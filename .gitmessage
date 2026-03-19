@@ -14,7 +14,6 @@
 #   perf      Performance improvement with no behavior change.
 #   style     Formatting, whitespace, semicolons — no logic change.
 #   build     Changes to build system or external dependencies.
-#   ci        CI configuration files and scripts only.
 #   revert    Reverts a previous commit. Reference hash in the body.
 #
 # Examples:

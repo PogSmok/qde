@@ -19,6 +19,12 @@ jobs:
  
     steps:
       - uses: actions/checkout@v5
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+    	  version: '6.8.*'
+          cache: true
  
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
