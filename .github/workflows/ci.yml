@@ -19,7 +19,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-    	  version: '6.8.*'
+          version: '6.8.*'
           cache: true
 
       - name: Cache build
@@ -42,12 +42,12 @@ jobs:
     name: Sanitizers
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.*'
+          version: '6.8.*'
           cache: true
 
       - name: Configure
@@ -63,12 +63,12 @@ jobs:
     name: clang-tidy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.*'
+          version: '6.8.*'
           cache: true
 
       - name: Install clang-tidy
@@ -87,12 +87,12 @@ jobs:
     name: Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.*'
+          version: '6.8.*'
           cache: true
 
       - name: Install lcov

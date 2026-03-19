@@ -1,5 +1,5 @@
 name: CodeQL
- 
+
 on:
   push:
     branches: [ master, develop ]
@@ -7,7 +7,7 @@ on:
     branches: [ master, develop ]
   schedule:
     - cron: '0 0 * * 1'
- 
+
 jobs:
   analyze:
     name: CodeQL Analysis
@@ -16,29 +16,29 @@ jobs:
       security-events: write
       actions: read
       contents: read
- 
+
     steps:
       - uses: actions/checkout@v5
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-    	  version: '6.8.*'
+          version: '6.8.*'
           cache: true
- 
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: c-cpp
           queries: security-and-quality
           config-file: .github/codeql-config.yml
- 
+
       - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
- 
+        run: cmake --preset default
+
       - name: Build
-        run: cmake --build build --parallel
- 
+        run: cmake --build --preset default
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
