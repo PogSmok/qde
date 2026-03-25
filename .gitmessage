@@ -1,0 +1,36 @@
+# <type>(<scope>): <subject>
+# |         |          |
+# |         |          +-> Short description in present tense, not capitalized, no period at the end
+# |         +------------> Scope of the change (parser, simulator, ui, renderer, etc.)
+# +----------------------> Type: feat, fix, refactor, test, docs, chore, perf
+#
+# Types:
+#   feat      New feature or capability. Triggers minor version bump.
+#   fix       Bug fix correcting unintended behavior. Triggers patch bump.
+#   refactor  Restructuring code without fixing a bug or adding a feature.
+#   test      Adding or correcting tests. No production code change.
+#   docs      Documentation only; README, comments, changelogs.
+#   chore     Maintenance; CI config, build scripts, dependency updates.
+#   perf      Performance improvement with no behavior change.
+#   style     Formatting, whitespace, semicolons — no logic change.
+#   build     Changes to build system or external dependencies.
+#   revert    Reverts a previous commit. Reference hash in the body.
+#
+# Examples:
+#   feat(parser): add support for CNOT gate syntax
+#   fix(simulator): correct phase calculation for T gate
+#   refactor(renderer): simplify gate drawing logic
+#   test(parser): add edge cases for qubit declaration
+#   docs(readme): update installation steps
+#   chore(ci): add sanitizer build step
+#
+# ---------------------------------------------------------------------------
+# BODY (optional) - explain WHY, not WHAT. Wrap at 72 characters.
+# For reference, the line below has exactly 72 characters.
+########################################################################
+#
+# ---------------------------------------------------------------------------
+# FOOTER (optional)
+# Breaking change:  BREAKING CHANGE: <description>
+# Related issue:    Closes #<issue number>
+# ---------------------------------------------------------------------------
