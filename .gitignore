@@ -8,7 +8,13 @@ CMakeFiles/
 cmake_install.cmake
 compile_commands.json
 CTestTestfile.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
 _deps/
+install_manifest.txt
+
+# CMake user-local config (machine-specific paths, never commit)
+CMakeUserPresets.json
 
 # Coverage
 *.gcno
@@ -26,23 +32,42 @@ moc_*.h
 qrc_*.cpp
 ui_*.h
 .qmake.stash
+.qtc_clangd/
 
-# Binaries
+# ANTLR generated sources
+grammar/generated/
+
+# Binaries and libraries
 *.exe
 *.out
 *.app
 *.dll
 *.so
+*.so.*
 *.dylib
+*.a
+*.lib
+*.pdb
 
-# Local
-CMakeUserPresets.json
+# Sanitizer / profiling output
+*.profraw
+*.profdata
+default.profraw
 
 # IDE
+.claude/
 .vscode/
 .idea/
 *.swp
 *.swo
 *.user
+*.suo
+*.sln.docstates
+.vs/
+
+# OS
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+Desktop.ini

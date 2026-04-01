@@ -8,13 +8,23 @@
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_PREFIX_PATH": "$env{CMAKE_PREFIX_PATH}"
+        "CMAKE_PREFIX_PATH": "$env{CMAKE_PREFIX_PATH}",
+        "FETCHCONTENT_BASE_DIR": "${sourceDir}/_deps"
       }
     },
     {
       "name": "default",
       "displayName": "Default",
       "inherits": "base"
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build-rel",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
     },
     {
       "name": "sanitizers",
@@ -39,6 +49,7 @@
       "name": "analysis",
       "displayName": "Static Analysis",
       "inherits": "base",
+      "binaryDir": "${sourceDir}/build-analysis",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
@@ -46,6 +57,7 @@
   ],
   "buildPresets": [
     { "name": "default",    "configurePreset": "default",    "jobs": 0 },
+    { "name": "release",    "configurePreset": "release",    "jobs": 0 },
     { "name": "sanitizers", "configurePreset": "sanitizers", "jobs": 0 },
     { "name": "coverage",   "configurePreset": "coverage",   "jobs": 0 },
     { "name": "analysis",   "configurePreset": "analysis",   "jobs": 0 }
@@ -54,6 +66,12 @@
     {
       "name": "default",
       "configurePreset": "default",
+      "output": { "outputOnFailure": true },
+      "execution": { "jobs": 0 }
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
       "output": { "outputOnFailure": true },
       "execution": { "jobs": 0 }
     },
