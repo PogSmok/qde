@@ -11,14 +11,16 @@ endif()
 set(ANTLR_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 file(MAKE_DIRECTORY ${ANTLR_GEN_DIR})
 
-set(ANTLR_OUTPUTS
+set(ANTLR_SOURCES
     ${ANTLR_GEN_DIR}/qasm3Lexer.cpp
-    ${ANTLR_GEN_DIR}/qasm3Lexer.h
     ${ANTLR_GEN_DIR}/qasm3Parser.cpp
+)
+
+set(ANTLR_OUTPUTS
+    ${ANTLR_SOURCES}
+    ${ANTLR_GEN_DIR}/qasm3Lexer.h
     ${ANTLR_GEN_DIR}/qasm3Parser.h
-    ${ANTLR_GEN_DIR}/qasm3BaseVisitor.cpp
     ${ANTLR_GEN_DIR}/qasm3BaseVisitor.h
-    ${ANTLR_GEN_DIR}/qasm3Visitor.cpp
     ${ANTLR_GEN_DIR}/qasm3Visitor.h
 )
 
@@ -37,7 +39,7 @@ add_custom_command(
     VERBATIM
 )
 
-add_library(qasm3_parser STATIC ${ANTLR_OUTPUTS})
+add_library(qasm3_parser STATIC ${ANTLR_SOURCES})
 target_link_libraries(qasm3_parser PUBLIC antlr4_static)
 
 target_include_directories(qasm3_parser PUBLIC  ${ANTLR_GEN_DIR})

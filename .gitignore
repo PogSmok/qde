@@ -36,6 +36,7 @@ ui_*.h
 
 # ANTLR generated sources
 grammar/generated/
+*.jar
 
 # Binaries and libraries
 *.exe
