@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
+# CMP0135: use download timestamp for FetchContent archives, not extraction tim
 set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
 
 project(qde
@@ -24,7 +25,7 @@ FetchContent_Declare(
 )
 
 # GoogleTest
-set(gtest_force_shared_crt ON  CACHE BOOL "" FORCE)  # avoids CRT mismatch on MSVC
+set(gtest_force_shared_crt ON  CACHE BOOL "" FORCE) # avoids CRT mismatch on MSVC
 set(BUILD_GMOCK            OFF CACHE BOOL "" FORCE)
 set(INSTALL_GTEST          OFF CACHE BOOL "" FORCE)
 
@@ -34,6 +35,7 @@ FetchContent_Declare(
     GIT_TAG        v1.17.0
 )
 
+set(ANTLR_BUILD_CPP_TESTS OFF CACHE BOOL "" FORCE) # disable ANTLR4 internal tests from polluting CTest
 FetchContent_MakeAvailable(antlr4_runtime googletest)
 
 add_subdirectory(grammar)

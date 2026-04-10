@@ -1,14 +1,14 @@
 #ifndef SYNTAX_ERROR_HPP_
 #define SYNTAX_ERROR_HPP_
 
-#include <string>
 #include <cstddef>
+#include <string>
 
 namespace qde {
 
 struct SyntaxError {
   std::size_t line;
-  std::size_t idx;
+  std::size_t column;
   std::string message;
 };
 

@@ -1,5 +1,7 @@
 set(TEST_SOURCES
     test_syntax_error_listener.cpp
+    test_parse_result.cpp
+    test_parser.cpp
 )
 
 if(TEST_SOURCES)
@@ -12,6 +14,7 @@ if(TEST_SOURCES)
 
     target_link_libraries(qde_tests
         PRIVATE
+            qde_lib
             qasm3_parser
             GTest::gtest_main
     )
@@ -23,6 +26,7 @@ if(TEST_SOURCES)
     include(GoogleTest)
     gtest_discover_tests(qde_tests
         DISCOVERY_TIMEOUT 60
+        # PRE_TEST: defer discovery to ctest runtime; avoids DLL path issues on Windows during build
         DISCOVERY_MODE PRE_TEST
     )
 endif()

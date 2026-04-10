@@ -1,8 +1,9 @@
+#include "qde/parser.hpp"
+
 #include <string>
 
 #include <antlr4-runtime.h>
 
-#include "qde/parser.hpp"
 #include "qde/circuit.hpp"
 #include "qde/parse_result.hpp"
 #include "qde/syntax_error_listener.hpp"

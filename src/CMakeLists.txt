@@ -14,7 +14,7 @@ target_link_libraries(qde_lib
     PUBLIC
         Qt6::Core
         Qt6::Widgets
-    # TODO: move back to PRIVATE once main.cpp no longer needs ANTLR directly
+    PRIVATE
         qasm3_parser
 )
 

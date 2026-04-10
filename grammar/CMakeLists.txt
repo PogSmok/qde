@@ -27,6 +27,7 @@ set(ANTLR_OUTPUTS
 add_custom_command(
     OUTPUT ${ANTLR_OUTPUTS}
     COMMAND ${ANTLR4_COMMAND}
+            # Generate C++ with visitor pattern; listeners excluded as visitors give finer AST control
             -Dlanguage=Cpp -visitor -no-listener
             -o ${ANTLR_GEN_DIR}
             ${CMAKE_CURRENT_SOURCE_DIR}/qasm3Lexer.g4

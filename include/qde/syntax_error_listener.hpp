@@ -1,8 +1,8 @@
 #ifndef SYNTAX_ERROR_LISTENER_HPP_
 #define SYNTAX_ERROR_LISTENER_HPP_
 
-#include <string>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include <antlr4-runtime.h>
@@ -14,7 +14,8 @@ namespace qde {
 class SyntaxErrorListener : public antlr4::BaseErrorListener {
 public:
   void syntaxError(antlr4::Recognizer*, antlr4::Token*, std::size_t line,
-                    std::size_t column, const std::string& msg) override {
+                    std::size_t column, const std::string& msg,
+                    std::exception_ptr) override {
     errors_.push_back({line, column, msg});
   }
 
