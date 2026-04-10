@@ -1,7 +1,5 @@
 set(LIB_SOURCES
-    # Add new source files here explicitly, e.g.:
-    # foo.cpp
-    # bar/baz.cpp
+    parser.cpp
 )
 
 add_library(qde_lib STATIC ${LIB_SOURCES})
@@ -16,7 +14,7 @@ target_link_libraries(qde_lib
     PUBLIC
         Qt6::Core
         Qt6::Widgets
-    PRIVATE
+    # TODO: move back to PRIVATE once main.cpp no longer needs ANTLR directly
         qasm3_parser
 )
 

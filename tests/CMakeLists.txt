@@ -1,7 +1,5 @@
 set(TEST_SOURCES
-    # Add test source files here explicitly, e.g.:
-    # test_gate_type.cpp
-    # test_parser.cpp
+    test_syntax_error_listener.cpp
 )
 
 if(TEST_SOURCES)
@@ -14,12 +12,17 @@ if(TEST_SOURCES)
 
     target_link_libraries(qde_tests
         PRIVATE
-            qde_lib
+            qasm3_parser
             GTest::gtest_main
     )
+
+    if(MINGW)
+        target_link_options(qde_tests PRIVATE -static-libgcc -static-libstdc++ -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive)
+    endif()
 
     include(GoogleTest)
     gtest_discover_tests(qde_tests
         DISCOVERY_TIMEOUT 60
+        DISCOVERY_MODE PRE_TEST
     )
 endif()
