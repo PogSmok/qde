@@ -35,7 +35,12 @@ FetchContent_Declare(
     GIT_TAG        v1.17.0
 )
 
-set(ANTLR_BUILD_CPP_TESTS OFF CACHE BOOL "" FORCE) # disable ANTLR4 internal tests from polluting CTest
+# Disable ANTLR4 internal tests from polluting CTest
+set(ANTLR_BUILD_CPP_TESTS OFF CACHE BOOL "" FORCE)
+# Disable ANTLR4 shared library; antlr4_shared triggers C4275 on MSVC
+# (std::exception has no DLL export but is a base of antlr4 exception classes)
+# Only antlr4_static is linked so the shared build is unnecessary.
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(antlr4_runtime googletest)
 
 add_subdirectory(grammar)
