@@ -1,9 +1,17 @@
 name: CI
+
 on:
   push:
     branches: [ master, develop ]
   pull_request:
     branches: [ master, develop ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
@@ -14,7 +22,7 @@ jobs:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -22,27 +30,97 @@ jobs:
           version: '6.8.*'
           cache: true
 
+      - name: Cache FetchContent dependencies
+        uses: actions/cache@v5
+        with:
+          path: _deps
+          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
+
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build
-          key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt') }}
+          key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-cmake-
 
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download ANTLR4 tool JAR
+        shell: bash
+        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
+
       - name: Configure
-        run: cmake --preset default
+        shell: bash
+        run: cmake --preset default -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
 
       - name: Build
+        shell: bash
         run: cmake --build --preset default
 
       - name: Test
+        shell: bash
         run: ctest --preset default
+
+  release:
+    name: Release Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.*'
+          cache: true
+
+      - name: Cache FetchContent dependencies
+        uses: actions/cache@v5
+        with:
+          path: _deps
+          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
+
+      - name: Cache build
+        uses: actions/cache@v5
+        with:
+          path: build-rel
+          key: ${{ runner.os }}-cmake-rel-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-cmake-rel-
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download ANTLR4 tool JAR
+        shell: bash
+        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
+
+      - name: Configure
+        shell: bash
+        run: cmake --preset release -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
+
+      - name: Build
+        shell: bash
+        run: cmake --build --preset release
+
+      - name: Test
+        shell: bash
+        run: ctest --preset release
 
   sanitizers:
     name: Sanitizers
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -50,8 +128,31 @@ jobs:
           version: '6.8.*'
           cache: true
 
+      - name: Cache FetchContent dependencies
+        uses: actions/cache@v5
+        with:
+          path: _deps
+          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
+
+      - name: Cache build
+        uses: actions/cache@v5
+        with:
+          path: build-san
+          key: ${{ runner.os }}-cmake-san-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-cmake-san-
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download ANTLR4 tool JAR
+        shell: bash
+        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
+
       - name: Configure
-        run: cmake --preset sanitizers
+        run: cmake --preset sanitizers -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
 
       - name: Build
         run: cmake --build --preset sanitizers
@@ -63,7 +164,7 @@ jobs:
     name: clang-tidy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -71,23 +172,60 @@ jobs:
           version: '6.8.*'
           cache: true
 
+      - name: Cache FetchContent dependencies
+        uses: actions/cache@v5
+        with:
+          path: _deps
+          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
+
+      - name: Cache build
+        uses: actions/cache@v5
+        with:
+          path: build-analysis
+          key: ${{ runner.os }}-cmake-analysis-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-cmake-analysis-
+
       - name: Install clang-tidy
-        run: sudo apt-get install -y clang-tidy-18
+        run: sudo apt-get install -y clang-tidy
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download ANTLR4 tool JAR
+        shell: bash
+        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
 
       - name: Configure
-        run: cmake --preset analysis
+        run: cmake --preset analysis -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
 
       - name: Build
         run: cmake --build --preset analysis
 
       - name: Run clang-tidy
-        run: find src -name "*.cpp" | xargs clang-tidy-18 -p build
+        run: find src tests -type f -name "*.cpp" | xargs -r clang-tidy -p build-analysis
+
+  format:
+    name: clang-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: |
+          find src tests include -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \) | \
+            xargs -r clang-format --dry-run --Werror
 
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -95,11 +233,34 @@ jobs:
           version: '6.8.*'
           cache: true
 
+      - name: Cache FetchContent dependencies
+        uses: actions/cache@v5
+        with:
+          path: _deps
+          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
+
+      - name: Cache build
+        uses: actions/cache@v5
+        with:
+          path: build-cov
+          key: ${{ runner.os }}-cmake-cov-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-cmake-cov-
+
       - name: Install lcov
         run: sudo apt-get install -y lcov
 
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Download ANTLR4 tool JAR
+        shell: bash
+        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
+
       - name: Configure
-        run: cmake --preset coverage
+        run: cmake --preset coverage -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
 
       - name: Build
         run: cmake --build --preset coverage
@@ -110,17 +271,17 @@ jobs:
       - name: Generate coverage report
         run: |
           lcov --capture --directory build-cov --output-file coverage.info --gcov-tool gcov --ignore-errors mismatch
-          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/googletest/*' --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/googletest/*' --output-file coverage.info --ignore-errors mismatch
           genhtml coverage.info --output-directory coverage-html
 
       - name: Upload HTML report as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage-html/
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: coverage.info
           fail_ci_if_error: true

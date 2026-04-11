@@ -2,7 +2,7 @@
 # |         |          |
 # |         |          +-> Short description in present tense, not capitalized, no period at the end
 # |         +------------> Scope of the change (parser, simulator, ui, renderer, etc.)
-# +----------------------> Type: feat, fix, refactor, test, docs, chore, perf
+# +----------------------> Type: feat, fix, refactor, test, docs, chore, perf, style, build, revert
 #
 # Types:
 #   feat      New feature or capability. Triggers minor version bump.
