@@ -54,12 +54,15 @@ jobs:
         run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
 
       - name: Configure
+        shell: bash
         run: cmake --preset default -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
 
       - name: Build
+        shell: bash
         run: cmake --build --preset default
 
       - name: Test
+        shell: bash
         run: ctest --preset default
 
   release:
