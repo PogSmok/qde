@@ -22,7 +22,7 @@ jobs:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -31,20 +31,20 @@ jobs:
           cache: true
 
       - name: Cache FetchContent dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _deps
           key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
 
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build
           key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-cmake-
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -66,7 +66,7 @@ jobs:
     name: Release Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -75,20 +75,20 @@ jobs:
           cache: true
 
       - name: Cache FetchContent dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _deps
           key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
 
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build-rel
           key: ${{ runner.os }}-cmake-rel-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-cmake-rel-
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -110,7 +110,7 @@ jobs:
     name: Sanitizers
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -119,20 +119,20 @@ jobs:
           cache: true
 
       - name: Cache FetchContent dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _deps
           key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
 
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build-san
           key: ${{ runner.os }}-cmake-san-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-cmake-san-
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -154,7 +154,7 @@ jobs:
     name: clang-tidy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -163,13 +163,13 @@ jobs:
           cache: true
 
       - name: Cache FetchContent dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _deps
           key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
 
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build-analysis
           key: ${{ runner.os }}-cmake-analysis-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
@@ -179,7 +179,7 @@ jobs:
         run: sudo apt-get install -y clang-tidy
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -201,7 +201,7 @@ jobs:
     name: clang-format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install clang-format
         run: sudo apt-get install -y clang-format
@@ -215,7 +215,7 @@ jobs:
     name: Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -224,13 +224,13 @@ jobs:
           cache: true
 
       - name: Cache FetchContent dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _deps
           key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
 
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build-cov
           key: ${{ runner.os }}-cmake-cov-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
@@ -240,7 +240,7 @@ jobs:
         run: sudo apt-get install -y lcov
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -265,13 +265,13 @@ jobs:
           genhtml coverage.info --output-directory coverage-html
 
       - name: Upload HTML report as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage-html/
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: coverage.info
           fail_ci_if_error: true
