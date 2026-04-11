@@ -66,8 +66,12 @@ jobs:
         run: ctest --preset default
 
   release:
-    name: Release Build
-    runs-on: ubuntu-latest
+    name: Release Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
 
@@ -101,12 +105,15 @@ jobs:
         run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
 
       - name: Configure
+        shell: bash
         run: cmake --preset release -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
 
       - name: Build
+        shell: bash
         run: cmake --build --preset release
 
       - name: Test
+        shell: bash
         run: ctest --preset release
 
   sanitizers:
