@@ -38,10 +38,15 @@ FetchContent_Declare(
 set(ANTLR_BUILD_CPP_TESTS OFF CACHE BOOL "" FORCE) # Disable ANTLR4 internal tests from polluting CTest
 FetchContent_MakeAvailable(antlr4_runtime googletest)
 
-# MSVC does not pull in <chrono> transitively from other ANTLR4 headers,
+
 if(TARGET antlr4_static)
+    # MSVC does not pull in <chrono> transitively from other ANTLR4 headers
     target_compile_options(antlr4_static PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/FIchrono>
+    )
+    # ANTLR4 defaults to static CRT (/MT) which mismatches the dynamic CRT (/MD)
+    set_target_properties(antlr4_static PROPERTIES
+        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     )
 endif()
 
