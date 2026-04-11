@@ -39,14 +39,14 @@ set(ANTLR_BUILD_CPP_TESTS OFF CACHE BOOL "" FORCE) # Disable ANTLR4 internal tes
 FetchContent_MakeAvailable(antlr4_runtime googletest)
 
 # Disable ANTLR4 warnings
-if(TARGET antlr4_static)
-    # <chrono> not pulled in transitively by MSVC; causes C2653 in ProfilingATNSimulator.cpp
-    target_compile_options(antlr4_static PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/FIchrono>
-        $<$<CXX_COMPILER_ID:MSVC>:/w>
-        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
-    )
-endif()
+foreach(_antlr_target antlr4_static antlr4_shared)
+    if(TARGET ${_antlr_target})
+        target_compile_options(${_antlr_target} PRIVATE
+            $<$<CXX_COMPILER_ID:MSVC>:/FIchrono /w> # MSVC doesn't pull <chrono> transitively 
+            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
+        )
+    endif()
+endforeach()
 
 add_subdirectory(grammar)
 add_subdirectory(src)
