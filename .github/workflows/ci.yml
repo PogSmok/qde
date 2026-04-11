@@ -260,8 +260,8 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          lcov --capture --directory build-cov --output-file coverage.info --gcov-tool gcov
-          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/googletest/*' --output-file coverage.info
+          lcov --capture --directory build-cov --output-file coverage.info --gcov-tool gcov --ignore-errors mismatch
+          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/googletest/*' --output-file coverage.info --ignore-errors mismatch
           genhtml coverage.info --output-directory coverage-html
 
       - name: Upload HTML report as artifact
