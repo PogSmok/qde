@@ -7,6 +7,6 @@ class Circuit {
   // TODO: implement
 };
 
-} // namespace qde
+}  // namespace qde
 
-#endif // CIRCUIT_HPP_
+#endif  // CIRCUIT_HPP_

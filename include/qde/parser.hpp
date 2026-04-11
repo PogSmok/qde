@@ -8,10 +8,10 @@
 namespace qde {
 
 class Parser {
-public:
+ public:
   [[nodiscard]] ParseResult parse(const std::string& source) const;
 };
 
-} // namespace qde
+}  // namespace qde
 
-#endif // PARSER_HPP_
+#endif  // PARSER_HPP_

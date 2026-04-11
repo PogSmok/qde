@@ -4,11 +4,11 @@
 
 #include <antlr4-runtime.h>
 
+#include "qasm3Lexer.h"
+#include "qasm3Parser.h"
 #include "qde/circuit.hpp"
 #include "qde/parse_result.hpp"
 #include "qde/syntax_error_listener.hpp"
-#include "qasm3Lexer.h"
-#include "qasm3Parser.h"
 
 namespace qde {
 

@@ -12,6 +12,6 @@ struct SyntaxError {
   std::string message;
 };
 
-} // namespace qde
+}  // namespace qde
 
-#endif // SYNTAX_ERROR_HPP_
+#endif  // SYNTAX_ERROR_HPP_

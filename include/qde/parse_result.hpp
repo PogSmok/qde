@@ -12,7 +12,7 @@
 namespace qde {
 
 class ParseResult {
-public:
+ public:
   [[nodiscard]] static ParseResult ok(Circuit circuit) {
     return ParseResult(std::move(circuit), {});
   }
@@ -34,7 +34,7 @@ public:
   const std::vector<SyntaxError>& errors() const { return errors_; }
   bool isOk() const { return circuit_.has_value(); }
 
-private:
+ private:
   ParseResult(std::optional<Circuit> circuit, std::vector<SyntaxError> errors)
       : circuit_(std::move(circuit)), errors_(std::move(errors)) {}
 
@@ -42,6 +42,6 @@ private:
   std::vector<SyntaxError> errors_;
 };
 
-} // namespace qde
+}  // namespace qde
 
-#endif // PARSE_RESULT_HPP_
+#endif  // PARSE_RESULT_HPP_

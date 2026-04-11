@@ -1,7 +1,7 @@
 #include <string>
 
-#include <gtest/gtest.h>
 #include <antlr4-runtime.h>
+#include <gtest/gtest.h>
 
 #include "qasm3Lexer.h"
 #include "qasm3Parser.h"
