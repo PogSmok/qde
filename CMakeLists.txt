@@ -38,16 +38,6 @@ FetchContent_Declare(
 set(ANTLR_BUILD_CPP_TESTS OFF CACHE BOOL "" FORCE) # Disable ANTLR4 internal tests from polluting CTest
 FetchContent_MakeAvailable(antlr4_runtime googletest)
 
-# Suppress MSVC warnings on the shared target since
-# only antlr4_static is linked and cannot patch upstream source.
-# C4275: std::exception lacks dllexport but is a base of ANTLR4 exceptions.
-# C4100: unreferenced parameter in generated XPath lexer code.
-if(TARGET antlr4_shared)
-    target_compile_options(antlr4_shared PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/wd4275 /wd4100>
-    )
-endif()
-
 add_subdirectory(grammar)
 add_subdirectory(src)
 
