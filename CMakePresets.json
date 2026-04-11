@@ -90,6 +90,7 @@
     {
       "name": "default",
       "configurePreset": "default",
+      "configuration": "Debug",
       "output": {
         "outputOnFailure": true
       },
@@ -100,6 +101,7 @@
     {
       "name": "release",
       "configurePreset": "release",
+      "configuration": "RelWithDebInfo",
       "output": {
         "outputOnFailure": true
       },
