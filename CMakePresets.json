@@ -63,11 +63,13 @@
     {
       "name": "default",
       "configurePreset": "default",
+      "configuration": "Debug",
       "jobs": 2
     },
     {
       "name": "release",
       "configurePreset": "release",
+      "configuration": "RelWithDebInfo",
       "jobs": 2
     },
     {
