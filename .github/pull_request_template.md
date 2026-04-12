@@ -1,9 +1,9 @@
 <!--
   Title format: <type>(<scope>): <subject>
   |              |         |          |
-  |              |         |          +-> Short description, present tense, not capitalized, no period
-  |              |         +------------> Scope: parser, simulator, ui, renderer, etc.
-  |              +----------------------> Type: see list below
+  |              |         |          +-\> Short description, present tense, not capitalized, no period
+  |              |         +------------\> Scope: parser, simulator, ui, renderer, etc.
+  |              +----------------------\> Type: see list below
   |
   Types:
     feat      New feature or capability. Triggers minor version bump.
@@ -49,7 +49,6 @@
 ## Breaking changes
 
 <!-- If this PR introduces breaking changes, describe them here.
-     Otherwise delete this section.
 
      BREAKING CHANGE: <what changed and what callers must update>
 -->
