@@ -21,11 +21,15 @@ set(LIB_QT_SOURCES
     qt/app_controller.cpp
     qt/quantum_circuit_view.cpp
     qt/text_editor.cpp
+    qt/code_editor.cpp
+    qt/text_document.cpp
     # explicitly list Q_OBJECT headers:
     ${PROJECT_SOURCE_DIR}/include/qde/qt/app_controller.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/qt/main_window.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/qt/quantum_circuit_view.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/qt/text_editor.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/qt/code_editor.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/qt/text_document.hpp
 )
 
 add_library(qde_qt STATIC ${LIB_QT_SOURCES})

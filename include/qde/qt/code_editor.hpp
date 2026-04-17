@@ -1,0 +1,44 @@
+#ifndef CODE_EDITOR_HPP_
+#define CODE_EDITOR_HPP_
+
+#include <QPlainTextEdit>
+#include <QWidget>
+#include <vector>
+
+#include "qde/syntax_error.hpp"
+
+class CodeEditor : public QPlainTextEdit {
+  Q_OBJECT
+ public:
+  explicit CodeEditor(QWidget* parent = nullptr);
+  virtual ~CodeEditor();
+
+  void lineNumberAreaPaintEvent(QPaintEvent* event);
+  int  lineNumberAreaWidth() const;
+
+  void setErrors(const std::vector<qde::SyntaxError>& errors);
+  void clearErrors();
+
+ protected:
+  void resizeEvent(QResizeEvent* event) override;
+
+ public slots:
+  void updateLineNumberAreaWidth(int newBlockCount);
+  void updateLineNumberArea(const QRect& rect, int dy);
+
+ private:
+  QWidget* lineNumberArea_;
+};
+
+// ---- LineNumberArea ----
+class LineNumberArea : public QWidget {
+ public:
+  explicit LineNumberArea(CodeEditor* editor) : QWidget(editor), editor_(editor) {}
+  QSize sizeHint() const override { return { editor_->lineNumberAreaWidth(), 0 }; }
+ protected:
+  void paintEvent(QPaintEvent* ev) override { editor_->lineNumberAreaPaintEvent(ev); }
+ private:
+  CodeEditor* editor_;
+};
+
+#endif // CODE_EDITOR_HPP_
