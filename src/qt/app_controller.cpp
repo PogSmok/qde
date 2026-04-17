@@ -8,7 +8,15 @@ AppController::AppController(QuantumCircuitView* circuitView, TextEditor* textEd
  textEditor_(textEditor),
  parser_(std::make_unique<qde::Parser>()) {
  
- connect(textEditor_, &TextEditor::textChanged, this, &AppController::parseNow);
+ debounceTimer_.setSingleShot(true);
+ debounceTimer_.setInterval(400); // 400ms debounce
+
+ connect(textEditor_, &TextEditor::textChanged, this, &AppController::onTextChanged);
+ connect(&debounceTimer_, &QTimer::timeout, this, &AppController::parseNow);
+}
+
+void AppController::onTextChanged() {
+ debounceTimer_.start();
 }
 
 void AppController::parseNow() {

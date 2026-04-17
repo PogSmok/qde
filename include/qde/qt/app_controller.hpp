@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QTimer>
 #include <memory>
 #include <optional>
 
@@ -21,6 +22,7 @@ class AppController : public QObject {
   [[nodiscard]] const qde::Circuit* circuit() const { return circuit_.has_value() ? &circuit_.value() : nullptr; }
 
  public slots:
+  void onTextChanged();
   void parseNow();
 
  signals:
@@ -32,6 +34,7 @@ class AppController : public QObject {
   TextEditor* textEditor_;
   std::unique_ptr<qde::Parser> parser_;
   std::optional<qde::Circuit> circuit_;
+  QTimer debounceTimer_;
 };
 
 #endif // APP_CONTROLLER_HPP_

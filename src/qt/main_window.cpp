@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
  editor_->document()->setContent(example);
  editor_->syncEditorToDoc();
 
- // controller_->parseNow();
+ controller_->parseNow();
 }
 
 void MainWindow::setupMenuBar() {
