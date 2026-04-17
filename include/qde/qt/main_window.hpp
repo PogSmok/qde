@@ -19,7 +19,7 @@ class MainWindow : public QMainWindow {
  protected:
   void closeEvent(QCloseEvent* event) override;
 
- private Q_SLOTS:
+ public slots:
   void newFile();
   void openFile();
   void saveFile();
@@ -35,7 +35,7 @@ class MainWindow : public QMainWindow {
 
   TextEditor* editor_;
   QuantumCircuitView* circuitView_;
-  AppController controller_;
+  AppController* controller_;
   QSplitter* splitter_;
   QLabel* statusLabel_;
 };
