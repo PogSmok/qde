@@ -1,0 +1,105 @@
+#include <gtest/gtest.h>
+#include <QSignalSpy>
+#include <QTest>
+#include "qde/gui/app_controller.hpp"
+#include "qde/gui/main_window.hpp"
+#include "qde/gui/quantum_circuit_view.hpp"
+#include "qde/gui/text_editor.hpp"
+
+namespace qde::gui {
+
+class MainWindowTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    mainWindow = new MainWindow();
+    mainWindow->show();
+    // Allow event loop to process show events
+    QApplication::processEvents();
+  }
+
+  void TearDown() override { delete mainWindow; }
+
+  QPointer<MainWindow> mainWindow;
+};
+
+TEST_F(MainWindowTest, Initialization) {
+  EXPECT_EQ(mainWindow->windowTitle(), QString("QDE *"));
+  // when opening app an example source code is put inside which marks document
+  // as 'modified', hence the ' *' is added to the windowTitle
+  // NOTE: if this behavior is changed in the future this test will fail
+
+  auto* splitter = mainWindow->findChild<QSplitter*>();
+  ASSERT_NE(splitter, nullptr);
+  EXPECT_EQ(splitter->count(), 2);
+
+  auto* editor = mainWindow->findChild<TextEditor*>();
+  ASSERT_NE(editor, nullptr);
+
+  auto* circuitView = mainWindow->findChild<QuantumCircuitView*>();
+  ASSERT_NE(circuitView, nullptr);
+}
+
+TEST_F(MainWindowTest, UpdateTitleOnModifiedChanged) {
+  auto* editor = mainWindow->findChild<TextEditor*>();
+  ASSERT_NE(editor, nullptr);
+
+  // Set unmodified first
+  editor->document()->setModified(false);
+  mainWindow->onModifiedChanged(false);
+
+  QString unmodifiedTitle = mainWindow->windowTitle();
+  EXPECT_FALSE(unmodifiedTitle.endsWith("*"));
+
+  // Trigger modified
+  editor->document()->setModified(true);
+  mainWindow->onModifiedChanged(true);
+
+  QString modifiedTitle = mainWindow->windowTitle();
+  EXPECT_TRUE(modifiedTitle.endsWith("*"));
+}
+
+TEST_F(MainWindowTest, OnParseSuccessUpdatesStatus) {
+  mainWindow->onParseSuccess();
+  auto* statusLabel = mainWindow->findChild<QLabel*>();
+  ASSERT_NE(statusLabel, nullptr);
+
+  EXPECT_EQ(statusLabel->text(), "Parsed successfully");
+  EXPECT_TRUE(statusLabel->styleSheet().contains("#4CAF50"));  // Green color
+}
+
+TEST_F(MainWindowTest, OnParseFailUpdatesStatus) {
+  mainWindow->onParseFail({"Error 1", "Error 2"});
+  auto* statusLabel = mainWindow->findChild<QLabel*>();
+  ASSERT_NE(statusLabel, nullptr);
+
+  EXPECT_EQ(statusLabel->text(), "Syntax Error: 2 errors");
+  EXPECT_TRUE(statusLabel->styleSheet().contains("#F44336"));  // Red color
+}
+
+TEST_F(MainWindowTest, NewFileWhenUnmodified) {
+  auto* editor = mainWindow->findChild<TextEditor*>();
+  ASSERT_NE(editor, nullptr);
+
+  // Type something to make it modified first, wait we said unmodified
+  editor->document()->setContent("some text");
+  editor->document()->setModified(false);
+
+  // newFile should clear the editor if unmodified without blocking prompt
+  mainWindow->newFile();
+  EXPECT_TRUE(editor->plainText().isEmpty());
+}
+
+TEST_F(MainWindowTest, CloseEventWhenUnmodified) {
+  auto* editor = mainWindow->findChild<TextEditor*>();
+  ASSERT_NE(editor, nullptr);
+  editor->document()->setModified(false);
+
+  // If we close when unmodified, it shouldn't block on QMessageBox
+  // So we just simulate a close event
+  QCloseEvent event;
+  QApplication::sendEvent(mainWindow, &event);
+
+  EXPECT_TRUE(event.isAccepted());
+}
+
+}  // namespace qde::gui

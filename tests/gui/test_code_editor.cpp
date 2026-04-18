@@ -38,4 +38,23 @@ TEST_F(CodeEditorTest, SetClearErrors) {
   EXPECT_TRUE(selections.isEmpty());
 }
 
+TEST_F(CodeEditorTest, GeometryAndLineNumbers) {
+  // Show editor to ensure geometries are updated
+  editor->show();
+
+  // Set multi-line text to ensure block count goes above 10 for width
+  // adjustment
+  QString text;
+  for (int i = 0; i < 20; ++i) {
+    text += "line\n";
+  }
+  editor->setPlainText(text);
+
+  // Force a resize event
+  editor->resize(400, 400);
+
+  // Width should increase with digits
+  EXPECT_GT(editor->lineNumberAreaWidth(), 0);
+}
+
 }  // namespace qde::gui
