@@ -16,7 +16,7 @@ TextEditor::TextEditor(QWidget* parent) : QWidget(parent) {
   undoStack_ = new QUndoStack(this);
   // highlighter_ = new QASMSyntaxHighlighter(editor_->document());
 
-  auto* layout = new QVBoxLayout(this);
+  QPointer<QVBoxLayout> const layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
   layout->addWidget(editor_);
 
