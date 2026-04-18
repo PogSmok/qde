@@ -5,8 +5,6 @@
 
 namespace qde::gui {
 
-TextDocument::~TextDocument() = default;
-
 TextDocument::TextDocument(QObject* parent) : QObject(parent) {}
 
 QString TextDocument::filePath() const {

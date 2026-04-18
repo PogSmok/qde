@@ -1,13 +1,12 @@
-#include <QFontMetrics>
 #include <QPainter>
-#include <QResizeEvent>
 #include <QTextBlock>
 
 #include "qde/gui/code_editor.hpp"
 
-namespace qde::gui {
+#include <iostream>
+#include <ostream>
 
-CodeEditor::~CodeEditor() = default;
+namespace qde::gui {
 
 CodeEditor::CodeEditor(QWidget* parent) : QPlainTextEdit(parent) {
   lineNumberArea_ = new LineNumberArea(this);
@@ -56,16 +55,17 @@ void CodeEditor::updateLineNumberArea(const QRect& rect, int dy) {
   if (rect.contains(viewport()->rect())) updateLineNumberAreaWidth(0);
 }
 
-void CodeEditor::resizeEvent(QResizeEvent* ev) {
-  QPlainTextEdit::resizeEvent(ev);
+void CodeEditor::resizeEvent(QResizeEvent* event) {
+  QPlainTextEdit::resizeEvent(event);
   QRect cr = contentsRect();
   lineNumberArea_->setGeometry(
       {cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()});
+  std::cout << lineNumberAreaWidth() << std::endl;
 }
 
-void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent* ev) {
+void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
   QPainter painter(lineNumberArea_);
-  painter.fillRect(ev->rect(), QColor(40, 40, 40));
+  painter.fillRect(event->rect(), QColor(40, 40, 40));
 
   QTextBlock block = firstVisibleBlock();
   int blockNum = block.blockNumber();
@@ -73,8 +73,8 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent* ev) {
       qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
   int bottom = top + qRound(blockBoundingRect(block).height());
 
-  while (block.isValid() && top <= ev->rect().bottom()) {
-    if (block.isVisible() && bottom >= ev->rect().top()) {
+  while (block.isValid() && top <= event->rect().bottom()) {
+    if (block.isVisible() && bottom >= event->rect().top()) {
       painter.setPen(QColor(133, 133, 133));
       painter.drawText(0, top, lineNumberArea_->width() - 4,
                        fontMetrics().height(), Qt::AlignRight,
@@ -90,21 +90,21 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent* ev) {
 void CodeEditor::setErrors(const std::vector<qde::SyntaxError>& errors) {
   QList<QTextEdit::ExtraSelection> selections;
 
-  for (const auto& error : errors) {
+  for (const auto& [line, column, message] : errors) {
     QTextEdit::ExtraSelection selection;
 
     QTextCharFormat format;
     format.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
     format.setUnderlineColor(Qt::red);
-    format.setToolTip(QString::fromStdString(error.message));
+    format.setToolTip(QString::fromStdString(message));
 
     QTextCursor cursor = textCursor();
     cursor.setPosition(0);
     // QTextBlock is 0-indexed, SyntaxError line is 1-indexed.
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor,
-                        error.line - 1);
+                        line - 1);
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
-                        error.column - 1);
+                        column - 1);
 
     // Select the word or character at the error position
     cursor.select(QTextCursor::WordUnderCursor);

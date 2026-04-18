@@ -10,7 +10,6 @@ class QuantumCircuitView : public QWidget {
   Q_OBJECT
  public:
   explicit QuantumCircuitView(QWidget* parent = nullptr);
-  virtual ~QuantumCircuitView();
 };
 
 }  // namespace qde::gui

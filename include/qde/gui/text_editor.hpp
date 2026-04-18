@@ -15,12 +15,11 @@ class TextEditor : public QWidget {
   Q_OBJECT
  public:
   explicit TextEditor(QWidget* parent = nullptr);
-  virtual ~TextEditor();
 
   void newFile();
   void openFile(const QString& path);
   bool saveFile();
-  bool saveFileAs(const QString& path);
+  bool saveFileAs(const QString& path) const;
   void syncEditorToDoc();
 
   [[nodiscard]] QString plainText() const;
@@ -29,8 +28,8 @@ class TextEditor : public QWidget {
 
   [[nodiscard]] QPointer<TextDocument> document() const { return document_; }
 
-  void setErrors(const std::vector<qde::SyntaxError>& errors);
-  void clearErrors();
+  void setErrors(const std::vector<qde::SyntaxError>& errors) const;
+  void clearErrors() const;
 
  signals:
   void textChanged();

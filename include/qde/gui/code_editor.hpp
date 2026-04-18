@@ -14,10 +14,9 @@ class CodeEditor : public QPlainTextEdit {
   Q_OBJECT
  public:
   explicit CodeEditor(QWidget* parent = nullptr);
-  virtual ~CodeEditor();
 
-  void lineNumberAreaPaintEvent(QPaintEvent* event);
-  int lineNumberAreaWidth() const;
+  void lineNumberAreaPaintEvent(const QPaintEvent* event) const;
+  [[nodiscard]] int lineNumberAreaWidth() const;
 
   void setErrors(const std::vector<qde::SyntaxError>& errors);
   void clearErrors();
@@ -38,7 +37,7 @@ class LineNumberArea : public QWidget {
  public:
   explicit LineNumberArea(CodeEditor* editor)
       : QWidget(editor), editor_(editor) {}
-  QSize sizeHint() const override {
+  [[nodiscard]] QSize sizeHint() const override {
     return {editor_->lineNumberAreaWidth(), 0};
   }
 

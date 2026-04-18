@@ -1,18 +1,13 @@
 #include <QAction>
-#include <QCloseEvent>
 #include <QFileDialog>
 #include <QKeySequence>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QSplitter>
 #include <QStatusBar>
-#include <QVBoxLayout>
 
 #include "qde/gui/main_window.hpp"
 
 namespace qde::gui {
-
-MainWindow::~MainWindow() = default;
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
   setWindowTitle("QDE");
@@ -84,7 +79,7 @@ void MainWindow::setupMenuBar() {
   const QPointer<QAction> saveAsAct =
       fileMenu->addAction("Save &As…", this, &MainWindow::saveFileAs);
   fileMenu->addSeparator();
-  fileMenu->addAction("&Quit", this, &QWidget::close, QKeySequence::Quit);
+  fileMenu->addAction("&Quit", QKeySequence::Quit, this, &QWidget::close);
 
   Q_UNUSED(newAct)
   Q_UNUSED(openAct)
@@ -141,17 +136,18 @@ void MainWindow::saveFileAs() {
       this, "Save As", {}, "QASM Files (*.qasm);;All Files (*)");
   if (!path.isEmpty()) {
     editor_->saveFileAs(path);
+    // TODO: Handle error
     updateTitle();
   }
 }
 
-void MainWindow::onParseSuccess() {
+void MainWindow::onParseSuccess() const {
   statusLabel_->setText("Parsed successfully");
   statusLabel_->setStyleSheet(
       "color: #4CAF50; padding: 0 6px;");  // Green color for success
 }
 
-void MainWindow::onParseFail(const QStringList& errors) {
+void MainWindow::onParseFail(const QStringList& errors) const {
   statusLabel_->setText(QString("Syntax Error: %1 errors").arg(errors.size()));
   statusLabel_->setStyleSheet(
       "color: #F44336; padding: 0 6px;");  // Red color for failure
