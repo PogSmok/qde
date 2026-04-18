@@ -42,6 +42,6 @@ class MainWindow : public QMainWindow {
   QLabel* statusLabel_;
 };
 
-}  // namespace qge::gui
+}  // namespace qde::gui
 
 #endif  // MAIN_WINDOW_HPP_
