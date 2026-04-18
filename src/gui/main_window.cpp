@@ -9,7 +9,12 @@
 
 namespace qde::gui {
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow{parent},
+      editor_(new TextEditor(this)),
+      circuitView_(new QuantumCircuitView(this)),
+      controller_(new AppController(circuitView_, editor_, this)),
+      splitter_(new QSplitter(Qt::Vertical, this)) {
   setWindowTitle("QDE");
   resize(1280, 800);
 
@@ -24,11 +29,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
   p.setColor(QPalette::Highlight, QColor(86, 156, 214));
   setPalette(p);
 
-  editor_ = new TextEditor(this);
-  circuitView_ = new QuantumCircuitView(this);
-  controller_ = new AppController(circuitView_, editor_, this);
-
-  splitter_ = new QSplitter(Qt::Vertical, this);
   splitter_->addWidget(editor_);
   splitter_->addWidget(circuitView_);
   splitter_->setSizes({400, 360});
@@ -72,10 +72,13 @@ void MainWindow::setupMenuBar() {
       "QMenu { background: #2d2d2d; color: #ddd; }"
       "QMenu::item:selected { background: #094771; }");
 
-  const QPointer<QAction> newAct = fileMenu->addAction("&New", QKeySequence::New, this, &MainWindow::newFile);
-  const QPointer<QAction> openAct = fileMenu->addAction("&Open...",QKeySequence::Open, this, &MainWindow::openFile);
+  const QPointer<QAction> newAct = fileMenu->addAction(
+      "&New", QKeySequence::New, this, &MainWindow::newFile);
+  const QPointer<QAction> openAct = fileMenu->addAction(
+      "&Open...", QKeySequence::Open, this, &MainWindow::openFile);
   fileMenu->addSeparator();
-  const QPointer<QAction> saveAct = fileMenu->addAction("&Save", QKeySequence::Save, this, &MainWindow::saveFile);
+  const QPointer<QAction> saveAct = fileMenu->addAction(
+      "&Save", QKeySequence::Save, this, &MainWindow::saveFile);
   const QPointer<QAction> saveAsAct =
       fileMenu->addAction("Save &As…", this, &MainWindow::saveFileAs);
   fileMenu->addSeparator();
@@ -112,7 +115,9 @@ void MainWindow::newFile() {
     auto btn = QMessageBox::question(this, "Unsaved changes",
                                      "Discard unsaved changes?",
                                      QMessageBox::Yes | QMessageBox::No);
-    if (btn != QMessageBox::Yes) return;
+    if (btn != QMessageBox::Yes) {
+      return;
+    }
   }
   editor_->newFile();
   updateTitle();
@@ -121,7 +126,9 @@ void MainWindow::newFile() {
 void MainWindow::openFile() {
   QString path = QFileDialog::getOpenFileName(
       this, "Open QASM File", {}, "QASM Files (*.qasm *.qasm2);;All Files (*)");
-  if (path.isEmpty()) return;
+  if (path.isEmpty()) {
+    return;
+  }
   editor_->openFile(path);
   updateTitle();
 }
@@ -157,8 +164,12 @@ void MainWindow::onModifiedChanged(bool modified) { updateTitle(); }
 
 void MainWindow::updateTitle() {
   QString title = "QDE";
-  if (!editor_->filePath().isEmpty()) title += " — " + editor_->filePath();
-  if (editor_->isModified()) title += " *";
+  if (!editor_->filePath().isEmpty()) {
+    title += " — " + editor_->filePath();
+  }
+  if (editor_->isModified()) {
+    title += " *";
+  }
   setWindowTitle(title);
 }
 

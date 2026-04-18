@@ -10,7 +10,7 @@ class TextEditorTest : public ::testing::Test {
 
   void TearDown() override { delete editor; }
 
-  TextEditor* editor;
+  QPointer<TextEditor> editor;
 };
 
 TEST_F(TextEditorTest, NewFileResetsState) {

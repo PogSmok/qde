@@ -4,13 +4,11 @@
 #include "qde/gui/code_editor.hpp"
 
 #include <iostream>
-#include <ostream>
 
 namespace qde::gui {
 
-CodeEditor::CodeEditor(QWidget* parent) : QPlainTextEdit(parent) {
-  lineNumberArea_ = new LineNumberArea(this);
-
+CodeEditor::CodeEditor(QWidget* parent)
+    : QPlainTextEdit(parent), lineNumberArea_(new LineNumberArea(this)) {
   // Dark background
   QPalette p = palette();
   p.setColor(QPalette::Base, QColor(30, 30, 30));
@@ -37,22 +35,24 @@ int CodeEditor::lineNumberAreaWidth() const {
     max /= 10;
     ++digits;
   }
-  return 8 + fontMetrics().horizontalAdvance('9') * digits;
+  return 8 + (fontMetrics().horizontalAdvance('9') * digits);
 }
 
-void CodeEditor::updateLineNumberAreaWidth(int) {
+void CodeEditor::updateLineNumberAreaWidth(int /*unused*/) {
   setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
 
 void CodeEditor::updateLineNumberArea(const QRect& rect, int dy) {
-  if (dy) {
+  if (dy != 0) {
     lineNumberArea_->scroll(0, dy);
   } else {
     lineNumberArea_->update(0, rect.y(), lineNumberArea_->width(),
                             rect.height());
   }
 
-  if (rect.contains(viewport()->rect())) updateLineNumberAreaWidth(0);
+  if (rect.contains(viewport()->rect())) {
+    updateLineNumberAreaWidth(0);
+  }
 }
 
 void CodeEditor::resizeEvent(QResizeEvent* event) {
@@ -60,7 +60,6 @@ void CodeEditor::resizeEvent(QResizeEvent* event) {
   QRect cr = contentsRect();
   lineNumberArea_->setGeometry(
       {cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()});
-  std::cout << lineNumberAreaWidth() << std::endl;
 }
 
 void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
@@ -102,9 +101,9 @@ void CodeEditor::setErrors(const std::vector<qde::SyntaxError>& errors) {
     cursor.setPosition(0);
     // QTextBlock is 0-indexed, SyntaxError line is 1-indexed.
     cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor,
-                        line - 1);
+                        static_cast<int>(line) - 1);
     cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
-                        column - 1);
+                        static_cast<int>(column) - 1);
 
     // Select the word or character at the error position
     cursor.select(QTextCursor::WordUnderCursor);

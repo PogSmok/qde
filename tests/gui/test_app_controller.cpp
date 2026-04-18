@@ -21,16 +21,17 @@ class AppControllerTest : public ::testing::Test {
     delete circuitView;
   }
 
-  QuantumCircuitView* circuitView;
-  TextEditor* textEditor;
-  AppController* controller;
+ public:
+  QPointer<QuantumCircuitView> circuitView;
+  QPointer<TextEditor> textEditor;
+  QPointer<AppController> controller;
 };
 
 TEST_F(AppControllerTest, ParseNowSuccess) {
   QSignalSpy successSpy(controller, &AppController::parseSuccess);
   QSignalSpy errorSpy(controller, &AppController::parseError);
 
-  CodeEditor* innerEditor = textEditor->findChild<CodeEditor*>();
+  auto* innerEditor = textEditor->findChild<CodeEditor*>();
   ASSERT_NE(innerEditor, nullptr);
   innerEditor->setPlainText("OPENQASM 3.0;\nqreg q[1];");
 
@@ -45,7 +46,7 @@ TEST_F(AppControllerTest, ParseNowError) {
   QSignalSpy successSpy(controller, &AppController::parseSuccess);
   QSignalSpy errorSpy(controller, &AppController::parseError);
 
-  CodeEditor* innerEditor = textEditor->findChild<CodeEditor*>();
+  auto* innerEditor = textEditor->findChild<CodeEditor*>();
   ASSERT_NE(innerEditor, nullptr);
   innerEditor->setPlainText("INVALID SYNTAX");
 
@@ -59,7 +60,7 @@ TEST_F(AppControllerTest, ParseNowError) {
 TEST_F(AppControllerTest, DebounceTimerWorks) {
   QSignalSpy successSpy(controller, &AppController::parseSuccess);
 
-  CodeEditor* innerEditor = textEditor->findChild<CodeEditor*>();
+  auto* innerEditor = textEditor->findChild<CodeEditor*>();
   ASSERT_NE(innerEditor, nullptr);
 
   // Type something

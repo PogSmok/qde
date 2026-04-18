@@ -12,7 +12,8 @@ class TextDocumentTest : public ::testing::Test {
 
   void TearDown() override { delete doc; }
 
-  TextDocument* doc;
+ public:
+  QPointer<TextDocument> doc;
 };
 
 TEST_F(TextDocumentTest, InitialState) {

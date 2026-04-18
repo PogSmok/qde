@@ -9,7 +9,8 @@ class CodeEditorTest : public ::testing::Test {
 
   void TearDown() override { delete editor; }
 
-  CodeEditor* editor;
+ public:
+  QPointer<CodeEditor> editor;
 };
 
 TEST_F(CodeEditorTest, SetClearErrors) {

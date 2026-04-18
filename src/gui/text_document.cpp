@@ -13,7 +13,9 @@ QString TextDocument::filePath() const {
 
 bool TextDocument::load(const std::filesystem::path& path) {
   QFile file(QString::fromStdString(path.string()));
-  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return false;
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    return false;
+  }
   QTextStream in(&file);
   content_ = in.readAll();
   path_ = path;
@@ -24,13 +26,17 @@ bool TextDocument::load(const std::filesystem::path& path) {
 }
 
 bool TextDocument::save() {
-  if (path_.empty()) return false;
+  if (path_.empty()) {
+    return false;
+  }
   return saveAs(path_);
 }
 
 bool TextDocument::saveAs(const std::filesystem::path& path) {
   QFile file(QString::fromStdString(path.string()));
-  if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return false;
+  if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    return false;
+  }
   QTextStream out(&file);
   out << content_;
   path_ = path;
@@ -40,7 +46,9 @@ bool TextDocument::saveAs(const std::filesystem::path& path) {
 }
 
 void TextDocument::setModified(bool v) {
-  if (modified_ == v) return;
+  if (modified_ == v) {
+    return;
+  }
   modified_ = v;
   emit modifiedChanged(v);
 }

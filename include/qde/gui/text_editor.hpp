@@ -1,8 +1,8 @@
 #ifndef GUI_TEXT_EDITOR_HPP_
 #define GUI_TEXT_EDITOR_HPP_
 
-#include <QString>
 #include <QPointer>
+#include <QString>
 #include <QUndoStack>
 #include <QWidget>
 
@@ -19,7 +19,7 @@ class TextEditor : public QWidget {
   void newFile();
   void openFile(const QString& path);
   bool saveFile();
-  bool saveFileAs(const QString& path) const;
+  [[nodiscard]] bool saveFileAs(const QString& path) const;
   void syncEditorToDoc();
 
   [[nodiscard]] QString plainText() const;
