@@ -38,6 +38,8 @@ set(GUI_TEST_SOURCES
     gui/test_text_editor.cpp
     gui/test_app_controller.cpp
     gui/test_quantum_circuit_view.cpp
+    gui/test_main_window.cpp
+        gui/test_main_window.cpp
 )
 
 if(GUI_TEST_SOURCES)
