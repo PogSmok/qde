@@ -34,8 +34,8 @@ class AppController : public QObject {
   void parseError(const QStringList& errors);
 
  private:
-  QuantumCircuitView* circuitView_;
-  TextEditor* textEditor_;
+  QPointer<QuantumCircuitView> circuitView_;
+  QPointer<TextEditor> textEditor_;
   std::unique_ptr<qde::Parser> parser_;
   std::optional<qde::Circuit> circuit_;
   QTimer debounceTimer_;

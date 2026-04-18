@@ -2,6 +2,7 @@
 #define GUI_TEXT_EDITOR_HPP_
 
 #include <QString>
+#include <QPointer>
 #include <QUndoStack>
 #include <QWidget>
 
@@ -26,7 +27,7 @@ class TextEditor : public QWidget {
   [[nodiscard]] QString filePath() const;
   [[nodiscard]] bool isModified() const;
 
-  [[nodiscard]] TextDocument* document() const { return document_; }
+  [[nodiscard]] QPointer<TextDocument> document() const { return document_; }
 
   void setErrors(const std::vector<qde::SyntaxError>& errors);
   void clearErrors();
@@ -40,9 +41,9 @@ class TextEditor : public QWidget {
   void onEditorTextChanged();
 
  private:
-  CodeEditor* editor_;
-  TextDocument* document_;
-  QUndoStack* undoStack_;
+  QPointer<CodeEditor> editor_;
+  QPointer<TextDocument> document_;
+  QPointer<QUndoStack> undoStack_;
 
   bool syncing_ = false;
 };

@@ -2,6 +2,7 @@
 #define GUI_CODE_EDITOR_HPP_
 
 #include <QPlainTextEdit>
+#include <QPointer>
 #include <QWidget>
 #include <vector>
 
@@ -29,7 +30,7 @@ class CodeEditor : public QPlainTextEdit {
   void updateLineNumberArea(const QRect& rect, int dy);
 
  private:
-  QWidget* lineNumberArea_;
+  QPointer<QWidget> lineNumberArea_;
 };
 
 // ---- LineNumberArea ----
@@ -47,7 +48,7 @@ class LineNumberArea : public QWidget {
   }
 
  private:
-  CodeEditor* editor_;
+  QPointer<CodeEditor> editor_;
 };
 
 }  // namespace qde::gui

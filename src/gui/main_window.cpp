@@ -77,14 +77,11 @@ void MainWindow::setupMenuBar() {
       "QMenu { background: #2d2d2d; color: #ddd; }"
       "QMenu::item:selected { background: #094771; }");
 
-  auto* newAct = fileMenu->addAction("&New", this, &MainWindow::newFile,
-                                     QKeySequence::New);
-  auto* openAct = fileMenu->addAction("&Open...", this, &MainWindow::openFile,
-                                      QKeySequence::Open);
+  const QPointer<QAction> newAct = fileMenu->addAction("&New", QKeySequence::New, this, &MainWindow::newFile);
+  const QPointer<QAction> openAct = fileMenu->addAction("&Open...",QKeySequence::Open, this, &MainWindow::openFile);
   fileMenu->addSeparator();
-  auto* saveAct = fileMenu->addAction("&Save", this, &MainWindow::saveFile,
-                                      QKeySequence::Save);
-  auto* saveAsAct =
+  const QPointer<QAction> saveAct = fileMenu->addAction("&Save", QKeySequence::Save, this, &MainWindow::saveFile);
+  const QPointer<QAction> saveAsAct =
       fileMenu->addAction("Save &As…", this, &MainWindow::saveFileAs);
   fileMenu->addSeparator();
   fileMenu->addAction("&Quit", this, &QWidget::close, QKeySequence::Quit);

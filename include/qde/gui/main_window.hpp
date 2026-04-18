@@ -2,6 +2,7 @@
 #define GUI_MAIN_WINDOW_HPP_
 
 #include <QCloseEvent>
+#include <QPointer>
 #include <QLabel>
 #include <QMainWindow>
 #include <QSplitter>
@@ -35,11 +36,11 @@ class MainWindow : public QMainWindow {
   void setupStatusBar();
   void updateTitle();
 
-  TextEditor* editor_;
-  QuantumCircuitView* circuitView_;
-  AppController* controller_;
-  QSplitter* splitter_;
-  QLabel* statusLabel_;
+  QPointer<TextEditor> editor_;
+  QPointer<QuantumCircuitView> circuitView_;
+  QPointer<AppController> controller_;
+  QPointer<QSplitter> splitter_;
+  QPointer<QLabel> statusLabel_;
 };
 
 }  // namespace qde::gui
