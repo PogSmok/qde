@@ -1,11 +1,13 @@
-#ifndef CODE_EDITOR_HPP_
-#define CODE_EDITOR_HPP_
+#ifndef GUI_CODE_EDITOR_HPP_
+#define GUI_CODE_EDITOR_HPP_
 
 #include <QPlainTextEdit>
 #include <QWidget>
 #include <vector>
 
 #include "qde/syntax_error.hpp"
+
+namespace qde::gui {
 
 class CodeEditor : public QPlainTextEdit {
   Q_OBJECT
@@ -14,7 +16,7 @@ class CodeEditor : public QPlainTextEdit {
   virtual ~CodeEditor();
 
   void lineNumberAreaPaintEvent(QPaintEvent* event);
-  int  lineNumberAreaWidth() const;
+  int lineNumberAreaWidth() const;
 
   void setErrors(const std::vector<qde::SyntaxError>& errors);
   void clearErrors();
@@ -33,12 +35,21 @@ class CodeEditor : public QPlainTextEdit {
 // ---- LineNumberArea ----
 class LineNumberArea : public QWidget {
  public:
-  explicit LineNumberArea(CodeEditor* editor) : QWidget(editor), editor_(editor) {}
-  QSize sizeHint() const override { return { editor_->lineNumberAreaWidth(), 0 }; }
+  explicit LineNumberArea(CodeEditor* editor)
+      : QWidget(editor), editor_(editor) {}
+  QSize sizeHint() const override {
+    return {editor_->lineNumberAreaWidth(), 0};
+  }
+
  protected:
-  void paintEvent(QPaintEvent* ev) override { editor_->lineNumberAreaPaintEvent(ev); }
+  void paintEvent(QPaintEvent* ev) override {
+    editor_->lineNumberAreaPaintEvent(ev);
+  }
+
  private:
   CodeEditor* editor_;
 };
 
-#endif // CODE_EDITOR_HPP_
+}  // namespace qde::gui
+
+#endif  // GUI_CODE_EDITOR_HPP_

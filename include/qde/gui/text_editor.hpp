@@ -1,12 +1,14 @@
-#ifndef TEXT_EDITOR_HPP_
-#define TEXT_EDITOR_HPP_
+#ifndef GUI_TEXT_EDITOR_HPP_
+#define GUI_TEXT_EDITOR_HPP_
 
-#include <QWidget>
-#include <QUndoStack>
 #include <QString>
+#include <QUndoStack>
+#include <QWidget>
 
-#include "qde/qt/text_document.hpp"
-#include "qde/qt/code_editor.hpp"
+#include "qde/gui/code_editor.hpp"
+#include "qde/gui/text_document.hpp"
+
+namespace qde::gui {
 
 class TextEditor : public QWidget {
   Q_OBJECT
@@ -20,9 +22,9 @@ class TextEditor : public QWidget {
   bool saveFileAs(const QString& path);
   void syncEditorToDoc();
 
-  [[nodiscard]] QString plainText()  const;
-  [[nodiscard]] QString filePath()   const;
-  [[nodiscard]] bool    isModified() const;
+  [[nodiscard]] QString plainText() const;
+  [[nodiscard]] QString filePath() const;
+  [[nodiscard]] bool isModified() const;
 
   [[nodiscard]] TextDocument* document() const { return document_; }
 
@@ -38,13 +40,13 @@ class TextEditor : public QWidget {
   void onEditorTextChanged();
 
  private:
-  CodeEditor*           editor_;
-  TextDocument*         document_;
-  // QASMSyntaxHighlighter* highlighter_;
-  QUndoStack*           undoStack_;
+  CodeEditor* editor_;
+  TextDocument* document_;
+  QUndoStack* undoStack_;
 
   bool syncing_ = false;
-  
 };
 
-#endif // TEXT_EDITOR_HPP_
+}  // namespace qde::gui
+
+#endif  // GUI_TEXT_EDITOR_HPP_

@@ -1,7 +1,11 @@
-#include "qde/qt/quantum_circuit_view.hpp"
+#include "qde/gui/quantum_circuit_view.hpp"
+
+namespace qde::gui {
 
 QuantumCircuitView::~QuantumCircuitView() = default;
 
 QuantumCircuitView::QuantumCircuitView(QWidget* parent) : QWidget{parent} {
-    // TODO: implement
+  // TODO: implement
 }
+
+}  // namespace qde::gui

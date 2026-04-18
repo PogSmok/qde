@@ -15,32 +15,32 @@ target_link_libraries(qde_lib
         qasm3_parser
 )
 
-# QDE QT Library
-set(LIB_QT_SOURCES
-    qt/main_window.cpp
-    qt/app_controller.cpp
-    qt/quantum_circuit_view.cpp
-    qt/text_editor.cpp
-    qt/code_editor.cpp
-    qt/text_document.cpp
+# QDE GUI Library
+set(LIB_GUI_SOURCES
+    gui/main_window.cpp
+    gui/app_controller.cpp
+    gui/quantum_circuit_view.cpp
+    gui/text_editor.cpp
+    gui/code_editor.cpp
+    gui/text_document.cpp
     # explicitly list Q_OBJECT headers:
-    ${PROJECT_SOURCE_DIR}/include/qde/qt/app_controller.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/qt/main_window.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/qt/quantum_circuit_view.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/qt/text_editor.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/qt/code_editor.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/qt/text_document.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/app_controller.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/main_window.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/quantum_circuit_view.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/text_editor.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/code_editor.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/text_document.hpp
 )
 
-add_library(qde_qt STATIC ${LIB_QT_SOURCES})
-set_target_properties(qde_qt PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC ON)
+add_library(qde_gui STATIC ${LIB_GUI_SOURCES})
+set_target_properties(qde_gui PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC ON)
 
-target_include_directories(qde_qt
+target_include_directories(qde_gui
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
 )
 
-target_link_libraries(qde_qt
+target_link_libraries(qde_gui
     PUBLIC
         qde_lib
         Qt6::Gui
@@ -54,5 +54,5 @@ qt_add_executable(qde main.cpp)
 target_link_libraries(qde
     PRIVATE
         qde_lib
-        qde_qt
+        qde_gui
 )
