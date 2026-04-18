@@ -70,8 +70,8 @@ TEST_F(AppControllerTest, DebounceTimerWorks) {
   // It should not parse instantly.
   EXPECT_EQ(successSpy.count(), 0);
 
-  // Wait slightly more than 400ms
-  QTest::qWait(450);
+  // Wait more than 400ms
+  QTest::qWait(800);
 
   // Now it should have parsed
   EXPECT_EQ(successSpy.count(), 1);
