@@ -1,6 +1,5 @@
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QPlainTextEdit>
 #include <QVBoxLayout>
 
 #include "qde/gui/code_editor.hpp"
@@ -8,13 +7,10 @@
 
 namespace qde::gui {
 
-TextEditor::~TextEditor() = default;
-
 TextEditor::TextEditor(QWidget* parent) : QWidget(parent) {
   editor_ = new CodeEditor(this);
   document_ = new TextDocument(this);
   undoStack_ = new QUndoStack(this);
-  // highlighter_ = new QASMSyntaxHighlighter(editor_->document());
 
   QPointer<QVBoxLayout> const layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
@@ -51,7 +47,7 @@ bool TextEditor::saveFile() {
   return document_->save();
 }
 
-bool TextEditor::saveFileAs(const QString& path) {
+bool TextEditor::saveFileAs(const QString& path) const {
   if (path.isEmpty()) return false;
   document_->setContent(editor_->toPlainText());
   return document_->saveAs(std::filesystem::path(path.toStdString()));
@@ -73,10 +69,10 @@ void TextEditor::syncEditorToDoc() {
   syncing_ = false;
 }
 
-void TextEditor::setErrors(const std::vector<qde::SyntaxError>& errors) {
+void TextEditor::setErrors(const std::vector<qde::SyntaxError>& errors) const {
   editor_->setErrors(errors);
 }
 
-void TextEditor::clearErrors() { editor_->clearErrors(); }
+void TextEditor::clearErrors() const { editor_->clearErrors(); }
 
 }  // namespace qde::gui

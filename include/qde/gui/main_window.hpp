@@ -1,7 +1,6 @@
 #ifndef GUI_MAIN_WINDOW_HPP_
 #define GUI_MAIN_WINDOW_HPP_
 
-#include <QCloseEvent>
 #include <QPointer>
 #include <QLabel>
 #include <QMainWindow>
@@ -17,7 +16,6 @@ class MainWindow : public QMainWindow {
   Q_OBJECT
  public:
   explicit MainWindow(QWidget* parent = nullptr);
-  virtual ~MainWindow();
 
  protected:
   void closeEvent(QCloseEvent* event) override;
@@ -27,8 +25,8 @@ class MainWindow : public QMainWindow {
   void openFile();
   void saveFile();
   void saveFileAs();
-  void onParseSuccess();
-  void onParseFail(const QStringList& errors);
+  void onParseSuccess() const;
+  void onParseFail(const QStringList& errors) const;
   void onModifiedChanged(bool modified);
 
  private:
@@ -45,4 +43,4 @@ class MainWindow : public QMainWindow {
 
 }  // namespace qde::gui
 
-#endif  // MAIN_WINDOW_HPP_
+#endif  // GUI_MAIN_WINDOW_HPP_

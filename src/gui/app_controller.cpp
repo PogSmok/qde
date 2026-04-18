@@ -2,8 +2,6 @@
 
 namespace qde::gui {
 
-AppController::~AppController() = default;
-
 AppController::AppController(QuantumCircuitView* circuitView,
                              TextEditor* textEditor, QObject* parent)
     : QObject{parent},

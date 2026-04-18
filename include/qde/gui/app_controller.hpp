@@ -1,8 +1,6 @@
 #ifndef GUI_APP_CONTROLLER_HPP_
 #define GUI_APP_CONTROLLER_HPP_
 
-#include <QObject>
-#include <QStringList>
 #include <QTimer>
 #include <memory>
 #include <optional>
@@ -19,7 +17,6 @@ class AppController : public QObject {
  public:
   explicit AppController(QuantumCircuitView* circuitView,
                          TextEditor* textEditor, QObject* parent = nullptr);
-  virtual ~AppController();
   [[nodiscard]] qde::Parser* parser() const { return parser_.get(); }
   [[nodiscard]] const qde::Circuit* circuit() const {
     return circuit_.has_value() ? &circuit_.value() : nullptr;

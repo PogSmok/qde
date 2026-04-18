@@ -11,7 +11,6 @@ class TextDocument : public QObject {
   Q_OBJECT
  public:
   explicit TextDocument(QObject* parent = nullptr);
-  virtual ~TextDocument();
 
   [[nodiscard]] QString filePath() const;
   [[nodiscard]] const QString& content() const noexcept { return content_; }

@@ -2,8 +2,6 @@
 
 namespace qde::gui {
 
-QuantumCircuitView::~QuantumCircuitView() = default;
-
 QuantumCircuitView::QuantumCircuitView(QWidget* parent) : QWidget{parent} {
   // TODO: implement
 }
