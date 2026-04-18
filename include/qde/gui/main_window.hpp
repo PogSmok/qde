@@ -1,7 +1,6 @@
 #ifndef GUI_MAIN_WINDOW_HPP_
 #define GUI_MAIN_WINDOW_HPP_
 
-#include <QPointer>
 #include <QLabel>
 #include <QMainWindow>
 #include <QSplitter>
