@@ -1,14 +1,14 @@
 #include <QApplication>
 #include <QStyleFactory>
 
-#include "qde/qt/main_window.hpp"
+#include "qde/gui/main_window.hpp"
 
-int main(int argc, char* argv[]) { 
- QApplication app(argc, argv);
- app.setApplicationDisplayName("Quantum Development Environment");
- app.setOrganizationName("StormWave");
+int main(int argc, char* argv[]) {
+  QApplication app(argc, argv);
+  app.setApplicationDisplayName("Quantum Development Environment");
+  app.setOrganizationName("StormWave");
 
- MainWindow window;
- window.show();
- return app.exec(); 
+  qde::gui::MainWindow window;
+  window.show();
+  return app.exec();
 }

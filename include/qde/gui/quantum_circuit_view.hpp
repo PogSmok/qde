@@ -1,7 +1,9 @@
-#ifndef QUANTUM_CIRCUIT_VIEW_HPP_
-#define QUANTUM_CIRCUIT_VIEW_HPP_
+#ifndef GUI_QUANTUM_CIRCUIT_VIEW_HPP_
+#define GUI_QUANTUM_CIRCUIT_VIEW_HPP_
 
 #include <QWidget>
+
+namespace qde::gui {
 
 // TODO: implement
 class QuantumCircuitView : public QWidget {
@@ -11,4 +13,6 @@ class QuantumCircuitView : public QWidget {
   virtual ~QuantumCircuitView();
 };
 
-#endif // QUANTUM_CIRCUIT_VIEW_HPP_
+}  // namespace qde::gui
+
+#endif  // GUI_QUANTUM_CIRCUIT_VIEW_HPP_

@@ -1,14 +1,16 @@
-#ifndef MAIN_WINDOW_HPP_
-#define MAIN_WINDOW_HPP_
+#ifndef GUI_MAIN_WINDOW_HPP_
+#define GUI_MAIN_WINDOW_HPP_
 
-#include <QMainWindow>
-#include <QLabel>
-#include <QSplitter>
 #include <QCloseEvent>
+#include <QLabel>
+#include <QMainWindow>
+#include <QSplitter>
 
-#include "qde/qt/app_controller.hpp"
-#include "qde/qt/text_editor.hpp"
-#include "qde/qt/quantum_circuit_view.hpp"
+#include "qde/gui/app_controller.hpp"
+#include "qde/gui/quantum_circuit_view.hpp"
+#include "qde/gui/text_editor.hpp"
+
+namespace qde::gui {
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -39,5 +41,7 @@ class MainWindow : public QMainWindow {
   QSplitter* splitter_;
   QLabel* statusLabel_;
 };
+
+}  // namespace qge::gui
 
 #endif  // MAIN_WINDOW_HPP_

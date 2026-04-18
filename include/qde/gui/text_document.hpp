@@ -1,9 +1,11 @@
-#ifndef TEXT_DOCUMENT_HPP_
-#define TEXT_DOCUMENT_HPP_
+#ifndef GUI_TEXT_DOCUMENT_HPP_
+#define GUI_TEXT_DOCUMENT_HPP_
 
 #include <QObject>
 #include <QString>
 #include <filesystem>
+
+namespace qde::gui {
 
 class TextDocument : public QObject {
   Q_OBJECT
@@ -27,9 +29,11 @@ class TextDocument : public QObject {
   void filePathChanged(const QString& path);
 
  private:
-  QString                 content_;
-  bool                    modified_ = false;
-  std::filesystem::path   path_;
+  QString content_;
+  bool modified_ = false;
+  std::filesystem::path path_;
 };
 
-#endif // TEXT_DOCUMENT_HPP_
+}  // namespace qde::gui
+
+#endif  // GUI_TEXT_DOCUMENT_HPP_
