@@ -54,10 +54,10 @@ void TextDocument::setModified(bool v) {
 }
 
 void TextDocument::setContent(const QString& text) {
-  content_ = text;
-  if (text == content_) {
+  if (content_ == text) {
     return;
   }
+  content_ = text;
   setModified(true);
   emit contentChanged();
 }
