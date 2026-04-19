@@ -10,8 +10,11 @@ AppController::AppController(QuantumCircuitView* circuitView,
       parser_(std::make_unique<qde::Parser>()) {
   Q_ASSERT(circuitView);
   Q_ASSERT(textEditor);
+
+  constexpr int debounceTimeMs = 400;
+
   debounceTimer_.setSingleShot(true);
-  debounceTimer_.setInterval(400);  // 400ms debounce
+  debounceTimer_.setInterval(debounceTimeMs);  // 400ms debounce
 
   connect(textEditor_, &TextEditor::textChanged, this,
           &AppController::onTextChanged);

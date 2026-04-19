@@ -3,8 +3,6 @@
 
 #include "qde/gui/code_editor.hpp"
 
-#include <iostream>
-
 namespace qde::gui {
 
 CodeEditor::CodeEditor(QWidget* parent)
@@ -74,8 +72,9 @@ void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
 
   while (block.isValid() && top <= event->rect().bottom()) {
     if (block.isVisible() && bottom >= event->rect().top()) {
+      constexpr int textBlockLeftPadding = 4;
       painter.setPen(QColor(133, 133, 133));
-      painter.drawText(0, top, lineNumberArea_->width() - 4,
+      painter.drawText(0, top, lineNumberArea_->width() - textBlockLeftPadding,
                        fontMetrics().height(), Qt::AlignRight,
                        QString::number(blockNum + 1));
     }
