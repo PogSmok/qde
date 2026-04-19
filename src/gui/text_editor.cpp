@@ -49,7 +49,7 @@ bool TextEditor::saveFile() {
   return document_->save();
 }
 
-bool TextEditor::saveFileAs(const QString& path) const {
+bool TextEditor::saveFileAs(const QString& path) {
   if (path.isEmpty()) {
     return false;
   }
@@ -75,10 +75,10 @@ void TextEditor::syncEditorToDoc() {
   syncing_ = false;
 }
 
-void TextEditor::setErrors(const std::vector<qde::SyntaxError>& errors) const {
+void TextEditor::setErrors(const std::vector<qde::SyntaxError>& errors) {
   editor_->setErrors(errors);
 }
 
-void TextEditor::clearErrors() const { editor_->clearErrors(); }
+void TextEditor::clearErrors() { editor_->clearErrors(); }
 
 }  // namespace qde::gui

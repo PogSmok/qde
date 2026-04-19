@@ -19,7 +19,7 @@ class TextEditor : public QWidget {
   void newFile();
   void openFile(const QString& path);
   bool saveFile();
-  [[nodiscard]] bool saveFileAs(const QString& path) const;
+  [[nodiscard]] bool saveFileAs(const QString& path);
   void syncEditorToDoc();
 
   [[nodiscard]] QString plainText() const;
@@ -28,8 +28,8 @@ class TextEditor : public QWidget {
 
   [[nodiscard]] QPointer<TextDocument> document() const { return document_; }
 
-  void setErrors(const std::vector<qde::SyntaxError>& errors) const;
-  void clearErrors() const;
+  void setErrors(const std::vector<qde::SyntaxError>& errors);
+  void clearErrors();
 
  signals:
   void textChanged();
