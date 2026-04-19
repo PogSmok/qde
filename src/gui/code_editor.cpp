@@ -27,15 +27,15 @@ class LineNumberArea : public QWidget {
 CodeEditor::CodeEditor(QWidget* parent)
     : QPlainTextEdit(parent), lineNumberArea_(new LineNumberArea(this)) {
   QPalette p = palette();
-  p.setColor(QPalette::Base, theme::editorBackground);
-  p.setColor(QPalette::Text, theme::editorText);
+  p.setColor(QPalette::Base, theme::kEditorBackground);
+  p.setColor(QPalette::Text, theme::kEditorText);
   setPalette(p);
 
-  QFont font(theme::editorFontFamily, theme::editorFontSize);
+  QFont font(theme::kEditorFontFamily, theme::kEditorFontSize);
   font.setFixedPitch(true);
   setFont(font);
   setTabStopDistance(QFontMetrics(font).horizontalAdvance(' ') *
-                     theme::editorTabStop);
+                     theme::kEditorTabStop);
 
   connect(this, &QPlainTextEdit::blockCountChanged, this,
           &CodeEditor::updateLineNumberAreaWidth);
@@ -81,7 +81,7 @@ void CodeEditor::resizeEvent(QResizeEvent* event) {
 
 void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
   QPainter painter(lineNumberArea_);
-  painter.fillRect(event->rect(), theme::lineNumberBackground);
+  painter.fillRect(event->rect(), theme::kLineNumberBackground);
 
   QTextBlock block = firstVisibleBlock();
   int blockNum = block.blockNumber();
@@ -91,9 +91,9 @@ void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
 
   while (block.isValid() && top <= event->rect().bottom()) {
     if (block.isVisible() && bottom >= event->rect().top()) {
-      painter.setPen(theme::lineNumberText);
+      painter.setPen(theme::kLineNumberText);
       painter.drawText(0, top,
-                       lineNumberArea_->width() - theme::textBlockLeftPadding,
+                       lineNumberArea_->width() - theme::kTextBlockLeftPadding,
                        fontMetrics().height(), Qt::AlignRight,
                        QString::number(blockNum + 1));
     }

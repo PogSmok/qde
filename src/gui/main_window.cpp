@@ -20,13 +20,13 @@ MainWindow::MainWindow(QWidget* parent)
   resize(1280, 800);
 
   QPalette p;
-  p.setColor(QPalette::Window, theme::windowBackground);
-  p.setColor(QPalette::WindowText, theme::windowText);
-  p.setColor(QPalette::Base, theme::baseBackground);
-  p.setColor(QPalette::Text, theme::textColor);
-  p.setColor(QPalette::Button, theme::buttonBackground);
-  p.setColor(QPalette::ButtonText, theme::buttonText);
-  p.setColor(QPalette::Highlight, theme::highlightBackground);
+  p.setColor(QPalette::Window, theme::kWindowBackground);
+  p.setColor(QPalette::WindowText, theme::kWindowText);
+  p.setColor(QPalette::Base, theme::kBaseBackground);
+  p.setColor(QPalette::Text, theme::kTextColor);
+  p.setColor(QPalette::Button, theme::kButtonBackground);
+  p.setColor(QPalette::ButtonText, theme::kButtonText);
+  p.setColor(QPalette::Highlight, theme::kHighlightBackground);
   setPalette(p);
 
   splitter_->addWidget(editor_);
@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget* parent)
   splitter_->setSizes({400, 360});
   splitter_->setStyleSheet(
       QString("QSplitter::handle { background: %1; height: 4px; }")
-          .arg(theme::splitterHandleBackground));
+          .arg(theme::kSplitterHandleBackground));
 
   setCentralWidget(splitter_);
 
@@ -71,8 +71,8 @@ void MainWindow::setupMenuBar() {
   auto* fileMenu = menuBar()->addMenu("&File");
   fileMenu->setStyleSheet(QString("QMenu { background: %1; color: %2; }"
                                   "QMenu::item:selected { background: %3; }")
-                              .arg(theme::menuBackground, theme::menuText,
-                                   theme::menuSelectedBackground));
+                              .arg(theme::kMenuBackground, theme::kMenuText,
+                                   theme::kMenuSelectedBackground));
 
   const QPointer<QAction> newAct = fileMenu->addAction(
       "&New", QKeySequence::New, this, &MainWindow::newFile);
@@ -103,17 +103,17 @@ void MainWindow::setupMenuBar() {
   menuBar()->setStyleSheet(
       QString("QMenuBar { background: %1; color: %2; }"
               "QMenuBar::item:selected { background: %3; }")
-          .arg(theme::menuBarBackground, theme::menuBarText,
-               theme::menuSelectedBackground));
+          .arg(theme::kMenuBarBackground, theme::kMenuBarText,
+               theme::kMenuSelectedBackground));
 }
 
 void MainWindow::setupStatusBar() {
   statusLabel_ = new QLabel("Ready", this);
   statusLabel_->setStyleSheet(
-      QString("color: %1; padding: 0 6px;").arg(theme::statusBarText));
+      QString("color: %1; padding: 0 6px;").arg(theme::kStatusBarText));
   statusBar()->addWidget(statusLabel_);
   statusBar()->setStyleSheet(QString("QStatusBar { background: %1; }")
-                                 .arg(theme::statusBarBackground));
+                                 .arg(theme::kStatusBarBackground));
 }
 
 void MainWindow::newFile() {
@@ -157,13 +157,13 @@ void MainWindow::saveFileAs() {
 void MainWindow::onParseSuccess() const {
   statusLabel_->setText("Parsed successfully");
   statusLabel_->setStyleSheet(
-      QString("color: %1; padding: 0 6px;").arg(theme::successText));
+      QString("color: %1; padding: 0 6px;").arg(theme::kSuccessText));
 }
 
 void MainWindow::onParseFail(const QStringList& errors) const {
   statusLabel_->setText(QString("Syntax Error: %1 errors").arg(errors.size()));
   statusLabel_->setStyleSheet(
-      QString("color: %1; padding: 0 6px;").arg(theme::errorText));
+      QString("color: %1; padding: 0 6px;").arg(theme::kErrorText));
 }
 
 void MainWindow::onModifiedChanged(bool modified) { updateTitle(); }
