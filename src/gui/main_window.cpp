@@ -49,22 +49,6 @@ MainWindow::MainWindow(QWidget* parent)
           &MainWindow::onParseSuccess);
   connect(controller_, &AppController::parseError, this,
           &MainWindow::onParseFail);
-
-  // Load example program
-  editor_->newFile();
-  const QString example =
-      "OPENQASM 3.0;\n"
-      "include \"qelib1.inc\";\n"
-      "\n"
-      "qreg q[4];\n"
-      "creg c[4];\n";
-
-  // Push text directly into editor via document
-  editor_->openFile({});
-  editor_->document()->setContent(example);
-  editor_->syncEditorToDoc();
-
-  controller_->parseNow();
 }
 
 void MainWindow::setupMenuBar() {
