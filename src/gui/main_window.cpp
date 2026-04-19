@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget* parent)
   setWindowTitle("QDE");
   resize(1280, 800);
 
-  // Dark palette
   QPalette p;
   p.setColor(QPalette::Window, theme::windowBackground);
   p.setColor(QPalette::WindowText, theme::windowText);
