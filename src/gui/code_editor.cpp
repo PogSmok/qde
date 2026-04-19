@@ -2,6 +2,7 @@
 #include <QTextBlock>
 
 #include "qde/gui/code_editor.hpp"
+#include "qde/gui/theme.hpp"
 
 namespace qde::gui {
 
@@ -9,11 +10,11 @@ CodeEditor::CodeEditor(QWidget* parent)
     : QPlainTextEdit(parent), lineNumberArea_(new LineNumberArea(this)) {
   // Dark background
   QPalette p = palette();
-  p.setColor(QPalette::Base, QColor(30, 30, 30));
-  p.setColor(QPalette::Text, QColor(212, 212, 212));
+  p.setColor(QPalette::Base, theme::editorBackground);
+  p.setColor(QPalette::Text, theme::editorText);
   setPalette(p);
 
-  QFont font("Cascadia Code", 11);
+  QFont font(theme::editorFontFamily, theme::editorFontSize);
   font.setFixedPitch(true);
   setFont(font);
   setTabStopDistance(QFontMetrics(font).horizontalAdvance(' ') * 4);

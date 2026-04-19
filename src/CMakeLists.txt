@@ -38,6 +38,7 @@ set_target_properties(qde_gui PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC ON)
 target_include_directories(qde_gui
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/include/gui
 )
 
 target_link_libraries(qde_gui
