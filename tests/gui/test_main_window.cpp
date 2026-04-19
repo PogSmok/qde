@@ -23,7 +23,10 @@ class MainWindowTest : public ::testing::Test {
 };
 
 TEST_F(MainWindowTest, Initialization) {
-  EXPECT_EQ(mainWindow->windowTitle(), QString("QDE"));
+  EXPECT_EQ(mainWindow->windowTitle(), QString("QDE *"));
+  // when opening app an example source code is put inside which marks document
+  // as 'modified', hence the ' *' is added to the windowTitle
+  // NOTE: if this behavior is changed in the future this test will fail
 
   auto* splitter = mainWindow->findChild<QSplitter*>();
   ASSERT_NE(splitter, nullptr);
