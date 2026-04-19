@@ -36,6 +36,9 @@ inline constexpr auto errorText = "#F44336";
 // Editor font
 inline constexpr auto editorFontFamily = "Cascadia Code";
 inline constexpr auto editorFontSize = 11;
+inline constexpr auto editorTabStop = 4;
+
+inline constexpr auto textBlockLeftPadding = 4;
 
 }  // namespace qde::gui::theme
 
