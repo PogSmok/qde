@@ -26,7 +26,8 @@ class TextEditor : public QWidget {
   [[nodiscard]] QString filePath() const;
   [[nodiscard]] bool isModified() const;
 
-  [[nodiscard]] QPointer<TextDocument> document() const { return document_; }
+  [[nodiscard]] const TextDocument* document() const { return document_; }
+  void setContent(const QString& content);
 
   void setErrors(const std::vector<qde::SyntaxError>& errors);
   void clearErrors();
@@ -43,8 +44,6 @@ class TextEditor : public QWidget {
   QPointer<CodeEditor> editor_;
   QPointer<TextDocument> document_;
   QPointer<QUndoStack> undoStack_;
-
-  bool syncing_ = false;
 };
 
 }  // namespace qde::gui
