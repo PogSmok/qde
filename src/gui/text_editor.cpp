@@ -70,9 +70,9 @@ void TextEditor::onEditorTextChanged() {
 }
 
 void TextEditor::syncEditorToDoc() {
-  syncing_ = true;
+  QSignalBlocker block(editor_);
   editor_->setPlainText(document_->content());
-  syncing_ = false;
+  block.unblock();
 }
 
 void TextEditor::setErrors(const std::vector<qde::SyntaxError>& errors) {
