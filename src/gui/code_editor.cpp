@@ -6,6 +6,24 @@
 
 namespace qde::gui {
 
+// ---- LineNumberArea ----
+class LineNumberArea : public QWidget {
+ public:
+  explicit LineNumberArea(CodeEditor* editor)
+      : QWidget(editor), editor_(editor) {}
+  [[nodiscard]] QSize sizeHint() const override {
+    return {editor_->lineNumberAreaWidth(), 0};
+  }
+
+ protected:
+  void paintEvent(QPaintEvent* ev) override {
+    editor_->lineNumberAreaPaintEvent(ev);
+  }
+
+ private:
+  QPointer<CodeEditor> editor_;
+};
+
 CodeEditor::CodeEditor(QWidget* parent)
     : QPlainTextEdit(parent), lineNumberArea_(new LineNumberArea(this)) {
   // Dark background
