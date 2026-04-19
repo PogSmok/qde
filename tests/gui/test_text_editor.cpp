@@ -16,8 +16,7 @@ class TextEditorTest : public ::testing::Test {
 };
 
 TEST_F(TextEditorTest, NewFileResetsState) {
-  editor->document()->setContent("some text");
-  editor->document()->setModified(true);
+  editor->setContent("some text");
 
   editor->newFile();
 
@@ -77,8 +76,7 @@ TEST_F(TextEditorTest, SaveFileAs) {
   QString tempPath = tempFile.fileName();
   tempFile.close();
 
-  editor->document()->setContent("new content");
-  editor->syncEditorToDoc();
+  editor->setContent("new content");
 
   EXPECT_TRUE(editor->saveFileAs(tempPath));
   EXPECT_FALSE(editor->isModified());
@@ -93,8 +91,7 @@ TEST_F(TextEditorTest, ErrorHandling) {
   std::vector<qde::SyntaxError> errors;
   errors.push_back({1, 1, "Error 1"});
 
-  editor->document()->setContent("code\nmore code");
-  editor->syncEditorToDoc();
+  editor->setContent("code\nmore code");
 
   editor->setErrors(errors);
 
