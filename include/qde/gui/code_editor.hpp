@@ -32,24 +32,6 @@ class CodeEditor : public QPlainTextEdit {
   QPointer<QWidget> lineNumberArea_;
 };
 
-// ---- LineNumberArea ----
-class LineNumberArea : public QWidget {
- public:
-  explicit LineNumberArea(CodeEditor* editor)
-      : QWidget(editor), editor_(editor) {}
-  [[nodiscard]] QSize sizeHint() const override {
-    return {editor_->lineNumberAreaWidth(), 0};
-  }
-
- protected:
-  void paintEvent(QPaintEvent* ev) override {
-    editor_->lineNumberAreaPaintEvent(ev);
-  }
-
- private:
-  QPointer<CodeEditor> editor_;
-};
-
 }  // namespace qde::gui
 
 #endif  // GUI_CODE_EDITOR_HPP_
