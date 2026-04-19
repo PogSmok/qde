@@ -19,6 +19,7 @@ namespace qde {
 
 class GateRegistry {
  public:
+  GateRegistry() = default;
   GateRegistry(const GateRegistry&) = delete;
   GateRegistry& operator=(const GateRegistry&) = delete;
   GateRegistry(GateRegistry&&) = default;
