@@ -61,10 +61,12 @@ QString TextEditor::plainText() const { return editor_->toPlainText(); }
 QString TextEditor::filePath() const { return document_->filePath(); }
 bool TextEditor::isModified() const { return document_->modified(); }
 
+void TextEditor::setContent(const QString& content) {
+  document_->setContent(content);
+  syncEditorToDoc();
+}
+
 void TextEditor::onEditorTextChanged() {
-  if (syncing_) {
-    return;
-  }
   document_->setContent(editor_->toPlainText());
   emit textChanged();
 }
