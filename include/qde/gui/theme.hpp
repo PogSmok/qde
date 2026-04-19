@@ -7,7 +7,7 @@ namespace qde::gui::theme {
 
 // Editor colors
 inline constexpr QColor kEditorBackground(30, 30, 30);
-inline constexpr QColor kEditorText(212, 212, 212);
+inline constexpr QColor kEditorText(211, 211, 211);
 inline constexpr QColor kLineNumberBackground(40, 40, 40);
 inline constexpr QColor kLineNumberText(133, 133, 133);
 inline const QColor kErrorUnderline = Qt::red;
