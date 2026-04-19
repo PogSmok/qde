@@ -26,7 +26,6 @@ class LineNumberArea : public QWidget {
 
 CodeEditor::CodeEditor(QWidget* parent)
     : QPlainTextEdit(parent), lineNumberArea_(new LineNumberArea(this)) {
-
   QPalette p = palette();
   p.setColor(QPalette::Base, theme::editorBackground);
   p.setColor(QPalette::Text, theme::editorText);
