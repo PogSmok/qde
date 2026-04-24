@@ -12,12 +12,12 @@ namespace qde {
 
 struct QubitRegister {
   std::string name;
-  std::uint8_t size;
+  std::size_t size;
 };
 
 struct BitRegister {
   std::string name;
-  std::uint8_t size;
+  std::size_t size;
 };
 
 class Circuit {
