@@ -20,7 +20,7 @@ namespace qde {
 // ---------------------------------------------------------------------------
 
 class GateDefinition {
-public:
+ public:
   using MatrixFn = std::function<
     std::vector<std::complex<double>>(const std::vector<double>&)>;
 
@@ -75,7 +75,7 @@ public:
     return matrix_fn_(params);
   }
 
-private:
+ private:
   std::string name_;
   std::uint8_t num_qubits_;
   std::uint8_t num_params_;
