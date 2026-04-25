@@ -7,10 +7,11 @@ namespace qde {
 
 void GateRegistry::add(GateDefinition gate) {
   std::string name = gate.name(); // non-const copy to allow std::move()
-  if (gates_.find(name) != gates_.end())
+  if (gates_.count(name)) {
     throw std::invalid_argument(
         "GateRegistry: gate '" + name +
         "' is already defined (OpenQASM 3.0 does not allow redefinitions)");
+  }
   gates_.emplace(std::move(name),
                  std::make_shared<GateDefinition>(std::move(gate)));
 }
@@ -22,7 +23,7 @@ std::shared_ptr<const GateDefinition> GateRegistry::find(
 }
 
 bool GateRegistry::contains(const std::string& name) const {
-  return gates_.find(name) != gates_.end();
+  return gates_.count(name);
 }
 
 // Row-major unitary matrices for built-in gates.
