@@ -42,8 +42,7 @@
 // ---- helpers ----------------------------------------------------------------
 
 static qde::ParseResult parse(const std::string& source) {
-  return qde::Parser{}.parse("OPENQASM 3.0;\n" + source,
-                              qde::BackendConfig{});
+  return qde::Parser{}.parse("OPENQASM 3.0;\n" + source, qde::BackendConfig{});
 }
 
 // ---- syntax -----------------------------------------------------------------
@@ -62,10 +61,10 @@ TEST(Parser, InvalidTokenFails) {
 
 TEST(Parser, ErrorReportsCorrectLocation) {
   qde::Parser parser;
-  auto result = parser.parse("OPENQASM 3.0;\nqubit q;\n???\n",
-                              qde::BackendConfig{});
+  auto result =
+      parser.parse("OPENQASM 3.0;\nqubit q;\n???\n", qde::BackendConfig{});
   ASSERT_FALSE(result.errors().empty());
-  EXPECT_EQ(result.errors().front().line,   3u);
+  EXPECT_EQ(result.errors().front().line, 3u);
   EXPECT_EQ(result.errors().front().column, 0u);
 }
 
@@ -113,7 +112,7 @@ TEST(Parser, MultipleRegisters) {
   auto result = parse("qubit[2] a;\nqubit[3] b;\nbit[2] c;");
   ASSERT_TRUE(result.isOk());
   EXPECT_EQ(result.circuit().qubitRegisters().size(), 2u);
-  EXPECT_EQ(result.circuit().bitRegisters().size(),   1u);
+  EXPECT_EQ(result.circuit().bitRegisters().size(), 1u);
 }
 
 TEST(Parser, DuplicateQubitRegisterIsError) {
@@ -175,8 +174,7 @@ TEST(Parser, GateCallProducesGateOperation) {
   auto result = parse("qubit q;\nh q;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type,
-            qde::OperationType::Gate);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Gate);
 }
 
 TEST(Parser, MultipleGateCalls) {
@@ -198,8 +196,7 @@ TEST(Parser, RxWithArithmeticExpr) {
 }
 
 TEST(Parser, RxWithConstParam) {
-  auto result = parse(
-      "qubit q;\nconst float a = pi / 2;\nrx(a) q;");
+  auto result = parse("qubit q;\nconst float a = pi / 2;\nrx(a) q;");
   EXPECT_TRUE(result.isOk());
 }
 
@@ -278,8 +275,7 @@ TEST(Parser, InvModifierProducesOperation) {
   auto result = parse("qubit q;\ninv @ h q;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type,
-            qde::OperationType::Gate);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Gate);
 }
 
 TEST(Parser, PowModifier) {
@@ -293,8 +289,7 @@ TEST(Parser, CtrlModifierOneControl) {
 }
 
 TEST(Parser, CtrlModifierCount) {
-  auto result = parse(
-      "qubit[3] q;\nctrl(2) @ x q[0], q[1], q[2];");
+  auto result = parse("qubit[3] q;\nctrl(2) @ x q[0], q[1], q[2];");
   EXPECT_TRUE(result.isOk());
 }
 
@@ -337,8 +332,7 @@ TEST(Parser, CtrlGphaseAddsOperation) {
   auto result = parse("qubit q;\nctrl @ gphase(pi) q;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type,
-            qde::OperationType::Gate);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Gate);
 }
 
 // ---- gate definitions -------------------------------------------------------
@@ -418,8 +412,7 @@ TEST(Parser, MeasureArrowProducesMeasureOperation) {
   auto result = parse("qubit q;\nbit c;\nmeasure q -> c;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type,
-            qde::OperationType::Measure);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Measure);
 }
 
 TEST(Parser, MeasureArrowRegisterSizeMismatchIsError) {
@@ -451,8 +444,7 @@ TEST(Parser, MeasureAssignmentForm) {
 }
 
 TEST(Parser, MeasureAssignmentIndexed) {
-  auto result = parse(
-      "qubit[2] q;\nbit[2] c;\nc[0] = measure q[0];");
+  auto result = parse("qubit[2] q;\nbit[2] c;\nc[0] = measure q[0];");
   EXPECT_TRUE(result.isOk());
 }
 
@@ -478,8 +470,7 @@ TEST(Parser, ResetProducesResetOperation) {
   auto result = parse("qubit q;\nreset q;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type,
-            qde::OperationType::Reset);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Reset);
 }
 
 TEST(Parser, ResetUndefinedQubitIsError) {
@@ -493,8 +484,7 @@ TEST(Parser, BarrierGlobalExpandsOverAllQubits) {
   auto result = parse("qubit[2] q;\nbarrier;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type,
-            qde::OperationType::Barrier);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Barrier);
   EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2u);
 }
 
@@ -896,14 +886,12 @@ TEST(Parser, IntCastTruncates) {
 // ---- expression tree: const chaining ----------------------------------------
 
 TEST(Parser, ConstReferencesOtherConst) {
-  auto result = parse(
-      "const float a = pi / 2;\nconst float b = a + 1.0;");
+  auto result = parse("const float a = pi / 2;\nconst float b = a + 1.0;");
   EXPECT_TRUE(result.isOk());
 }
 
 TEST(Parser, ConstUsedAsGateParam) {
-  auto result = parse(
-      "qubit q;\nconst float a = pi / 2;\nrx(a) q;");
+  auto result = parse("qubit q;\nconst float a = pi / 2;\nrx(a) q;");
   EXPECT_TRUE(result.isOk());
 }
 
@@ -1034,8 +1022,7 @@ TEST(Parser, WhileStatementIsOk) {
 }
 
 TEST(Parser, ForStatementIsOk) {
-  auto result = parse(
-      "qubit q;\nfor int i in {0, 1} { h q; }");
+  auto result = parse("qubit q;\nfor int i in {0, 1} { h q; }");
   EXPECT_TRUE(result.isOk());
 }
 

@@ -22,18 +22,15 @@ TEST_F(GateRegistryTest, FindUnknownGateReturnsNull) {
   EXPECT_EQ(reg_.find("nonexistent"), nullptr);
 }
 
-TEST_F(GateRegistryTest, ContainsKnownGate) {
-  EXPECT_TRUE(reg_.contains("h"));
-}
+TEST_F(GateRegistryTest, ContainsKnownGate) { EXPECT_TRUE(reg_.contains("h")); }
 
 TEST_F(GateRegistryTest, ContainsUnknownGateReturnsFalse) {
   EXPECT_FALSE(reg_.contains("nonexistent"));
 }
 
 TEST_F(GateRegistryTest, AddDuplicateThrows) {
-  EXPECT_THROW(
-      reg_.add(GateDefinition("x", 1, {0, 1, 1, 0})),
-      std::invalid_argument);
+  EXPECT_THROW(reg_.add(GateDefinition("x", 1, {0, 1, 1, 0})),
+               std::invalid_argument);
 }
 
 TEST_F(GateRegistryTest, AddDuplicateMessageContainsName) {
@@ -53,8 +50,8 @@ TEST_F(GateRegistryTest, AddUserDefinedGate) {
 // ---- withBuiltins() -------------------------------------------------------
 
 TEST_F(GateRegistryTest, ContainsSingleQubitGates) {
-  for (const auto& name : {"id", "h", "x", "y", "z", "s", "sdg",
-                            "t", "tdg", "sx", "sxdg"}) {
+  for (const auto& name :
+       {"id", "h", "x", "y", "z", "s", "sdg", "t", "tdg", "sx", "sxdg"}) {
     EXPECT_TRUE(reg_.contains(name)) << "missing gate: " << name;
   }
 }
@@ -66,8 +63,8 @@ TEST_F(GateRegistryTest, ContainsParametricSingleQubitGates) {
 }
 
 TEST_F(GateRegistryTest, ContainsTwoQubitGates) {
-  for (const auto& name : {"cx", "cz", "cy", "swap", "iswap",
-                            "cp", "crx", "cry", "crz"}) {
+  for (const auto& name :
+       {"cx", "cz", "cy", "swap", "iswap", "cp", "crx", "cry", "crz"}) {
     EXPECT_TRUE(reg_.contains(name)) << "missing gate: " << name;
   }
 }
@@ -91,9 +88,9 @@ TEST_F(GateRegistryTest, XGateMatrix) {
 TEST_F(GateRegistryTest, HGateMatrix) {
   auto mat = reg_.find("h")->matrix();
   const double kIS2 = 0.7071067811865475;
-  EXPECT_NEAR(mat[0].real(), kIS2,  1e-10);
-  EXPECT_NEAR(mat[1].real(), kIS2,  1e-10);
-  EXPECT_NEAR(mat[2].real(), kIS2,  1e-10);
+  EXPECT_NEAR(mat[0].real(), kIS2, 1e-10);
+  EXPECT_NEAR(mat[1].real(), kIS2, 1e-10);
+  EXPECT_NEAR(mat[2].real(), kIS2, 1e-10);
   EXPECT_NEAR(mat[3].real(), -kIS2, 1e-10);
 }
 
@@ -108,8 +105,8 @@ TEST_F(GateRegistryTest, RxGateAtZeroIsIdentity) {
 TEST_F(GateRegistryTest, CXGateMetadata) {
   auto gate = reg_.find("cx");
   ASSERT_NE(gate, nullptr);
-  EXPECT_EQ(gate->numQubits(), 2u);
-  EXPECT_EQ(gate->matrix().size(), 16u);
+  EXPECT_EQ(gate->numQubits(), 2U);
+  EXPECT_EQ(gate->matrix().size(), 16U);
 }
 
 TEST_F(GateRegistryTest, ParametricGateWrongParamCountThrows) {

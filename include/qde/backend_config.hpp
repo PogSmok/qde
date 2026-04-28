@@ -12,11 +12,12 @@ class BackendConfig {
  public:
   BackendConfig() = default;
 
-  double dtNs() const noexcept { return dt_ns_; }
+  [[nodiscard]] double dtNs() const noexcept { return dt_ns_; }
 
   void setDtNs(double dt_ns) {
-    if (dt_ns < 0.0)
+    if (dt_ns < 0.0) {
       throw std::invalid_argument("BackendConfig: dt_ns must be >= 0");
+    }
     dt_ns_ = dt_ns;
   }
 

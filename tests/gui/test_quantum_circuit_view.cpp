@@ -9,7 +9,7 @@ class QuantumCircuitViewTest : public ::testing::Test {
 
   void TearDown() override { delete view; }
 
-  QuantumCircuitView* view;
+  QuantumCircuitView* view{};
 };
 
 TEST_F(QuantumCircuitViewTest, Instantiation) {

@@ -10,8 +10,8 @@ using C = std::complex<double>;
 TEST(GateDefinition, FixedGateStoresNameAndQubits) {
   GateDefinition g("x", 1, {0, 1, 1, 0});
   EXPECT_EQ(g.name(), "x");
-  EXPECT_EQ(g.numQubits(), 1u);
-  EXPECT_EQ(g.numParams(), 0u);
+  EXPECT_EQ(g.numQubits(), 1U);
+  EXPECT_EQ(g.numParams(), 0U);
 }
 
 TEST(GateDefinition, FixedGateMatrixReturnsCorrectValue) {
@@ -36,11 +36,11 @@ TEST(GateDefinition, FixedGateWrongMatrixSizeThrows) {
 
 TEST(GateDefinition, FixedGateWrongMatrixSizeMessageContainsSizes) {
   try {
-    GateDefinition("bad", 1, {1, 0});
+    GateDefinition giveMeAName("bad", 1, {1, 0});
     FAIL();
   } catch (const std::invalid_argument& e) {
-    EXPECT_NE(std::string(e.what()).find("4"), std::string::npos);
-    EXPECT_NE(std::string(e.what()).find("2"), std::string::npos);
+    EXPECT_NE(std::string(e.what()).find('4'), std::string::npos);
+    EXPECT_NE(std::string(e.what()).find('2'), std::string::npos);
   }
 }
 
@@ -54,26 +54,25 @@ TEST(GateDefinition, FixedGateAcceptsCorrectMatrix) {
 
 TEST(GateDefinition, ParametricGateStoresMetadata) {
   GateDefinition g("rx", 1, 1, [](const std::vector<double>& p) {
-    const double c = std::cos(p[0] / 2.0), s = std::sin(p[0] / 2.0);
+    const double c = std::cos(p[0] / 2.0);
+    const double s = std::sin(p[0] / 2.0);
     return std::vector<C>{{c, 0}, {0, -s}, {0, -s}, {c, 0}};
   });
   EXPECT_EQ(g.name(), "rx");
-  EXPECT_EQ(g.numQubits(), 1u);
-  EXPECT_EQ(g.numParams(), 1u);
+  EXPECT_EQ(g.numQubits(), 1U);
+  EXPECT_EQ(g.numParams(), 1U);
 }
 
 TEST(GateDefinition, ParametricGateZeroQubitsThrows) {
-  EXPECT_THROW(
-      GateDefinition("bad", 0, 1, [](const std::vector<double>&) {
-        return std::vector<C>(4);
-      }),
-      std::invalid_argument);
+  EXPECT_THROW(GateDefinition("bad", 0, 1,
+                              [](const std::vector<double>&) {
+                                return std::vector<C>(4);
+                              }),
+               std::invalid_argument);
 }
 
 TEST(GateDefinition, ParametricGateNullFnThrows) {
-  EXPECT_THROW(
-      GateDefinition("bad", 1, 1, nullptr),
-      std::invalid_argument);
+  EXPECT_THROW(GateDefinition("bad", 1, 1, nullptr), std::invalid_argument);
 }
 
 TEST(GateDefinition, ParametricGateEvaluatesCorrectly) {
@@ -97,9 +96,8 @@ TEST(GateDefinition, MatrixWrongParamCountThrows) {
 }
 
 TEST(GateDefinition, MatrixWrongParamCountMessageContainsCounts) {
-  GateDefinition g("rx", 1, 1, [](const std::vector<double>&) {
-    return std::vector<C>(4);
-  });
+  GateDefinition g(
+      "rx", 1, 1, [](const std::vector<double>&) { return std::vector<C>(4); });
   try {
     g.matrix({});
     FAIL();

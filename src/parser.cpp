@@ -242,14 +242,26 @@ using ExprPtr = std::shared_ptr<ExprNode>;
 // ---------------------------------------------------------------------------
 double parseTimingLiteral(const std::string& text, double dt_ns) {
   std::size_t i = 0;
-  while (i < text.size() && (std::isdigit(text[i]) || text[i] == '.')) ++i;
+  while (i < text.size() && ((std::isdigit(text[i]) != 0) || text[i] == '.')) {
+    ++i;
+  }
   double num = std::stod(text.substr(0, i));
   std::string unit = text.substr(i);
-  if (unit == "ns") return num;
-  if (unit == "us") return num * 1e3;
-  if (unit == "ms") return num * 1e6;
-  if (unit == "s") return num * 1e9;
-  if (unit == "dt") return num * dt_ns;
+  if (unit == "ns") {
+    return num;
+  }
+  if (unit == "us") {
+    return num * 1e3;
+  }
+  if (unit == "ms") {
+    return num * 1e6;
+  }
+  if (unit == "s") {
+    return num * 1e9;
+  }
+  if (unit == "dt") {
+    return num * dt_ns;
+  }
   assert(false && "unknown timing unit in parseTimingLiteral");
   return 0.0;  // unreachable
 }
@@ -261,18 +273,19 @@ double parseTimingLiteral(const std::string& text, double dt_ns) {
 // Needed for modifier counts/exponents requiring a compile-time integer.
 // Falls back to default_val for anything more complex.
 // ---------------------------------------------------------------------------
-static std::uint8_t extractIntLiteral(qasm3Parser::ExpressionContext* expr,
-                                      std::uint8_t default_val = 1) {
+std::uint8_t extractIntLiteral(qasm3Parser::ExpressionContext* expr,
+                               std::uint8_t default_val = 1) {
   auto* lit = dynamic_cast<qasm3Parser::LiteralExpressionContext*>(expr);
-  if (lit && lit->DecimalIntegerLiteral())
+  if ((lit != nullptr) && (lit->DecimalIntegerLiteral() != nullptr)) {
     return static_cast<std::uint8_t>(
         std::stoi(lit->DecimalIntegerLiteral()->getText()));
+  }
   return default_val;
 }
 
 // Returns the integer count carried by a modifier expression, e.g. ctrl(2).
-static int modifierCount(qasm3Parser::GateModifierContext* mod) {
-  return mod->expression()
+int modifierCount(qasm3Parser::GateModifierContext* mod) {
+  return (mod->expression() != nullptr)
              ? static_cast<int>(extractIntLiteral(mod->expression(), 1))
              : 1;
 }
@@ -282,89 +295,109 @@ static int modifierCount(qasm3Parser::GateModifierContext* mod) {
 // Matrices are stored in row-major order; qubit k = bit (n-1-k) of the index.
 // ---------------------------------------------------------------------------
 
-static Mat identityMatrix(std::uint8_t n) {
+Mat identityMatrix(std::uint8_t n) {
   const std::size_t dim = std::size_t{1} << n;
   Mat m(dim * dim, C{0.0, 0.0});
-  for (std::size_t i = 0; i < dim; ++i) m[i * dim + i] = C{1.0, 0.0};
+  for (std::size_t i = 0; i < dim; ++i) {
+    m[(i * dim) + i] = C{1.0, 0.0};
+  }
   return m;
 }
 
-static Mat conjugateTranspose(const Mat& m, std::uint8_t n) {
+Mat conjugateTranspose(const Mat& m, std::uint8_t n) {
   const std::size_t dim = std::size_t{1} << n;
   Mat result(dim * dim);
-  for (std::size_t i = 0; i < dim; ++i)
-    for (std::size_t j = 0; j < dim; ++j)
-      result[i * dim + j] = std::conj(m[j * dim + i]);
+  for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t j = 0; j < dim; ++j) {
+      result[(i * dim) + j] = std::conj(m[(j * dim) + i]);
+    }
+  }
   return result;
 }
 
-static Mat matMul(const Mat& a, const Mat& b, std::size_t dim) {
+Mat matMul(const Mat& a, const Mat& b, std::size_t dim) {
   Mat result(dim * dim, C{0.0, 0.0});
-  for (std::size_t i = 0; i < dim; ++i)
-    for (std::size_t j = 0; j < dim; ++j)
-      for (std::size_t k = 0; k < dim; ++k)
-        result[i * dim + j] += a[i * dim + k] * b[k * dim + j];
+  for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t j = 0; j < dim; ++j) {
+      for (std::size_t k = 0; k < dim; ++k) {
+        result[(i * dim) + j] += a[(i * dim) + k] * b[(k * dim) + j];
+      }
+    }
+  }
   return result;
 }
 
-static Mat matrixPow(const Mat& m, std::uint8_t n, int power) {
+Mat matrixPow(const Mat& m, std::uint8_t n, int power) {
   const std::size_t dim = std::size_t{1} << n;
   Mat result = identityMatrix(n);
-  for (int p = 0; p < power; ++p) result = matMul(result, m, dim);
+  for (int p = 0; p < power; ++p) {
+    result = matMul(result, m, dim);
+  }
   return result;
 }
 
 // Prepends one control qubit: identity on |0⟩, U on |1⟩.
-static Mat addControl(const Mat& m, std::uint8_t n) {
+Mat addControl(const Mat& m, std::uint8_t n) {
   const std::size_t dim = std::size_t{1} << n;
-  const std::size_t new_dim = dim * 2;
-  Mat result(new_dim * new_dim, C{0.0, 0.0});
-  for (std::size_t i = 0; i < dim; ++i) result[i * new_dim + i] = C{1.0, 0.0};
-  for (std::size_t i = 0; i < dim; ++i)
-    for (std::size_t j = 0; j < dim; ++j)
-      result[(dim + i) * new_dim + (dim + j)] = m[i * dim + j];
+  const std::size_t newDim = dim * 2;
+  Mat result(newDim * newDim, C{0.0, 0.0});
+  for (std::size_t i = 0; i < dim; ++i) {
+    result[(i * newDim) + i] = C{1.0, 0.0};
+  }
+  for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t j = 0; j < dim; ++j) {
+      result[((dim + i) * newDim) + (dim + j)] = m[(i * dim) + j];
+    }
+  }
   return result;
 }
 
 // Prepends one negated control qubit: U on |0⟩, identity on |1⟩.
-static Mat addNegControl(const Mat& m, std::uint8_t n) {
+Mat addNegControl(const Mat& m, std::uint8_t n) {
   const std::size_t dim = std::size_t{1} << n;
-  const std::size_t new_dim = dim * 2;
-  Mat result(new_dim * new_dim, C{0.0, 0.0});
-  for (std::size_t i = 0; i < dim; ++i)
-    for (std::size_t j = 0; j < dim; ++j)
-      result[i * new_dim + j] = m[i * dim + j];
-  for (std::size_t i = 0; i < dim; ++i)
-    result[(dim + i) * new_dim + (dim + i)] = C{1.0, 0.0};
+  const std::size_t newDim = dim * 2;
+  Mat result(newDim * newDim, C{0.0, 0.0});
+  for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t j = 0; j < dim; ++j) {
+      result[(i * newDim) + j] = m[(i * dim) + j];
+    }
+  }
+  for (std::size_t i = 0; i < dim; ++i) {
+    result[((dim + i) * newDim) + (dim + i)] = C{1.0, 0.0};
+  }
   return result;
 }
 
 // Lifts a gate_n-qubit gate acting on qubit_indices into total_n-qubit space.
-static Mat embedGate(const Mat& gate_mat, std::uint8_t gate_n,
-                     const std::vector<std::uint8_t>& qubit_indices,
-                     std::uint8_t total_n) {
-  if (gate_n == total_n) return gate_mat;
-  const std::size_t total_dim = std::size_t{1} << total_n;
-  const std::size_t gate_dim = std::size_t{1} << gate_n;
-  Mat result(total_dim * total_dim, C{0.0, 0.0});
-  for (std::size_t in_state = 0; in_state < total_dim; ++in_state) {
-    std::size_t gate_in = 0;
+Mat embedGate(const Mat& gate_mat, std::uint8_t gate_n,
+              const std::vector<std::uint8_t>& qubit_indices,
+              std::uint8_t total_n) {
+  if (gate_n == total_n) {
+    return gate_mat;
+  }
+  const std::size_t totalDim = std::size_t{1} << total_n;
+  const std::size_t gateDim = std::size_t{1} << gate_n;
+  Mat result(totalDim * totalDim, C{0.0, 0.0});
+  for (std::size_t inState = 0; inState < totalDim; ++inState) {
+    std::size_t gateIn = 0;
     for (std::uint8_t k = 0; k < gate_n; ++k) {
       std::uint8_t bit = total_n - 1 - qubit_indices[k];
-      if (in_state & (std::size_t{1} << bit))
-        gate_in |= std::size_t{1} << (gate_n - 1 - k);
+      if ((inState & (std::size_t{1} << bit)) != 0u) {
+        gateIn |= std::size_t{1} << (gate_n - 1 - k);
+      }
     }
-    for (std::size_t gate_out = 0; gate_out < gate_dim; ++gate_out) {
-      C amp = gate_mat[gate_out * gate_dim + gate_in];
-      std::size_t out_state = in_state;
+    for (std::size_t gateOut = 0; gateOut < gateDim; ++gateOut) {
+      C amp = gate_mat[(gateOut * gateDim) + gateIn];
+      std::size_t outState = inState;
       for (std::uint8_t k = 0; k < gate_n; ++k) {
         std::uint8_t bit = total_n - 1 - qubit_indices[k];
-        if (gate_out & (std::size_t{1} << (gate_n - 1 - k)))
-          out_state |= std::size_t{1} << bit;
-        else
-          out_state &= ~(std::size_t{1} << bit);
+        if ((gateOut & (std::size_t{1} << (gate_n - 1 - k))) != 0u) {
+          outState |= std::size_t{1} << bit;
+        } else {
+          outState &= ~(std::size_t{1} << bit);
+        }
       }
-      result[out_state * total_dim + in_state] = amp;
+      result[(outState * totalDim) + inState] = amp;
     }
   }
   return result;
@@ -389,11 +422,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   // May only be called once. std::move transfers ownership out of the object.
   Circuit buildCircuit() {
-    return Circuit(std::move(registry_), std::move(qubit_registers_),
-                   std::move(bit_registers_), std::move(operations_));
+    return {std::move(registry_), std::move(qubit_registers_),
+            std::move(bit_registers_), std::move(operations_)};
   }
 
-  const std::vector<SyntaxError>& semanticErrors() const {
+  [[nodiscard]] const std::vector<SyntaxError>& semanticErrors() const {
     return semantic_errors_;
   }
 
@@ -411,10 +444,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       qasm3Parser::AssignmentStatementContext* ctx) override {
     // c[i] = measure q[i];
     if (auto* meas = ctx->measureExpression()) {
-      const std::string lhs_name =
+      const std::string lhsName =
           ctx->indexedIdentifier()->Identifier()->getText();
-      if (checkUndefined(UndefinedKind::BitRegister, lhs_name, ctx))
+      if (checkUndefined(UndefinedKind::kBitRegister, lhsName, ctx)) {
         return visitChildren(ctx);
+      }
       const QubitReference qubit = resolveQubit(meas->gateOperand(), ctx);
       const BitReference target = resolveBit(ctx->indexedIdentifier(), ctx);
       operations_.push_back(
@@ -422,11 +456,15 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       return visitChildren(ctx);
     }
 
-    if (!ctx->expression()) return visitChildren(ctx);
+    if (ctx->expression() == nullptr) {
+      return visitChildren(ctx);
+    }
 
     auto* lhs = ctx->indexedIdentifier();
     const std::string name = lhs->Identifier()->getText();
-    if (checkConstReassignment(name, ctx)) return visitChildren(ctx);
+    if (checkConstReassignment(name, ctx)) {
+      return visitChildren(ctx);
+    }
 
     // Build lookup key: "name" for scalar, "name[i]" for array element
     std::string key = name;
@@ -438,7 +476,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     const C* existing = lookupScalar(key);
-    if (!existing) {
+    if (existing == nullptr) {
       addError(errUndefined(UndefinedKind::Variable, name), ctx);
       return visitChildren(ctx);
     }
@@ -463,19 +501,31 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     const double rhs = ExprNode::eval(buildExprTree(ctx->expression()), {});
     double cur = existing->real();
 
-    if (op == "+=")
-      cur += rhs;
-    else if (op == "-=")
-      cur -= rhs;
-    else if (op == "*=")
-      cur *= rhs;
-    else if (op == "/=")
-      cur = (rhs != 0.0) ? cur / rhs : 0.0;
-    else if (op == "%=")
-      cur = std::fmod(cur, rhs);
-    else if (op == "**=")
-      cur = std::pow(cur, rhs);
-    else if (op == "&=") {
+    if (op == "+=") {
+      {
+        cur += rhs;
+      }
+    } else if (op == "-=") {
+      {
+        cur -= rhs;
+      }
+    } else if (op == "*=") {
+      {
+        cur *= rhs;
+      }
+    } else if (op == "/=") {
+      {
+        cur = (rhs != 0.0) ? cur / rhs : 0.0;
+      }
+    } else if (op == "%=") {
+      {
+        cur = std::fmod(cur, rhs);
+      }
+    } else if (op == "**=") {
+      {
+        cur = std::pow(cur, rhs);
+      }
+    } else if (op == "&=") {
       auto l = static_cast<long long>(cur);
       auto r = static_cast<long long>(rhs);
       cur = static_cast<double>(l & r);
@@ -516,22 +566,25 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   std::any visitBarrierStatement(
       qasm3Parser::BarrierStatementContext* ctx) override {
     std::vector<QubitReference> qubits;
-    if (!ctx->gateOperandList()) {
+    if (ctx->gateOperandList() == nullptr) {
       // Global barrier: expand over every declared qubit
-      for (std::size_t r = 0; r < qubit_registers_.size(); ++r)
-        for (std::size_t q = 0; q < qubit_registers_[r].size; ++q)
+      for (std::size_t r = 0; r < qubit_registers_.size(); ++r) {
+        for (std::size_t q = 0; q < qubit_registers_[r].size; ++q) {
           qubits.push_back(
               {static_cast<std::uint8_t>(r), static_cast<std::uint8_t>(q)});
+        }
+      }
     } else {
       for (auto* op : ctx->gateOperandList()->gateOperand()) {
         auto* indexed = op->indexedIdentifier();
         // Whole-register barrier: expand without an index
-        if (indexed && indexed->indexOperator().empty()) {
+        if ((indexed != nullptr) && indexed->indexOperator().empty()) {
           auto it = qubit_map_.find(indexed->Identifier()->getText());
           if (it != qubit_map_.end()) {
-            for (std::size_t q = 0; q < it->second.size; ++q)
+            for (std::size_t q = 0; q < it->second.size; ++q) {
               qubits.push_back({static_cast<std::uint8_t>(it->second.index),
                                 static_cast<std::uint8_t>(q)});
+            }
             continue;
           }
         }
@@ -570,26 +623,29 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   std::any visitClassicalDeclarationStatement(
       qasm3Parser::ClassicalDeclarationStatementContext* ctx) override {
     const std::string name = ctx->Identifier()->getText();
-    if (checkRedeclared(name, ctx)) return visitChildren(ctx);
+    if (checkRedeclared(name, ctx)) {
+      return visitChildren(ctx);
+    }
 
     // Array type: store elements as "name[i]", "name[i][j]", etc.
-    if (ctx->arrayType()) {
+    if (ctx->arrayType() != nullptr) {
       if (auto* decl = ctx->declarationExpression()) {
         if (auto* cast = dynamic_cast<qasm3Parser::CastExpressionContext*>(
                 decl->expression())) {
           // array[T](src) cast — convert source array elements
-          if (cast->arrayType()) {
-            if (auto* src_lit =
+          if (cast->arrayType() != nullptr) {
+            if (auto* srcLit =
                     dynamic_cast<qasm3Parser::LiteralExpressionContext*>(
                         cast->expression())) {
-              if (src_lit->Identifier()) {
-                const std::string src = src_lit->Identifier()->getText();
+              if (srcLit->Identifier() != nullptr) {
+                const std::string src = srcLit->Identifier()->getText();
                 const std::string pfx = src + "[";
                 for (const auto& kv : scopes_.back().scalar_map) {
                   if (kv.first.size() >= pfx.size() &&
-                      kv.first.compare(0, pfx.size(), pfx) == 0)
+                      kv.first.compare(0, pfx.size(), pfx) == 0) {
                     setScalar(name + kv.first.substr(src.size()),
                               kv.second.real());
+                  }
                 }
               }
             }
@@ -605,8 +661,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                       const std::string& prefix) {
             auto subs = a->arrayLiteral();
             if (!subs.empty()) {
-              for (int i = 0; i < static_cast<int>(subs.size()); ++i)
+              for (int i = 0; i < static_cast<int>(subs.size()); ++i) {
                 store(subs[i], prefix + "[" + std::to_string(i) + "]");
+              }
             } else {
               int i = 0;
               for (auto* expr : a->expression()) {
@@ -622,35 +679,43 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     auto* scalar = ctx->scalarType();
-    if (!scalar) return visitChildren(ctx);
+    if (scalar == nullptr) {
+      return visitChildren(ctx);
+    }
 
-    if (scalar->BIT()) {
-      if (bit_map_.count(name) || qubit_map_.count(name)) {
+    if (scalar->BIT() != nullptr) {
+      if ((bit_map_.count(name) != 0u) || (qubit_map_.count(name) != 0u)) {
         addError("redeclaration of '" + name + "'", ctx);
         return visitChildren(ctx);
       }
       const std::size_t size =
-          scalar->designator()
+          (scalar->designator() != nullptr)
               ? static_cast<std::size_t>(ExprNode::eval(
                     buildExprTree(scalar->designator()->expression()), {}))
               : 1;
       bit_map_[name] = {bit_registers_.size(), size};
       bit_registers_.push_back({name, size});
-    } else if (scalar->FLOAT() || scalar->INT() || scalar->UINT() ||
-               scalar->ANGLE()) {
-      if (ctx->declarationExpression())
-        if (auto* expr = ctx->declarationExpression()->expression())
+    } else if ((scalar->FLOAT() != nullptr) || (scalar->INT() != nullptr) ||
+               (scalar->UINT() != nullptr) || (scalar->ANGLE() != nullptr)) {
+      if (ctx->declarationExpression() != nullptr) {
+        if (auto* expr = ctx->declarationExpression()->expression()) {
           setScalar(name, ExprNode::eval(buildExprTree(expr), {}));
-    } else if (scalar->COMPLEX()) {
-      if (ctx->declarationExpression())
-        if (auto* expr = ctx->declarationExpression()->expression())
+        }
+      }
+    } else if (scalar->COMPLEX() != nullptr) {
+      if (ctx->declarationExpression() != nullptr) {
+        if (auto* expr = ctx->declarationExpression()->expression()) {
           setComplexScalar(name, evalC(expr));
-    } else if (scalar->DURATION()) {
+        }
+      }
+    } else if (scalar->DURATION() != nullptr) {
       setScalar(name, 0.0);
-      if (ctx->declarationExpression())
-        if (auto* expr = ctx->declarationExpression()->expression())
+      if (ctx->declarationExpression() != nullptr) {
+        if (auto* expr = ctx->declarationExpression()->expression()) {
           setScalar(name, ExprNode::eval(buildExprTree(expr), {}));
-    } else if (scalar->STRETCH()) {
+        }
+      }
+    } else if (scalar->STRETCH() != nullptr) {
       setScalar(name, 0.0);
     }
     return visitChildren(ctx);
@@ -660,7 +725,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   std::any visitConstDeclarationStatement(
       qasm3Parser::ConstDeclarationStatementContext* ctx) override {
     const std::string name = ctx->Identifier()->getText();
-    if (checkRedeclared(name, ctx)) return visitChildren(ctx);
+    if (checkRedeclared(name, ctx)) {
+      return visitChildren(ctx);
+    }
 
     if (auto* expr = ctx->declarationExpression()->expression()) {
       setScalar(name, ExprNode::eval(buildExprTree(expr), {}));
@@ -726,25 +793,31 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   std::any visitGateCallStatement(
       qasm3Parser::GateCallStatementContext* ctx) override {
     // ---- gphase special case -----------------------------------------------
-    if (ctx->GPHASE()) {
+    if (ctx->GPHASE() != nullptr) {
       auto modifiers = ctx->gateModifier();
       // Bare gphase has no observable effect without qubit modifiers
-      if (modifiers.empty()) return visitChildren(ctx);
+      if (modifiers.empty()) {
+        return visitChildren(ctx);
+      }
 
       double theta = 0.0;
-      if (ctx->expressionList() &&
+      if ((ctx->expressionList() != nullptr) &&
           !ctx->expressionList()->expression().empty()) {
         theta = ExprNode::eval(
             buildExprTree(ctx->expressionList()->expression(0)), {});
       }
 
       auto gate = deriveGphaseWithModifiers(theta, modifiers, ctx);
-      if (!gate) return visitChildren(ctx);
+      if (!gate) {
+        return visitChildren(ctx);
+      }
 
       std::vector<QubitReference> qubits;
-      if (auto* ol = ctx->gateOperandList())
-        for (auto* op : ol->gateOperand())
+      if (auto* ol = ctx->gateOperandList()) {
+        for (auto* op : ol->gateOperand()) {
           qubits.push_back(resolveQubit(op, ctx));
+        }
+      }
 
       if (qubits.size() != gate->numQubits()) {
         addError("ctrl@gphase expects " + std::to_string(gate->numQubits()) +
@@ -758,21 +831,24 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     // ---- normal gate call --------------------------------------------------
-    const std::string gate_name = ctx->Identifier()->getText();
-    if (checkUndefined(UndefinedKind::Gate, gate_name, ctx))
+    const std::string gateName = ctx->Identifier()->getText();
+    if (checkUndefined(UndefinedKind::kGate, gateName, ctx)) {
       return visitChildren(ctx);
-    auto gate = registry_.find(gate_name);
+    }
+    auto gate = registry_.find(gateName);
 
     // Evaluate parameter expressions with the current scalar scope
     std::vector<double> params;
-    if (auto* el = ctx->expressionList())
-      for (auto* expr : el->expression())
+    if (auto* el = ctx->expressionList()) {
+      for (auto* expr : el->expression()) {
         params.push_back(ExprNode::eval(buildExprTree(expr), {}));
+      }
+    }
 
     auto modifiers = ctx->gateModifier();
 
     if (modifiers.empty() && params.size() != gate->numParams()) {
-      addError("gate '" + gate_name + "' expects " +
+      addError("gate '" + gateName + "' expects " +
                    std::to_string(gate->numParams()) + " parameter(s), got " +
                    std::to_string(params.size()),
                ctx);
@@ -781,24 +857,26 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
     if (!modifiers.empty()) {
       gate = deriveModifiedGate(gate, params, modifiers, ctx);
-      if (!gate) return visitChildren(ctx);
+      if (!gate) {
+        return visitChildren(ctx);
+      }
       params.clear();
     }
 
-    auto* operand_list = ctx->gateOperandList();
-    if (!operand_list) {
-      addError("gate '" + gate_name + "' called with no qubit operands", ctx);
+    auto* operandList = ctx->gateOperandList();
+    if (operandList == nullptr) {
+      addError("gate '" + gateName + "' called with no qubit operands", ctx);
       return visitChildren(ctx);
     }
-    auto operands = operand_list->gateOperand();
+    auto operands = operandList->gateOperand();
 
     // Single-qubit gate with one unindexed operand: broadcast over register
     if (gate->numQubits() == 1 && modifiers.empty() && operands.size() == 1) {
       auto* indexed = operands[0]->indexedIdentifier();
-      if (indexed && indexed->indexOperator().empty()) {
+      if ((indexed != nullptr) && indexed->indexOperator().empty()) {
         auto it = qubit_map_.find(indexed->Identifier()->getText());
         if (it != qubit_map_.end()) {
-          for (std::size_t q = 0; q < it->second.size; ++q)
+          for (std::size_t q = 0; q < it->second.size; ++q) {
             operations_.push_back(
                 {OperationType::Gate,
                  gate,
@@ -806,6 +884,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                  {{static_cast<std::uint8_t>(it->second.index),
                    static_cast<std::uint8_t>(q)}},
                  {}});
+          }
           return visitChildren(ctx);
         }
       }
@@ -814,35 +893,38 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     // Pairwise broadcast: all operands are whole registers of equal size
     if (modifiers.empty() &&
         operands.size() == static_cast<std::size_t>(gate->numQubits())) {
-      bool all_whole = true;
+      bool allWhole = true;
       std::vector<RegisterInfo*> regs;
       for (auto* op : operands) {
         auto* idx = op->indexedIdentifier();
-        if (!idx || !idx->indexOperator().empty()) {
-          all_whole = false;
+        if ((idx == nullptr) || !idx->indexOperator().empty()) {
+          allWhole = false;
           break;
         }
         auto it = qubit_map_.find(idx->Identifier()->getText());
         if (it == qubit_map_.end()) {
-          all_whole = false;
+          allWhole = false;
           break;
         }
         regs.push_back(&it->second);
       }
-      if (all_whole && regs.size() > 1) {
+      if (allWhole && regs.size() > 1) {
         const std::size_t sz = regs[0]->size;
         bool same = true;
-        for (auto* r : regs)
+        for (auto* r : regs) {
           if (r->size != sz) {
             same = false;
             break;
           }
+        }
         if (same) {
           for (std::size_t q = 0; q < sz; ++q) {
             std::vector<QubitReference> qubits;
-            for (auto* r : regs)
+            qubits.reserve(regs.size());
+            for (auto* r : regs) {
               qubits.push_back({static_cast<std::uint8_t>(r->index),
                                 static_cast<std::uint8_t>(q)});
+            }
             operations_.push_back(
                 {OperationType::Gate, gate, params, std::move(qubits), {}});
           }
@@ -854,7 +936,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     // Normal case: resolve each operand individually
     std::vector<QubitReference> qubits;
     qubits.reserve(operands.size());
-    for (auto* operand : operands) qubits.push_back(resolveQubit(operand, ctx));
+    for (auto* operand : operands) {
+      qubits.push_back(resolveQubit(operand, ctx));
+    }
 
     if (qubits.size() != gate->numQubits()) {
       addError(
@@ -872,37 +956,45 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   //   qubits=identifierList scope;
   std::any visitGateStatement(qasm3Parser::GateStatementContext* ctx) override {
     const std::string name = ctx->Identifier()->getText();
-    if (checkRedefined(RedefinedKind::Gate, name, ctx)) return {};
+    if (checkRedefined(RedefinedKind::kGate, name, ctx)) {
+      return {};
+    }
 
-    std::vector<std::string> param_names;
-    if (ctx->params)
-      for (auto* id : ctx->params->Identifier())
-        param_names.push_back(id->getText());
+    std::vector<std::string> paramNames;
+    if (ctx->params != nullptr) {
+      for (auto* id : ctx->params->Identifier()) {
+        paramNames.push_back(id->getText());
+      }
+    }
 
-    std::vector<std::string> qubit_names;
-    if (ctx->qubits)
-      for (auto* id : ctx->qubits->Identifier())
-        qubit_names.push_back(id->getText());
+    std::vector<std::string> qubitNames;
+    if (ctx->qubits != nullptr) {
+      for (auto* id : ctx->qubits->Identifier()) {
+        qubitNames.push_back(id->getText());
+      }
+    }
 
-    if (qubit_names.empty()) {
+    if (qubitNames.empty()) {
       addError("gate '" + name + "' must operate on at least one qubit", ctx);
       return {};
     }
 
-    std::unordered_map<std::string, int> param_idx;
-    for (int i = 0; i < static_cast<int>(param_names.size()); ++i)
-      param_idx[param_names[i]] = i;
+    std::unordered_map<std::string, int> paramIdx;
+    for (int i = 0; i < static_cast<int>(paramNames.size()); ++i) {
+      paramIdx[paramNames[i]] = i;
+    }
 
-    std::unordered_map<std::string, std::uint8_t> local_qubit_idx;
-    for (std::size_t i = 0; i < qubit_names.size(); ++i)
-      local_qubit_idx[qubit_names[i]] = static_cast<std::uint8_t>(i);
+    std::unordered_map<std::string, std::uint8_t> localQubitIdx;
+    for (std::size_t i = 0; i < qubitNames.size(); ++i) {
+      localQubitIdx[qubitNames[i]] = static_cast<std::uint8_t>(i);
+    }
 
-    const auto num_qubits = static_cast<std::uint8_t>(qubit_names.size());
-    const auto num_params = static_cast<std::uint8_t>(param_names.size());
+    const auto numQubits = static_cast<std::uint8_t>(qubitNames.size());
+    const auto numParams = static_cast<std::uint8_t>(paramNames.size());
 
     // Deferred modifier kind — used when base gate is parametric
     struct BodyMod {
-      enum class Kind { Inv, Pow, Ctrl, NegCtrl };
+      enum class Kind { kInv, kPow, kCtrl, kNegCtrl };
       Kind kind;
       int count = 1;
     };
@@ -916,56 +1008,68 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
     for (auto* sos : ctx->scope()->statementOrScope()) {
       auto* stmt = sos->statement();
-      if (!stmt) continue;
+      if (stmt == nullptr) {
+        continue;
+      }
       auto* call = stmt->gateCallStatement();
-      if (!call || call->GPHASE()) continue;
-
-      const std::string call_name = call->Identifier()->getText();
-      auto call_gate = registry_.find(call_name);
-      if (!call_gate) {
-        addError(errUndefined(UndefinedKind::Gate, call_name), call);
+      if ((call == nullptr) || (call->GPHASE() != nullptr)) {
         continue;
       }
 
-      auto body_mods = call->gateModifier();
-      BodyCall bc;
-      bc.gate = call_gate;
+      const std::string callName = call->Identifier()->getText();
+      auto callGate = registry_.find(callName);
+      if (!callGate) {
+        addError(errUndefined(UndefinedKind::kGate, callName), call);
+        continue;
+      }
 
-      if (!body_mods.empty() && call_gate->numParams() == 0) {
+      auto bodyMods = call->gateModifier();
+      BodyCall bc;
+      bc.gate = callGate;
+
+      if (!bodyMods.empty() && callGate->numParams() == 0) {
         // Non-parametric base: fold modifiers into the matrix now
-        call_gate = deriveModifiedGate(call_gate, {}, body_mods, call);
-        if (!call_gate) continue;
-        bc.gate = call_gate;
-      } else if (!body_mods.empty()) {
+        callGate = deriveModifiedGate(callGate, {}, bodyMods, call);
+        if (!callGate) {
+          continue;
+        }
+        bc.gate = callGate;
+      } else if (!bodyMods.empty()) {
         // Parametric base: record modifiers, apply at call time
-        for (auto* mod : body_mods) {
-          if (mod->INV()) {
-            bc.modifiers.push_back({BodyMod::Kind::Inv, 1});
-          } else if (mod->POW()) {
-            bc.modifiers.push_back({BodyMod::Kind::Pow, modifierCount(mod)});
-          } else if (mod->CTRL()) {
-            bc.modifiers.push_back({BodyMod::Kind::Ctrl, modifierCount(mod)});
-          } else if (mod->NEGCTRL()) {
+        for (auto* mod : bodyMods) {
+          if (mod->INV() != nullptr) {
+            bc.modifiers.push_back({BodyMod::Kind::kInv, 1});
+          } else if (mod->POW() != nullptr) {
+            bc.modifiers.push_back({BodyMod::Kind::kPow, modifierCount(mod)});
+          } else if (mod->CTRL() != nullptr) {
+            bc.modifiers.push_back({BodyMod::Kind::kCtrl, modifierCount(mod)});
+          } else if (mod->NEGCTRL() != nullptr) {
             bc.modifiers.push_back(
-                {BodyMod::Kind::NegCtrl, modifierCount(mod)});
+                {BodyMod::Kind::kNegCtrl, modifierCount(mod)});
           }
         }
-        if (auto* el = call->expressionList())
-          for (auto* expr : el->expression())
-            bc.param_exprs.push_back(buildExprTree(expr, param_idx));
+        if (auto* el = call->expressionList()) {
+          for (auto* expr : el->expression()) {
+            bc.param_exprs.push_back(buildExprTree(expr, paramIdx));
+          }
+        }
       } else {
-        if (auto* el = call->expressionList())
-          for (auto* expr : el->expression())
-            bc.param_exprs.push_back(buildExprTree(expr, param_idx));
+        if (auto* el = call->expressionList()) {
+          for (auto* expr : el->expression()) {
+            bc.param_exprs.push_back(buildExprTree(expr, paramIdx));
+          }
+        }
       }
 
       if (auto* ol = call->gateOperandList()) {
         for (auto* operand : ol->gateOperand()) {
           auto* indexed = operand->indexedIdentifier();
-          if (!indexed) continue;
+          if (indexed == nullptr) {
+            continue;
+          }
           const std::string qname = indexed->Identifier()->getText();
-          auto it = local_qubit_idx.find(qname);
-          if (it != local_qubit_idx.end()) {
+          auto it = localQubitIdx.find(qname);
+          if (it != localQubitIdx.end()) {
             bc.qubit_indices.push_back(it->second);
           } else {
             addError("undefined qubit parameter '" + qname +
@@ -977,57 +1081,58 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       body.push_back(std::move(bc));
     }
 
-    if (num_params == 0) {
+    if (numParams == 0) {
       // Parameterless: compute full matrix immediately
-      const std::size_t dim = std::size_t{1} << num_qubits;
-      Mat result = identityMatrix(num_qubits);
+      const std::size_t dim = std::size_t{1} << numQubits;
+      Mat result = identityMatrix(numQubits);
       for (auto& bc : body) {
-        Mat gate_mat = bc.gate->matrix({});
-        Mat embedded = embedGate(gate_mat, bc.gate->numQubits(),
-                                 bc.qubit_indices, num_qubits);
+        Mat gateMat = bc.gate->matrix({});
+        Mat embedded = embedGate(gateMat, bc.gate->numQubits(),
+                                 bc.qubit_indices, numQubits);
         result = matMul(embedded, result, dim);
       }
-      registry_.add(GateDefinition(name, num_qubits, std::move(result)));
+      registry_.add(GateDefinition(name, numQubits, std::move(result)));
     } else {
       // Parametric: defer matrix computation to each call site
       registry_.add(GateDefinition(
-          name, num_qubits, num_params,
-          [body, num_qubits](const std::vector<double>& params) -> Mat {
-            const std::size_t dim = std::size_t{1} << num_qubits;
-            Mat result = identityMatrix(num_qubits);
+          name, numQubits, numParams,
+          [body, numQubits](const std::vector<double>& params) -> Mat {
+            const std::size_t dim = std::size_t{1} << numQubits;
+            Mat result = identityMatrix(numQubits);
             for (const auto& bc : body) {
-              std::vector<double> call_params;
-              call_params.reserve(bc.param_exprs.size());
-              for (const auto& ep : bc.param_exprs)
-                call_params.push_back(ExprNode::eval(ep, params));
-              Mat gate_mat = bc.gate->matrix(call_params);
-              std::uint8_t gate_n = bc.gate->numQubits();
+              std::vector<double> callParams;
+              callParams.reserve(bc.param_exprs.size());
+              for (const auto& ep : bc.param_exprs) {
+                callParams.push_back(ExprNode::eval(ep, params));
+              }
+              Mat gateMat = bc.gate->matrix(callParams);
+              std::uint8_t gateN = bc.gate->numQubits();
               for (int i = static_cast<int>(bc.modifiers.size()) - 1; i >= 0;
                    --i) {
                 const auto& mod = bc.modifiers[i];
                 switch (mod.kind) {
-                  case BodyMod::Kind::Inv:
-                    gate_mat = conjugateTranspose(gate_mat, gate_n);
+                  case BodyMod::Kind::kInv:
+                    gateMat = conjugateTranspose(gateMat, gateN);
                     break;
-                  case BodyMod::Kind::Pow:
-                    gate_mat = matrixPow(gate_mat, gate_n, mod.count);
+                  case BodyMod::Kind::kPow:
+                    gateMat = matrixPow(gateMat, gateN, mod.count);
                     break;
-                  case BodyMod::Kind::Ctrl:
+                  case BodyMod::Kind::kCtrl:
                     for (int c = 0; c < mod.count; ++c) {
-                      gate_mat = addControl(gate_mat, gate_n);
-                      ++gate_n;
+                      gateMat = addControl(gateMat, gateN);
+                      ++gateN;
                     }
                     break;
-                  case BodyMod::Kind::NegCtrl:
+                  case BodyMod::Kind::kNegCtrl:
                     for (int c = 0; c < mod.count; ++c) {
-                      gate_mat = addNegControl(gate_mat, gate_n);
-                      ++gate_n;
+                      gateMat = addNegControl(gateMat, gateN);
+                      ++gateN;
                     }
                     break;
                 }
               }
               Mat embedded =
-                  embedGate(gate_mat, gate_n, bc.qubit_indices, num_qubits);
+                  embedGate(gateMat, gateN, bc.qubit_indices, numQubits);
               result = matMul(embedded, result, dim);
             }
             return result;
@@ -1065,58 +1170,62 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       qasm3Parser::MeasureArrowAssignmentStatementContext* ctx) override {
     auto* meas = ctx->measureExpression();
     // quantumCallExpression form is not yet handled
-    if (!meas) return visitChildren(ctx);
+    if (meas == nullptr) {
+      return visitChildren(ctx);
+    }
 
-    auto* qubit_operand = meas->gateOperand();
-    auto* bit_target = ctx->indexedIdentifier();
+    auto* qubitOperand = meas->gateOperand();
+    auto* bitTarget = ctx->indexedIdentifier();
 
     // Validate register names before resolving
-    auto* q_indexed = qubit_operand->indexedIdentifier();
-    if (q_indexed) {
-      const std::string qname = q_indexed->Identifier()->getText();
-      if (!qubit_map_.count(qname)) {
-        addError(errUndefined(UndefinedKind::QubitRegister, qname), ctx);
+    auto* qIndexed = qubitOperand->indexedIdentifier();
+    if (qIndexed != nullptr) {
+      const std::string qname = qIndexed->Identifier()->getText();
+      if (qubit_map_.count(qname) == 0u) {
+        addError(errUndefined(UndefinedKind::kQubitRegister, qname), ctx);
         return visitChildren(ctx);
       }
     }
-    if (bit_target) {
-      const std::string cname = bit_target->Identifier()->getText();
-      if (!bit_map_.count(cname)) {
-        addError(errUndefined(UndefinedKind::BitRegister, cname), ctx);
+    if (bitTarget != nullptr) {
+      const std::string cname = bitTarget->Identifier()->getText();
+      if (bit_map_.count(cname) == 0u) {
+        addError(errUndefined(UndefinedKind::kBitRegister, cname), ctx);
         return visitChildren(ctx);
       }
     }
 
     // Whole-register broadcast: measure q -> c expands to N per-qubit ops
-    if (q_indexed && q_indexed->indexOperator().empty() && bit_target &&
-        bit_target->indexOperator().empty()) {
-      auto q_it = qubit_map_.find(q_indexed->Identifier()->getText());
-      auto c_it = bit_map_.find(bit_target->Identifier()->getText());
-      if (q_it != qubit_map_.end() && c_it != bit_map_.end()) {
-        if (q_it->second.size != c_it->second.size) {
-          addError("register size mismatch in measurement: '" + q_it->first +
-                       "' (" + std::to_string(q_it->second.size) +
-                       " qubits) vs '" + c_it->first + "' (" +
-                       std::to_string(c_it->second.size) + " bits)",
+    if ((qIndexed != nullptr) && qIndexed->indexOperator().empty() &&
+        (bitTarget != nullptr) && bitTarget->indexOperator().empty()) {
+      auto qIt = qubit_map_.find(qIndexed->Identifier()->getText());
+      auto cIt = bit_map_.find(bitTarget->Identifier()->getText());
+      if (qIt != qubit_map_.end() && cIt != bit_map_.end()) {
+        if (qIt->second.size != cIt->second.size) {
+          addError("register size mismatch in measurement: '" + qIt->first +
+                       "' (" + std::to_string(qIt->second.size) +
+                       " qubits) vs '" + cIt->first + "' (" +
+                       std::to_string(cIt->second.size) + " bits)",
                    ctx);
           return visitChildren(ctx);
         }
-        for (std::size_t i = 0; i < q_it->second.size; ++i)
-          operations_.push_back(
-              {OperationType::Measure,
-               nullptr,
-               {},
-               {{static_cast<std::uint8_t>(q_it->second.index),
-                 static_cast<std::uint8_t>(i)}},
-               {{static_cast<std::uint8_t>(c_it->second.index),
-                 static_cast<std::uint8_t>(i)}}});
+        for (std::size_t i = 0; i < qIt->second.size; ++i) {
+          operations_.push_back({OperationType::Measure,
+                                 nullptr,
+                                 {},
+                                 {{static_cast<std::uint8_t>(qIt->second.index),
+                                   static_cast<std::uint8_t>(i)}},
+                                 {{static_cast<std::uint8_t>(cIt->second.index),
+                                   static_cast<std::uint8_t>(i)}}});
+        }
         return visitChildren(ctx);
       }
     }
 
-    const QubitReference qubit = resolveQubit(qubit_operand, ctx);
+    const QubitReference qubit = resolveQubit(qubitOperand, ctx);
     std::vector<BitReference> targets;
-    if (bit_target) targets.push_back(resolveBit(bit_target, ctx));
+    if (bitTarget != nullptr) {
+      targets.push_back(resolveBit(bitTarget, ctx));
+    }
     operations_.push_back(
         {OperationType::Measure, nullptr, {}, {qubit}, std::move(targets)});
     return visitChildren(ctx);
@@ -1131,13 +1240,15 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   std::any visitOldStyleDeclarationStatement(
       qasm3Parser::OldStyleDeclarationStatementContext* ctx) override {
     const std::string name = ctx->Identifier()->getText();
-    if (checkRedeclared(name, ctx)) return visitChildren(ctx);
+    if (checkRedeclared(name, ctx)) {
+      return visitChildren(ctx);
+    }
     const std::size_t size =
-        ctx->designator()
+        (ctx->designator() != nullptr)
             ? static_cast<std::size_t>(ExprNode::eval(
                   buildExprTree(ctx->designator()->expression()), {}))
             : 1;
-    if (ctx->QREG()) {
+    if (ctx->QREG() != nullptr) {
       qubit_map_[name] = {qubit_registers_.size(), size};
       qubit_registers_.push_back({name, size});
     } else {  // CREG
@@ -1151,9 +1262,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   std::any visitQuantumDeclarationStatement(
       qasm3Parser::QuantumDeclarationStatementContext* ctx) override {
     const std::string name = ctx->Identifier()->getText();
-    if (checkRedeclared(name, ctx)) return visitChildren(ctx);
+    if (checkRedeclared(name, ctx)) {
+      return visitChildren(ctx);
+    }
     const std::size_t size =
-        ctx->qubitType()->designator()
+        (ctx->qubitType()->designator() != nullptr)
             ? static_cast<std::size_t>(ExprNode::eval(
                   buildExprTree(ctx->qubitType()->designator()->expression()),
                   {}))
@@ -1168,20 +1281,21 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       qasm3Parser::ResetStatementContext* ctx) override {
     auto* indexed = ctx->gateOperand()->indexedIdentifier();
     // Whole-register reset: reset q; expands to N per-qubit resets
-    if (indexed && indexed->indexOperator().empty()) {
+    if ((indexed != nullptr) && indexed->indexOperator().empty()) {
       const std::string name = indexed->Identifier()->getText();
       auto it = qubit_map_.find(name);
       if (it != qubit_map_.end()) {
-        for (std::size_t q = 0; q < it->second.size; ++q)
+        for (std::size_t q = 0; q < it->second.size; ++q) {
           operations_.push_back({OperationType::Reset,
                                  nullptr,
                                  {},
                                  {{static_cast<std::uint8_t>(it->second.index),
                                    static_cast<std::uint8_t>(q)}},
                                  {}});
+        }
         return visitChildren(ctx);
       }
-      checkUndefined(UndefinedKind::QubitRegister, name, ctx);
+      checkUndefined(UndefinedKind::kQubitRegister, name, ctx);
       return visitChildren(ctx);
     }
     const QubitReference qubit = resolveQubit(ctx->gateOperand(), ctx);
@@ -1226,14 +1340,14 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   };
 
   enum class UndefinedKind {
-    Gate,
-    Subroutine,
-    QubitRegister,
-    BitRegister,
+    kGate,
+    kSubroutine,
+    kQubitRegister,
+    kBitRegister,
     Variable
   };
-  enum class RedeclaredKind { QubitRegister, BitRegister, Variable };
-  enum class RedefinedKind { Gate, Subroutine };
+  enum class RedeclaredKind { kQubitRegister, kBitRegister, kVariable };
+  enum class RedefinedKind { kGate, kSubroutine };
 
   // ---- circuit state ------------------------------------------------------
 
@@ -1272,13 +1386,13 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   static std::string errUndefined(UndefinedKind kind, const std::string& name) {
     switch (kind) {
-      case UndefinedKind::Gate:
+      case UndefinedKind::kGate:
         return "undefined gate '" + name + "'";
-      case UndefinedKind::Subroutine:
+      case UndefinedKind::kSubroutine:
         return "undefined subroutine '" + name + "'";
-      case UndefinedKind::QubitRegister:
+      case UndefinedKind::kQubitRegister:
         return "undefined qubit register '" + name + "'";
-      case UndefinedKind::BitRegister:
+      case UndefinedKind::kBitRegister:
         return "undefined bit register '" + name + "'";
       case UndefinedKind::Variable:
         return "undefined variable '" + name + "'";
@@ -1290,11 +1404,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   static std::string errRedeclared(RedeclaredKind kind,
                                    const std::string& name) {
     switch (kind) {
-      case RedeclaredKind::QubitRegister:
+      case RedeclaredKind::kQubitRegister:
         return "redeclaration of qubit register '" + name + "'";
-      case RedeclaredKind::BitRegister:
+      case RedeclaredKind::kBitRegister:
         return "redeclaration of bit register '" + name + "'";
-      case RedeclaredKind::Variable:
+      case RedeclaredKind::kVariable:
         return "redeclaration of variable '" + name + "'";
     }
 
@@ -1303,9 +1417,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   static std::string errRedefined(RedefinedKind kind, const std::string& name) {
     switch (kind) {
-      case RedefinedKind::Gate:
+      case RedefinedKind::kGate:
         return "redefinition of gate '" + name + "'";
-      case RedefinedKind::Subroutine:
+      case RedefinedKind::kSubroutine:
         return "redefinition of subroutine '" + name + "'";
     }
 
@@ -1337,32 +1451,37 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     const_vals_[key] = val.real();
   }
 
-  const C* lookupScalar(const std::string& name) const {
+  [[nodiscard]] const C* lookupScalar(const std::string& name) const {
     for (auto it = scopes_.rbegin(); it != scopes_.rend(); ++it) {
       auto found = it->scalar_map.find(name);
-      if (found != it->scalar_map.end()) return &found->second;
+      if (found != it->scalar_map.end()) {
+        return &found->second;
+      }
     }
     return nullptr;
   }
 
-  bool isConst(const std::string& name) const {
-    for (auto it = scopes_.rbegin(); it != scopes_.rend(); ++it)
-      if (it->const_names.count(name)) return true;
+  [[nodiscard]] bool isConst(const std::string& name) const {
+    for (auto it = scopes_.rbegin(); it != scopes_.rend(); ++it) {
+      if (it->const_names.count(name) != 0u) {
+        return true;
+      }
+    }
     return false;
   }
 
   bool checkRedeclared(const std::string& name,
                        antlr4::ParserRuleContext* ctx) {
-    if (qubit_map_.count(name)) {
-      addError(errRedeclared(RedeclaredKind::QubitRegister, name), ctx);
+    if (qubit_map_.count(name) != 0u) {
+      addError(errRedeclared(RedeclaredKind::kQubitRegister, name), ctx);
       return true;
     }
-    if (bit_map_.count(name)) {
-      addError(errRedeclared(RedeclaredKind::BitRegister, name), ctx);
+    if (bit_map_.count(name) != 0u) {
+      addError(errRedeclared(RedeclaredKind::kBitRegister, name), ctx);
       return true;
     }
     if (lookupScalar(name) != nullptr) {
-      addError(errRedeclared(RedeclaredKind::Variable, name), ctx);
+      addError(errRedeclared(RedeclaredKind::kVariable, name), ctx);
       return true;
     }
     return false;
@@ -1370,26 +1489,28 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   bool checkUndefined(UndefinedKind kind, const std::string& name,
                       antlr4::ParserRuleContext* ctx) {
-    bool is_undefined = false;
+    bool isUndefined = false;
     switch (kind) {
-      case UndefinedKind::Gate:
-        is_undefined = !registry_.contains(name);
+      case UndefinedKind::kGate:
+        isUndefined = !registry_.contains(name);
         break;
-      case UndefinedKind::Subroutine:
-        is_undefined = !subroutine_map_.count(name);
+      case UndefinedKind::kSubroutine:
+        isUndefined = (subroutine_map_.count(name) == 0u);
         break;
-      case UndefinedKind::QubitRegister:
-        is_undefined = !qubit_map_.count(name);
+      case UndefinedKind::kQubitRegister:
+        isUndefined = (qubit_map_.count(name) == 0u);
         break;
-      case UndefinedKind::BitRegister:
-        is_undefined = !bit_map_.count(name);
+      case UndefinedKind::kBitRegister:
+        isUndefined = (bit_map_.count(name) == 0u);
         break;
       case UndefinedKind::Variable:
-        is_undefined = (lookupScalar(name) == nullptr);
+        isUndefined = (lookupScalar(name) == nullptr);
         break;
     }
 
-    if (!is_undefined) return false;
+    if (!isUndefined) {
+      return false;
+    }
 
     addError(errUndefined(kind, name), ctx);
     return true;
@@ -1397,17 +1518,19 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   bool checkRedefined(RedefinedKind kind, const std::string& name,
                       antlr4::ParserRuleContext* ctx) {
-    bool is_redefined = false;
+    bool isRedefined = false;
     switch (kind) {
-      case RedefinedKind::Gate:
-        is_redefined = registry_.contains(name);
+      case RedefinedKind::kGate:
+        isRedefined = registry_.contains(name);
         break;
-      case RedefinedKind::Subroutine:
-        is_redefined = subroutine_map_.count(name);
+      case RedefinedKind::kSubroutine:
+        isRedefined = (subroutine_map_.count(name) != 0u);
         break;
     }
 
-    if (!is_redefined) return false;
+    if (!isRedefined) {
+      return false;
+    }
 
     addError(errRedefined(kind, name), ctx);
     return true;
@@ -1415,7 +1538,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   bool checkConstReassignment(const std::string& name,
                               antlr4::ParserRuleContext* ctx) {
-    if (!isConst(name)) return false;
+    if (!isConst(name)) {
+      return false;
+    }
 
     addError(errConstReassignment(name), ctx);
     return true;
@@ -1428,25 +1553,26 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   QubitReference resolveQubit(qasm3Parser::GateOperandContext* operand,
                               antlr4::ParserRuleContext* error_ctx) {
     auto* indexed = operand->indexedIdentifier();
-    if (!indexed) {
+    if (indexed == nullptr) {
       addError("hardware qubit references ($N) are not supported", error_ctx);
       return {0, 0};
     }
     const std::string name = indexed->Identifier()->getText();
     auto it = qubit_map_.find(name);
     if (it == qubit_map_.end()) {
-      addError(errUndefined(UndefinedKind::QubitRegister, name), error_ctx);
+      addError(errUndefined(UndefinedKind::kQubitRegister, name), error_ctx);
       return {0, 0};
     }
-    std::size_t qubit_idx = 0;
+    std::size_t qubitIdx = 0;
     if (!indexed->indexOperator().empty()) {
-      auto* idx_op = indexed->indexOperator(0);
-      if (!idx_op->expression().empty())
-        qubit_idx = static_cast<std::size_t>(
-            ExprNode::eval(buildExprTree(idx_op->expression(0)), {}));
+      auto* idxOp = indexed->indexOperator(0);
+      if (!idxOp->expression().empty()) {
+        qubitIdx = static_cast<std::size_t>(
+            ExprNode::eval(buildExprTree(idxOp->expression(0)), {}));
+      }
     }
     return {static_cast<std::uint8_t>(it->second.index),
-            static_cast<std::uint8_t>(qubit_idx)};
+            static_cast<std::uint8_t>(qubitIdx)};
   }
 
   BitReference resolveBit(qasm3Parser::IndexedIdentifierContext* indexed,
@@ -1454,18 +1580,19 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     const std::string name = indexed->Identifier()->getText();
     auto it = bit_map_.find(name);
     if (it == bit_map_.end()) {
-      addError(errUndefined(UndefinedKind::BitRegister, name), error_ctx);
+      addError(errUndefined(UndefinedKind::kBitRegister, name), error_ctx);
       return {0, 0};
     }
-    std::size_t bit_idx = 0;
+    std::size_t bitIdx = 0;
     if (!indexed->indexOperator().empty()) {
-      auto* idx_op = indexed->indexOperator(0);
-      if (!idx_op->expression().empty())
-        bit_idx = static_cast<std::size_t>(
-            ExprNode::eval(buildExprTree(idx_op->expression(0)), {}));
+      auto* idxOp = indexed->indexOperator(0);
+      if (!idxOp->expression().empty()) {
+        bitIdx = static_cast<std::size_t>(
+            ExprNode::eval(buildExprTree(idxOp->expression(0)), {}));
+      }
     }
     return {static_cast<std::uint8_t>(it->second.index),
-            static_cast<std::uint8_t>(bit_idx)};
+            static_cast<std::uint8_t>(bitIdx)};
   }
 
   // ---- gate modifier helpers ----------------------------------------------
@@ -1476,21 +1603,27 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::vector<qasm3Parser::GateModifierContext*>& modifiers) {
     std::string name;
     for (auto* mod : modifiers) {
-      if (mod->INV()) {
+      if (mod->INV() != nullptr) {
         name += "inv@";
-      } else if (mod->POW()) {
+      } else if (mod->POW() != nullptr) {
         name += "pow(" + std::to_string(modifierCount(mod)) + ")@";
-      } else if (mod->CTRL()) {
-        for (int i = 0; i < modifierCount(mod); ++i) name += "ctrl@";
-      } else if (mod->NEGCTRL()) {
-        for (int i = 0; i < modifierCount(mod); ++i) name += "negctrl@";
+      } else if (mod->CTRL() != nullptr) {
+        for (int i = 0; i < modifierCount(mod); ++i) {
+          name += "ctrl@";
+        }
+      } else if (mod->NEGCTRL() != nullptr) {
+        for (int i = 0; i < modifierCount(mod); ++i) {
+          name += "negctrl@";
+        }
       }
     }
     name += base_name;
     if (!base_params.empty()) {
       name += "(";
       for (std::size_t i = 0; i < base_params.size(); ++i) {
-        if (i > 0) name += ",";
+        if (i > 0) {
+          name += ",";
+        }
         name += std::to_string(base_params[i]);
       }
       name += ")";
@@ -1503,31 +1636,33 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   // like "ctrl@h" are never visible as user-callable gate definitions.
   // Modifiers are applied in reverse list order per OpenQASM 3.0 §6.5.
   std::shared_ptr<const GateDefinition> deriveModifiedGate(
-      std::shared_ptr<const GateDefinition> base,
+      const std::shared_ptr<const GateDefinition>& base,
       const std::vector<double>& base_params,
       const std::vector<qasm3Parser::GateModifierContext*>& modifiers,
       antlr4::ParserRuleContext* error_ctx) {
     const std::string name =
         buildModifiedName(base->name(), base_params, modifiers);
     auto it = derived_gates_.find(name);
-    if (it != derived_gates_.end()) return it->second;
+    if (it != derived_gates_.end()) {
+      return it->second;
+    }
 
     Mat mat = base->matrix(base_params);
     std::uint8_t n = base->numQubits();
 
     for (int i = static_cast<int>(modifiers.size()) - 1; i >= 0; --i) {
       auto* mod = modifiers[i];
-      if (mod->INV()) {
+      if (mod->INV() != nullptr) {
         mat = conjugateTranspose(mat, n);
-      } else if (mod->POW()) {
+      } else if (mod->POW() != nullptr) {
         mat = matrixPow(mat, n, modifierCount(mod));
-      } else if (mod->CTRL()) {
+      } else if (mod->CTRL() != nullptr) {
         const int count = modifierCount(mod);
         for (int c = 0; c < count; ++c) {
           mat = addControl(mat, n);
           ++n;
         }
-      } else if (mod->NEGCTRL()) {
+      } else if (mod->NEGCTRL() != nullptr) {
         const int count = modifierCount(mod);
         for (int c = 0; c < count; ++c) {
           mat = addNegControl(mat, n);
@@ -1552,39 +1687,47 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       antlr4::ParserRuleContext* /*error_ctx*/) {
     std::string name;
     for (auto* mod : modifiers) {
-      if (mod->INV()) {
+      if (mod->INV() != nullptr) {
         name += "inv@";
-      } else if (mod->POW()) {
+      } else if (mod->POW() != nullptr) {
         name += "pow(" + std::to_string(modifierCount(mod)) + ")@";
-      } else if (mod->CTRL()) {
-        for (int i = 0; i < modifierCount(mod); ++i) name += "ctrl@";
-      } else if (mod->NEGCTRL()) {
-        for (int i = 0; i < modifierCount(mod); ++i) name += "negctrl@";
+      } else if (mod->CTRL() != nullptr) {
+        for (int i = 0; i < modifierCount(mod); ++i) {
+          name += "ctrl@";
+        }
+      } else if (mod->NEGCTRL() != nullptr) {
+        for (int i = 0; i < modifierCount(mod); ++i) {
+          name += "negctrl@";
+        }
       }
     }
     name += "gphase(" + std::to_string(theta) + ")";
 
     auto it = derived_gates_.find(name);
-    if (it != derived_gates_.end()) return it->second;
+    if (it != derived_gates_.end()) {
+      return it->second;
+    }
 
     Mat mat = {std::exp(C{0.0, theta})};
     std::uint8_t n = 0;
 
     for (int i = static_cast<int>(modifiers.size()) - 1; i >= 0; --i) {
       auto* mod = modifiers[i];
-      if (mod->INV()) {
+      if (mod->INV() != nullptr) {
         mat[0] = std::conj(mat[0]);
-      } else if (mod->POW()) {
+      } else if (mod->POW() != nullptr) {
         C result{1.0, 0.0};
-        for (int p = 0; p < modifierCount(mod); ++p) result *= mat[0];
+        for (int p = 0; p < modifierCount(mod); ++p) {
+          result *= mat[0];
+        }
         mat[0] = result;
-      } else if (mod->CTRL()) {
+      } else if (mod->CTRL() != nullptr) {
         const int count = modifierCount(mod);
         for (int c = 0; c < count; ++c) {
           mat = addControl(mat, n);
           ++n;
         }
-      } else if (mod->NEGCTRL()) {
+      } else if (mod->NEGCTRL() != nullptr) {
         const int count = modifierCount(mod);
         for (int c = 0; c < count; ++c) {
           mat = addNegControl(mat, n);
@@ -1593,7 +1736,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
     }
 
-    if (n == 0) return nullptr;  // no qubit modifiers — unobservable
+    if (n == 0) {
+      return nullptr;  // no qubit modifiers — unobservable
+    }
     auto gate = std::make_shared<GateDefinition>(name, n, std::move(mat));
     derived_gates_[name] = gate;
     return gate;
@@ -1627,8 +1772,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       return buildExprTreeImpl(e->expression(), param_idx, const_vals);
 
       // expression indexOperator
-    } else if (auto* e =
-                   dynamic_cast<qasm3Parser::IndexExpressionContext*>(expr)) {
+    }
+    if (auto* e = dynamic_cast<qasm3Parser::IndexExpressionContext*>(expr)) {
       std::vector<int> indices;
       std::string arr_name;
       auto* cur = e;
@@ -1942,55 +2087,90 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   // expression types without complex semantics delegate to buildExprTree.
   C evalC(qasm3Parser::ExpressionContext* expr) {
     if (auto* e = dynamic_cast<qasm3Parser::LiteralExpressionContext*>(expr)) {
-      if (e->ImaginaryLiteral()) {
+      if (e->ImaginaryLiteral() != nullptr) {
         const std::string t = e->ImaginaryLiteral()->getText();
         return {0.0, std::stod(t.substr(0, t.size() - 2))};
       }
-      if (e->Identifier()) {
+      if (e->Identifier() != nullptr) {
         const std::string id = e->Identifier()->getText();
-        if (const C* v = lookupScalar(id)) return *v;
-        if (id == "pi") return {kPi, 0.0};
-        if (id == "tau") return {kTau, 0.0};
-        if (id == "euler") return {kEuler, 0.0};
+        if (const C* v = lookupScalar(id)) {
+          return *v;
+        }
+        if (id == "pi") {
+          return {kPi, 0.0};
+        }
+        if (id == "tau") {
+          return {kTau, 0.0};
+        }
+        if (id == "euler") {
+          return {kEuler, 0.0};
+        }
         return {0.0, 0.0};
       }
       return {ExprNode::eval(buildExprTree(expr), {}), 0.0};
     }
     if (auto* e =
-            dynamic_cast<qasm3Parser::ParenthesisExpressionContext*>(expr))
+            dynamic_cast<qasm3Parser::ParenthesisExpressionContext*>(expr)) {
       return evalC(e->expression());
+    }
     if (auto* e = dynamic_cast<qasm3Parser::UnaryExpressionContext*>(expr)) {
-      if (e->MINUS()) return -evalC(e->expression());
+      if (e->MINUS() != nullptr) {
+        return -evalC(e->expression());
+      }
       return evalC(e->expression());
     }
     if (auto* e = dynamic_cast<qasm3Parser::AdditiveExpressionContext*>(expr)) {
       const C l = evalC(e->expression(0));
       const C r = evalC(e->expression(1));
-      return e->PLUS() ? l + r : l - r;
+      return (e->PLUS() != nullptr) ? l + r : l - r;
     }
     if (auto* e =
             dynamic_cast<qasm3Parser::MultiplicativeExpressionContext*>(expr)) {
       const C l = evalC(e->expression(0));
       const C r = evalC(e->expression(1));
-      if (e->ASTERISK()) return l * r;
-      if (e->SLASH()) return r != C{0.0, 0.0} ? l / r : C{0.0, 0.0};
+      if (e->ASTERISK() != nullptr) {
+        return l * r;
+      }
+      if (e->SLASH() != nullptr) {
+        return r != C{0.0, 0.0} ? l / r : C{0.0, 0.0};
+      }
       return {std::fmod(l.real(), r.real()), 0.0};
     }
-    if (auto* e = dynamic_cast<qasm3Parser::PowerExpressionContext*>(expr))
+    if (auto* e = dynamic_cast<qasm3Parser::PowerExpressionContext*>(expr)) {
       return std::pow(evalC(e->expression(0)), evalC(e->expression(1)));
+    }
     if (auto* e = dynamic_cast<qasm3Parser::CallExpressionContext*>(expr)) {
-      if (e->expressionList() && !e->expressionList()->expression().empty()) {
+      if ((e->expressionList() != nullptr) &&
+          !e->expressionList()->expression().empty()) {
         const C arg = evalC(e->expressionList()->expression(0));
         const std::string fn = e->Identifier()->getText();
-        if (fn == "sin") return std::sin(arg);
-        if (fn == "cos") return std::cos(arg);
-        if (fn == "tan") return std::tan(arg);
-        if (fn == "exp") return std::exp(arg);
-        if (fn == "sqrt") return std::sqrt(arg);
-        if (fn == "ln") return std::log(arg);
-        if (fn == "arcsin") return std::asin(arg);
-        if (fn == "arccos") return std::acos(arg);
-        if (fn == "arctan") return std::atan(arg);
+        if (fn == "sin") {
+          return std::sin(arg);
+        }
+        if (fn == "cos") {
+          return std::cos(arg);
+        }
+        if (fn == "tan") {
+          return std::tan(arg);
+        }
+        if (fn == "exp") {
+          return std::exp(arg);
+        }
+        if (fn == "sqrt") {
+          return std::sqrt(arg);
+        }
+        if (fn == "ln") {
+          return std::log(arg);
+        }
+        if (fn == "arcsin") {
+          return std::asin(arg);
+        }
+        if (fn == "arccos") {
+          return std::acos(arg);
+        }
+        if (fn == "arctan") {
+          return std::atan(arg);
+        }
       }
     }
     return {ExprNode::eval(buildExprTree(expr), {}), 0.0};
@@ -2007,7 +2187,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 // ---------------------------------------------------------------------------
 
 ParseResult Parser::parse(const std::string& source,
-                          const BackendConfig& config) const {
+                          const BackendConfig& config) {
   SyntaxErrorListener listener;
 
   antlr4::ANTLRInputStream input(source);
@@ -2023,7 +2203,7 @@ ParseResult Parser::parse(const std::string& source,
   auto* tree = parser.program();
 
   if (listener.hasErrors()) {
-    return ParseResult::fail(std::move(listener.errors()));
+    return ParseResult::fail(listener.errors());
   }
 
   CircuitBuilder builder(config);

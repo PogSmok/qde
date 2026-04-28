@@ -61,12 +61,12 @@ class GateDefinition {
     }
   }
 
-  const std::string& name() const noexcept { return name_; }
-  std::uint8_t numQubits() const noexcept { return num_qubits_; }
-  std::uint8_t numParams() const noexcept { return num_params_; }
+  [[nodiscard]] const std::string& name() const noexcept { return name_; }
+  [[nodiscard]] std::uint8_t numQubits() const noexcept { return num_qubits_; }
+  [[nodiscard]] std::uint8_t numParams() const noexcept { return num_params_; }
 
   // Evaluate the unitary for the given parameters.
-  std::vector<std::complex<double>> matrix(
+  [[nodiscard]] std::vector<std::complex<double>> matrix(
       const std::vector<double>& params = {}) const {
     if (params.size() != num_params_) {
       throw std::invalid_argument(

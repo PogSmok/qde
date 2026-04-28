@@ -7,7 +7,7 @@ namespace qde {
 
 void GateRegistry::add(GateDefinition gate) {
   std::string name = gate.name();  // non-const copy to allow std::move()
-  if (gates_.count(name)) {
+  if (gates_.count(name) != 0U) {
     throw std::invalid_argument(
         "GateRegistry: gate '" + name +
         "' is already defined (OpenQASM 3.0 does not allow redefinitions)");
@@ -23,7 +23,7 @@ std::shared_ptr<const GateDefinition> GateRegistry::find(
 }
 
 bool GateRegistry::contains(const std::string& name) const {
-  return gates_.count(name);
+  return gates_.count(name) != 0U;
 }
 
 // Row-major unitary matrices for built-in gates.
@@ -61,16 +61,20 @@ M makeMatrix(std::size_t n, std::initializer_list<Swap> swaps = {},
              std::initializer_list<DiagPatch> diag_patches = {}) {
   const std::size_t dim = std::size_t{1} << n;
   M m(dim * dim, C{0.0, 0.0});
-  for (std::size_t i = 0; i < dim; ++i) m[i * dim + i] = C{1.0, 0.0};
-
-  for (auto [a, b] : swaps) {
-    m[a * dim + a] = C{0.0, 0.0};
-    m[b * dim + b] = C{0.0, 0.0};
-    m[a * dim + b] = C{1.0, 0.0};
-    m[b * dim + a] = C{1.0, 0.0};
+  for (std::size_t i = 0; i < dim; ++i) {
+    m[(i * dim) + i] = C{1.0, 0.0};
   }
 
-  for (auto [i, v] : diag_patches) m[i * dim + i] = v;
+  for (auto [a, b] : swaps) {
+    m[(a * dim) + a] = C{0.0, 0.0};
+    m[(b * dim) + b] = C{0.0, 0.0};
+    m[(a * dim) + b] = C{1.0, 0.0};
+    m[(b * dim) + a] = C{1.0, 0.0};
+  }
+
+  for (auto [i, v] : diag_patches) {
+    m[(i * dim) + i] = v;
+  }
 
   return m;
 }
@@ -145,26 +149,32 @@ GateRegistry GateRegistry::withBuiltins() {
            [](const P& p) { return mat2(1, 0, 0, std::exp(kI * p[0])); }});
 
   reg.add({"u2", 1, 2, [](const P& p) {
-             const double phi = p[0], lam = p[1];
+             const double phi = p[0];
+             const double lam = p[1];
              return mat2(kIS2, -std::exp(kI * lam) * kIS2,
                          std::exp(kI * phi) * kIS2,
                          std::exp(kI * (phi + lam)) * kIS2);
            }});
 
   reg.add({"u3", 1, 3, [](const P& p) {
-             const double theta = p[0], phi = p[1], lam = p[2];
-             const double c = std::cos(theta / 2.0), s = std::sin(theta / 2.0);
+             const double theta = p[0];
+             const double phi = p[1];
+             const double lam = p[2];
+             const double c = std::cos(theta / 2.0);
+             const double s = std::sin(theta / 2.0);
              return mat2(c, -std::exp(kI * lam) * s, std::exp(kI * phi) * s,
                          std::exp(kI * (phi + lam)) * c);
            }});
 
   reg.add({"rx", 1, 1, [](const P& p) {
-             const double c = std::cos(p[0] / 2.0), s = std::sin(p[0] / 2.0);
+             const double c = std::cos(p[0] / 2.0);
+             const double s = std::sin(p[0] / 2.0);
              return mat2(c, kMI * s, kMI * s, c);
            }});
 
   reg.add({"ry", 1, 1, [](const P& p) {
-             const double c = std::cos(p[0] / 2.0), s = std::sin(p[0] / 2.0);
+             const double c = std::cos(p[0] / 2.0);
+             const double s = std::sin(p[0] / 2.0);
              return mat2(c, -s, s, c);
            }});
 
@@ -188,13 +198,15 @@ GateRegistry GateRegistry::withBuiltins() {
            }});
 
   reg.add({"crx", 2, 1, [](const P& p) {
-             const double c = std::cos(p[0] / 2.0), s = std::sin(p[0] / 2.0);
+             const double c = std::cos(p[0] / 2.0);
+             const double s = std::sin(p[0] / 2.0);
              return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, kMI * s, 0, 0,
                          kMI * s, c);
            }});
 
   reg.add({"cry", 2, 1, [](const P& p) {
-             const double c = std::cos(p[0] / 2.0), s = std::sin(p[0] / 2.0);
+             const double c = std::cos(p[0] / 2.0);
+             const double s = std::sin(p[0] / 2.0);
              return mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
            }});
 

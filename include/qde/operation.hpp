@@ -20,14 +20,14 @@ struct BitReference {
 };
 
 enum class OperationType : std::uint8_t {
-  Gate,     // unitary gate application
-  Measure,  // measurement, writes result to measure_target
-  Reset,    // reset qubit to |0>
-  Barrier,  // prevents gate reordering across this point
+  kGate,     // unitary gate application
+  kMeasure,  // measurement, writes result to measure_target
+  kReset,    // reset qubit to |0>
+  kBarrier,  // prevents gate reordering across this point
 };
 
 struct Operation {
-  OperationType type = OperationType::Gate;
+  OperationType type = OperationType::kGate;
   std::shared_ptr<const GateDefinition> gate;  // non-null if type == Gate
   std::vector<double> gate_params;
   std::vector<QubitReference> qubits;

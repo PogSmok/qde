@@ -27,9 +27,10 @@ class GateRegistry {
   void add(GateDefinition gate);
 
   // Returns the definition, or nullptr if not found.
-  std::shared_ptr<const GateDefinition> find(const std::string& name) const;
+  [[nodiscard]] std::shared_ptr<const GateDefinition> find(
+      const std::string& name) const;
 
-  bool contains(const std::string& name) const;
+  [[nodiscard]] bool contains(const std::string& name) const;
 
  private:
   std::unordered_map<std::string, std::shared_ptr<GateDefinition>> gates_;

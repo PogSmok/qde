@@ -6,7 +6,7 @@
 #include "qde/syntax_error.hpp"
 
 static qde::Circuit makeEmptyCircuit() {
-  return qde::Circuit(qde::GateRegistry{}, {}, {}, {});
+  return {qde::GateRegistry{}, {}, {}, {}};
 }
 
 TEST(ParseResult, OkIsOk) {
@@ -27,10 +27,10 @@ TEST(ParseResult, OkHasNoErrors) {
 TEST(ParseResult, FailStoresErrors) {
   std::vector<qde::SyntaxError> errors = {{1, 0, "unexpected token"}};
   auto result = qde::ParseResult::fail(errors);
-  ASSERT_EQ(result.errors().size(), 1u);
+  ASSERT_EQ(result.errors().size(), 1U);
   EXPECT_EQ(result.errors().front().message, "unexpected token");
-  EXPECT_EQ(result.errors().front().line, 1u);
-  EXPECT_EQ(result.errors().front().column, 0u);
+  EXPECT_EQ(result.errors().front().line, 1U);
+  EXPECT_EQ(result.errors().front().column, 0U);
 }
 
 TEST(ParseResult, OkCircuitIsAccessible) {
