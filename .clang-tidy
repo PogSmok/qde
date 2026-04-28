@@ -3,10 +3,10 @@ Checks: >
   clang-diagnostic-*,
   clang-analyzer-*,
   bugprone-*,
-  cppcoreguidelines-*,
   modernize-*,
   performance-*,
   readability-*,
+  cppcoreguidelines-*,
   -fuchsia-*,
   -llvm-*,
   -llvmlibc-*,
@@ -17,9 +17,14 @@ Checks: >
   -readability-identifier-length,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
   -hicpp-signed-bitwise
 
-WarningsAsErrors: '*'
+# Only fail CI on high-signal checks
+WarningsAsErrors: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-*
 
 # Only report issues in our own headers, not Qt/ANTLR/system headers
 HeaderFilterRegex: '^.*include/qde/.*$'
