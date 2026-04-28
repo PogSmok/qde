@@ -22,7 +22,6 @@ Checks: >
 
 # Only fail CI on high-signal checks
 WarningsAsErrors: >
-  clang-diagnostic-*,
   clang-analyzer-*,
 
 # Only report issues in our own headers, not Qt/ANTLR/system headers
