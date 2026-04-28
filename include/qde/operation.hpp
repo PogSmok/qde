@@ -10,13 +10,13 @@
 namespace qde {
 
 struct QubitReference {
-  std::uint8_t reg;   // index into Circuit::qubitRegisters()
-  std::uint8_t qubit; // index within that register
+  std::uint8_t reg;    // index into Circuit::qubitRegisters()
+  std::uint8_t qubit;  // index within that register
 };
 
 struct BitReference {
-  std::uint8_t reg;   // index into Circuit::bitRegisters()
-  std::uint8_t bit;   // index within that register
+  std::uint8_t reg;  // index into Circuit::bitRegisters()
+  std::uint8_t bit;  // index within that register
 };
 
 enum class OperationType : std::uint8_t {

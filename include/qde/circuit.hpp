@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "qde/operation.hpp"
 #include "qde/gate_registry.hpp"
+#include "qde/operation.hpp"
 
 namespace qde {
 
@@ -25,17 +25,13 @@ class Circuit {
   Circuit(GateRegistry gate_registry,
           std::vector<QubitRegister> qubit_registers,
           std::vector<BitRegister> bit_registers,
-          std::vector<Operation> operations
-         )
+          std::vector<Operation> operations)
       : gate_registry_(std::move(gate_registry)),
         qubit_registers_(std::move(qubit_registers)),
         bit_registers_(std::move(bit_registers)),
-        operations_(std::move(operations))
-  {}
+        operations_(std::move(operations)) {}
 
-  const GateRegistry& gateRegistry() const noexcept {
-    return gate_registry_;
-  }
+  const GateRegistry& gateRegistry() const noexcept { return gate_registry_; }
   const std::vector<QubitRegister>& qubitRegisters() const noexcept {
     return qubit_registers_;
   }
@@ -49,8 +45,8 @@ class Circuit {
  private:
   GateRegistry gate_registry_;
   std::vector<QubitRegister> qubit_registers_;
-  std::vector<BitRegister>   bit_registers_;
-  std::vector<Operation>     operations_;
+  std::vector<BitRegister> bit_registers_;
+  std::vector<Operation> operations_;
 };
 
 }  // namespace qde
