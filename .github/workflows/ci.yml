@@ -217,12 +217,16 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install clang-format
-        run: sudo apt-get install -y clang-format
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22
+          sudo apt-get install -y clang-format-22
 
       - name: Check formatting
         run: |
           find src tests include -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \) | \
-            xargs -r clang-format --dry-run --Werror
+            xargs -r clang-format-22 --dry-run --Werror
 
   coverage:
     name: Coverage
