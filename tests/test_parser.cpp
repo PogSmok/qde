@@ -174,7 +174,7 @@ TEST(Parser, GateCallProducesGateOperation) {
   auto result = parse("qubit q;\nh q;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Gate);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
 }
 
 TEST(Parser, MultipleGateCalls) {
@@ -275,7 +275,7 @@ TEST(Parser, InvModifierProducesOperation) {
   auto result = parse("qubit q;\ninv @ h q;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Gate);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
 }
 
 TEST(Parser, PowModifier) {
@@ -332,7 +332,7 @@ TEST(Parser, CtrlGphaseAddsOperation) {
   auto result = parse("qubit q;\nctrl @ gphase(pi) q;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Gate);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
 }
 
 // ---- gate definitions -------------------------------------------------------
@@ -412,7 +412,8 @@ TEST(Parser, MeasureArrowProducesMeasureOperation) {
   auto result = parse("qubit q;\nbit c;\nmeasure q -> c;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Measure);
+  EXPECT_EQ(result.circuit().operations()[0].type,
+            qde::OperationType::kMeasure);
 }
 
 TEST(Parser, MeasureArrowRegisterSizeMismatchIsError) {
@@ -470,7 +471,7 @@ TEST(Parser, ResetProducesResetOperation) {
   auto result = parse("qubit q;\nreset q;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Reset);
+  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kReset);
 }
 
 TEST(Parser, ResetUndefinedQubitIsError) {
@@ -484,7 +485,8 @@ TEST(Parser, BarrierGlobalExpandsOverAllQubits) {
   auto result = parse("qubit[2] q;\nbarrier;");
   ASSERT_TRUE(result.isOk());
   ASSERT_EQ(result.circuit().operations().size(), 1u);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::Barrier);
+  EXPECT_EQ(result.circuit().operations()[0].type,
+            qde::OperationType::kBarrier);
   EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2u);
 }
 

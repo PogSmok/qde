@@ -452,7 +452,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const QubitReference qubit = resolveQubit(meas->gateOperand(), ctx);
       const BitReference target = resolveBit(ctx->indexedIdentifier(), ctx);
       operations_.push_back(
-          {OperationType::Measure, nullptr, {}, {qubit}, {target}});
+          {OperationType::kMeasure, nullptr, {}, {qubit}, {target}});
       return visitChildren(ctx);
     }
 
@@ -592,7 +592,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
     }
     operations_.push_back(
-        {OperationType::Barrier, nullptr, {}, std::move(qubits), {}});
+        {OperationType::kBarrier, nullptr, {}, std::move(qubits), {}});
     return visitChildren(ctx);
   }
 
@@ -826,7 +826,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         return visitChildren(ctx);
       }
       operations_.push_back(
-          {OperationType::Gate, gate, {}, std::move(qubits), {}});
+          {OperationType::kGate, gate, {}, std::move(qubits), {}});
       return visitChildren(ctx);
     }
 
@@ -878,7 +878,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         if (it != qubit_map_.end()) {
           for (std::size_t q = 0; q < it->second.size; ++q) {
             operations_.push_back(
-                {OperationType::Gate,
+                {OperationType::kGate,
                  gate,
                  params,
                  {{static_cast<std::uint8_t>(it->second.index),
@@ -926,7 +926,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                                 static_cast<std::uint8_t>(q)});
             }
             operations_.push_back(
-                {OperationType::Gate, gate, params, std::move(qubits), {}});
+                {OperationType::kGate, gate, params, std::move(qubits), {}});
           }
           return visitChildren(ctx);
         }
@@ -948,7 +948,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       return visitChildren(ctx);
     }
     operations_.push_back(
-        {OperationType::Gate, gate, std::move(params), std::move(qubits), {}});
+        {OperationType::kGate, gate, std::move(params), std::move(qubits), {}});
     return visitChildren(ctx);
   }
 
@@ -1209,7 +1209,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
           return visitChildren(ctx);
         }
         for (std::size_t i = 0; i < qIt->second.size; ++i) {
-          operations_.push_back({OperationType::Measure,
+          operations_.push_back({OperationType::kMeasure,
                                  nullptr,
                                  {},
                                  {{static_cast<std::uint8_t>(qIt->second.index),
@@ -1227,7 +1227,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       targets.push_back(resolveBit(bitTarget, ctx));
     }
     operations_.push_back(
-        {OperationType::Measure, nullptr, {}, {qubit}, std::move(targets)});
+        {OperationType::kMeasure, nullptr, {}, {qubit}, std::move(targets)});
     return visitChildren(ctx);
   }
 
@@ -1286,7 +1286,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       auto it = qubit_map_.find(name);
       if (it != qubit_map_.end()) {
         for (std::size_t q = 0; q < it->second.size; ++q) {
-          operations_.push_back({OperationType::Reset,
+          operations_.push_back({OperationType::kReset,
                                  nullptr,
                                  {},
                                  {{static_cast<std::uint8_t>(it->second.index),
@@ -1299,7 +1299,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       return visitChildren(ctx);
     }
     const QubitReference qubit = resolveQubit(ctx->gateOperand(), ctx);
-    operations_.push_back({OperationType::Reset, nullptr, {}, {qubit}, {}});
+    operations_.push_back({OperationType::kReset, nullptr, {}, {qubit}, {}});
     return visitChildren(ctx);
   }
 
