@@ -87,7 +87,7 @@ constexpr double kEuler = 2.718281828459045235360287471;
 
 class ExprNode {
  public:
-  enum class ExprKind {
+  enum class ExprKind : std::uint8_t {
     kLiteral,
     kParamRef,
     // Arithmetic
@@ -327,8 +327,10 @@ Mat matMul(const Mat& a, const Mat& b, std::size_t dim) {
   return result;
 }
 
-Mat matrixPow(const Mat& m, int power) {
-  size_t n = m.size();
+Mat matrixPow(const Mat& m,
+              std::uint8_t n,  // NOLINT(bugprone-easily-swappable-parameters)
+              int power        // NOLINT(bugprone-easily-swappable-parameters)
+) {
   const std::size_t dim = std::size_t{1} << n;
   Mat result = identityMatrix(n);
   for (int p = 0; p < power; ++p) {
@@ -1116,7 +1118,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                     gateMat = conjugateTranspose(gateMat, gateN);
                     break;
                   case BodyMod::Kind::kPow:
-                    gateMat = matrixPow(gateMat, mod.count);
+                    gateMat = matrixPow(gateMat, gateN, mod.count);
                     break;
                   case BodyMod::Kind::kCtrl:
                     for (int c = 0; c < mod.count; ++c) {
@@ -1656,7 +1658,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       if (mod->INV() != nullptr) {
         mat = conjugateTranspose(mat, n);
       } else if (mod->POW() != nullptr) {
-        mat = matrixPow(mat, modifierCount(mod));
+        mat = matrixPow(mat, n, modifierCount(mod));
       } else if (mod->CTRL() != nullptr) {
         const int count = modifierCount(mod);
         for (int c = 0; c < count; ++c) {

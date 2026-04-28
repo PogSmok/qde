@@ -42,11 +42,11 @@ TEST(SyntaxErrorListener, ErrorContainsLineNumber) {
   qde::SyntaxErrorListener listener;
   parse("OPENQASM 3.0;\nqubit q;\n???\n", listener);
   ASSERT_FALSE(listener.errors().empty());
-  EXPECT_EQ(listener.errors().front().line, 3u);
+  EXPECT_EQ(listener.errors().front().line, 3U);
 }
 
 TEST(SyntaxErrorListener, AccumulatesMultipleErrors) {
   qde::SyntaxErrorListener listener;
   parse("OPENQASM 3.0;\n???\n!!!\n", listener);
-  EXPECT_GT(listener.errors().size(), 1u);
+  EXPECT_GT(listener.errors().size(), 1U);
 }

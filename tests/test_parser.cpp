@@ -42,7 +42,7 @@
 // ---- helpers ----------------------------------------------------------------
 
 static qde::ParseResult parse(const std::string& source) {
-  return qde::Parser{}.parse("OPENQASM 3.0;\n" + source, qde::BackendConfig{});
+  return qde::Parser::parse("OPENQASM 3.0;\n" + source, qde::BackendConfig{});
 }
 
 // ---- syntax -----------------------------------------------------------------
@@ -61,11 +61,11 @@ TEST(Parser, InvalidTokenFails) {
 
 TEST(Parser, ErrorReportsCorrectLocation) {
   qde::Parser parser;
-  auto result =
-      parser.parse("OPENQASM 3.0;\nqubit q;\n???\n", qde::BackendConfig{});
+  auto result = qde::Parser::parse("OPENQASM 3.0;\nqubit q;\n???\n",
+                                   qde::BackendConfig{});
   ASSERT_FALSE(result.errors().empty());
-  EXPECT_EQ(result.errors().front().line, 3u);
-  EXPECT_EQ(result.errors().front().column, 0u);
+  EXPECT_EQ(result.errors().front().line, 3U);
+  EXPECT_EQ(result.errors().front().column, 0U);
 }
 
 TEST(Parser, EmptyInputIsOk) {
@@ -75,7 +75,7 @@ TEST(Parser, EmptyInputIsOk) {
 
 TEST(Parser, MultipleErrorsAreDetected) {
   auto result = parse("???\n!!!\n");
-  EXPECT_GT(result.errors().size(), 1u);
+  EXPECT_GT(result.errors().size(), 1U);
 }
 
 // ---- qubit / bit register declarations --------------------------------------
@@ -83,36 +83,36 @@ TEST(Parser, MultipleErrorsAreDetected) {
 TEST(Parser, QubitRegisterDeclared) {
   auto result = parse("qubit[3] q;");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().qubitRegisters().size(), 1u);
+  ASSERT_EQ(result.circuit().qubitRegisters().size(), 1U);
   EXPECT_EQ(result.circuit().qubitRegisters()[0].name, "q");
-  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 3u);
+  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 3U);
 }
 
 TEST(Parser, QubitNoDesignatorIsSize1) {
   auto result = parse("qubit q;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 1u);
+  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 1U);
 }
 
 TEST(Parser, BitRegisterDeclared) {
   auto result = parse("bit[2] c;");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().bitRegisters().size(), 1u);
+  ASSERT_EQ(result.circuit().bitRegisters().size(), 1U);
   EXPECT_EQ(result.circuit().bitRegisters()[0].name, "c");
-  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 2u);
+  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 2U);
 }
 
 TEST(Parser, BitNoDesignatorIsSize1) {
   auto result = parse("bit c;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 1u);
+  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 1U);
 }
 
 TEST(Parser, MultipleRegisters) {
   auto result = parse("qubit[2] a;\nqubit[3] b;\nbit[2] c;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().qubitRegisters().size(), 2u);
-  EXPECT_EQ(result.circuit().bitRegisters().size(), 1u);
+  EXPECT_EQ(result.circuit().qubitRegisters().size(), 2U);
+  EXPECT_EQ(result.circuit().bitRegisters().size(), 1U);
 }
 
 TEST(Parser, DuplicateQubitRegisterIsError) {
@@ -135,17 +135,17 @@ TEST(Parser, QubitAndBitSameNameIsError) {
 TEST(Parser, QregDeclared) {
   auto result = parse("qreg q[3];");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().qubitRegisters().size(), 1u);
+  ASSERT_EQ(result.circuit().qubitRegisters().size(), 1U);
   EXPECT_EQ(result.circuit().qubitRegisters()[0].name, "q");
-  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 3u);
+  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 3U);
 }
 
 TEST(Parser, CregDeclared) {
   auto result = parse("creg c[2];");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().bitRegisters().size(), 1u);
+  ASSERT_EQ(result.circuit().bitRegisters().size(), 1U);
   EXPECT_EQ(result.circuit().bitRegisters()[0].name, "c");
-  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 2u);
+  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 2U);
 }
 
 TEST(Parser, DuplicateQregIsError) {
@@ -173,14 +173,14 @@ TEST(Parser, XGate) {
 TEST(Parser, GateCallProducesGateOperation) {
   auto result = parse("qubit q;\nh q;");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1u);
+  ASSERT_EQ(result.circuit().operations().size(), 1U);
   EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
 }
 
 TEST(Parser, MultipleGateCalls) {
   auto result = parse("qubit q;\nh q;\nx q;\nh q;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 3u);
+  EXPECT_EQ(result.circuit().operations().size(), 3U);
 }
 
 // ---- gate calls: parameterized single-qubit ---------------------------------
@@ -247,13 +247,13 @@ TEST(Parser, CcxThreeQubits) {
 TEST(Parser, SingleQubitBroadcastExpandsToN) {
   auto result = parse("qubit[3] q;\nh q;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 3u);
+  EXPECT_EQ(result.circuit().operations().size(), 3U);
 }
 
 TEST(Parser, PairwiseBroadcastEqualRegisters) {
   auto result = parse("qubit[2] a;\nqubit[2] b;\ncx a, b;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 2u);
+  EXPECT_EQ(result.circuit().operations().size(), 2U);
 }
 
 TEST(Parser, PairwiseBroadcastMismatchedSizesFallsThrough) {
@@ -261,7 +261,7 @@ TEST(Parser, PairwiseBroadcastMismatchedSizesFallsThrough) {
   // resolves to qubit 0 of its register, giving one cx operation.
   auto result = parse("qubit[2] a;\nqubit[3] b;\ncx a, b;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 1u);
+  EXPECT_EQ(result.circuit().operations().size(), 1U);
 }
 
 // ---- gate call modifiers ----------------------------------------------------
@@ -274,7 +274,7 @@ TEST(Parser, InvModifier) {
 TEST(Parser, InvModifierProducesOperation) {
   auto result = parse("qubit q;\ninv @ h q;");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1u);
+  ASSERT_EQ(result.circuit().operations().size(), 1U);
   EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
 }
 
@@ -306,7 +306,7 @@ TEST(Parser, ModifierChain) {
 TEST(Parser, ModifierProducesOneOperation) {
   auto result = parse("qubit[2] q;\nctrl @ x q[0], q[1];");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 1u);
+  EXPECT_EQ(result.circuit().operations().size(), 1U);
 }
 
 TEST(Parser, ParametricBodyGateWithDeferredModifier) {
@@ -317,7 +317,7 @@ TEST(Parser, ParametricBodyGateWithDeferredModifier) {
       "qubit[2] q;\n"
       "my_crx(pi / 2) q[0], q[1];\n");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 1u);
+  EXPECT_EQ(result.circuit().operations().size(), 1U);
 }
 
 // ---- gphase -----------------------------------------------------------------
@@ -325,13 +325,13 @@ TEST(Parser, ParametricBodyGateWithDeferredModifier) {
 TEST(Parser, BareGphaseAddsNoOperation) {
   auto result = parse("qubit q;\ngphase(pi);");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 0u);
+  EXPECT_EQ(result.circuit().operations().size(), 0U);
 }
 
 TEST(Parser, CtrlGphaseAddsOperation) {
   auto result = parse("qubit q;\nctrl @ gphase(pi) q;");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1u);
+  ASSERT_EQ(result.circuit().operations().size(), 1U);
   EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
 }
 
@@ -351,7 +351,7 @@ TEST(Parser, UserGateProducesOneOperation) {
       "qubit q;\n"
       "my_h q;\n");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 1u);
+  EXPECT_EQ(result.circuit().operations().size(), 1U);
 }
 
 TEST(Parser, ParametricUserGate) {
@@ -400,7 +400,7 @@ TEST(Parser, MeasureArrowIndexed) {
 TEST(Parser, MeasureArrowWholeRegister) {
   auto result = parse("qubit[2] q;\nbit[2] c;\nmeasure q -> c;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 2u);
+  EXPECT_EQ(result.circuit().operations().size(), 2U);
 }
 
 TEST(Parser, MeasureArrowNoTarget) {
@@ -411,7 +411,7 @@ TEST(Parser, MeasureArrowNoTarget) {
 TEST(Parser, MeasureArrowProducesMeasureOperation) {
   auto result = parse("qubit q;\nbit c;\nmeasure q -> c;");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1u);
+  ASSERT_EQ(result.circuit().operations().size(), 1U);
   EXPECT_EQ(result.circuit().operations()[0].type,
             qde::OperationType::kMeasure);
 }
@@ -436,7 +436,7 @@ TEST(Parser, QuantumCallExpressionInMeasureArrowIsOk) {
   // measureArrowAssignment. Currently not handled; no operation added.
   auto result = parse("qubit q;\nbit c;\nh q -> c;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 0u);
+  EXPECT_EQ(result.circuit().operations().size(), 0U);
 }
 
 TEST(Parser, MeasureAssignmentForm) {
@@ -464,13 +464,13 @@ TEST(Parser, ResetIndexedQubit) {
 TEST(Parser, ResetWholeRegisterExpandsToN) {
   auto result = parse("qubit[3] q;\nreset q;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 3u);
+  EXPECT_EQ(result.circuit().operations().size(), 3U);
 }
 
 TEST(Parser, ResetProducesResetOperation) {
   auto result = parse("qubit q;\nreset q;");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1u);
+  ASSERT_EQ(result.circuit().operations().size(), 1U);
   EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kReset);
 }
 
@@ -484,10 +484,10 @@ TEST(Parser, ResetUndefinedQubitIsError) {
 TEST(Parser, BarrierGlobalExpandsOverAllQubits) {
   auto result = parse("qubit[2] q;\nbarrier;");
   ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1u);
+  ASSERT_EQ(result.circuit().operations().size(), 1U);
   EXPECT_EQ(result.circuit().operations()[0].type,
             qde::OperationType::kBarrier);
-  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2u);
+  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2U);
 }
 
 TEST(Parser, BarrierNoRegistersHasNoQubits) {
@@ -499,13 +499,13 @@ TEST(Parser, BarrierNoRegistersHasNoQubits) {
 TEST(Parser, BarrierWholeRegister) {
   auto result = parse("qubit[2] q;\nbarrier q;");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2u);
+  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2U);
 }
 
 TEST(Parser, BarrierIndexedQubits) {
   auto result = parse("qubit[3] q;\nbarrier q[0], q[2];");
   ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2u);
+  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2U);
 }
 
 TEST(Parser, BarrierUndefinedQubitIsError) {
