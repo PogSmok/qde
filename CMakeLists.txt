@@ -19,8 +19,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Ensure exceptions are enabled (required by ANTLR runtime)
 # -------------------------
 add_compile_options(
+    # MSVC and clang-cl (MSVC-compatible frontend)
     $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
-    $<$<CXX_COMPILER_ID:Clang>:-fexceptions>
+
+    # Clang in GNU mode (Linux/macOS)
+    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<NOT:$<BOOL:${MSVC}>>>:-fexceptions>
+
+    # GCC
     $<$<CXX_COMPILER_ID:GNU>:-fexceptions>
 )
 

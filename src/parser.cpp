@@ -88,49 +88,49 @@ constexpr double kEuler = 2.718281828459045235360287471;
 class ExprNode {
  public:
   enum class ExprKind {
-    Literal,
-    ParamRef,
+    kLiteral,
+    kParamRef,
     // Arithmetic
-    Neg,
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Mod,
-    Pow,
+    kNeg,
+    kAdd,
+    kSub,
+    kMul,
+    kDiv,
+    kMod,
+    kPow,
     // Unary
-    BitNot,
-    LogNot,
+    kBitNot,
+    kLogNot,
     // Bitwise
-    BitAnd,
-    BitOr,
-    BitXor,
-    LShift,
-    RShift,
+    kBitAnd,
+    kBitOr,
+    kBitXor,
+    kLShift,
+    kRShift,
     // Comparison (return 1.0 or 0.0)
-    Lt,
-    Gt,
-    Le,
-    Ge,
-    Eq,
-    Ne,
+    kLt,
+    kGt,
+    kLe,
+    kGe,
+    kEq,
+    kNe,
     // Logical (return 1.0 or 0.0)
-    LogAnd,
-    LogOr,
+    kLogAnd,
+    kLogOr,
     // Math functions
-    Sin,
-    Cos,
-    Tan,
-    Exp,
-    Sqrt,
-    Ln,
-    Arcsin,
-    Arccos,
-    Arctan,
-    Floor,
+    kSin,
+    kCos,
+    kTan,
+    kExp,
+    kSqrt,
+    kLn,
+    kArcsin,
+    kArccos,
+    kArctan,
+    kFloor,
   };
 
-  ExprKind kind = ExprKind::Literal;
+  ExprKind kind = ExprKind::kLiteral;
   double value = 0.0;  // Literal
   int param_idx = 0;   // ParamRef
   std::shared_ptr<ExprNode> lhs, rhs;
@@ -138,95 +138,95 @@ class ExprNode {
   static double eval(const std::shared_ptr<ExprNode>& n,
                      const std::vector<double>& params) {
     switch (n->kind) {
-      case ExprKind::Literal:
+      case ExprKind::kLiteral:
         return n->value;
-      case ExprKind::ParamRef:
+      case ExprKind::kParamRef:
         return params[n->param_idx];
-      case ExprKind::Neg:
+      case ExprKind::kNeg:
         return -eval(n->lhs, params);
-      case ExprKind::Add:
+      case ExprKind::kAdd:
         return eval(n->lhs, params) + eval(n->rhs, params);
-      case ExprKind::Sub:
+      case ExprKind::kSub:
         return eval(n->lhs, params) - eval(n->rhs, params);
-      case ExprKind::Mul:
+      case ExprKind::kMul:
         return eval(n->lhs, params) * eval(n->rhs, params);
-      case ExprKind::Div: {
+      case ExprKind::kDiv: {
         double r = eval(n->rhs, params);
         return r != 0.0 ? eval(n->lhs, params) / r : 0.0;
       }
-      case ExprKind::Mod:
+      case ExprKind::kMod:
         return std::fmod(eval(n->lhs, params), eval(n->rhs, params));
-      case ExprKind::Pow:
+      case ExprKind::kPow:
         return std::pow(eval(n->lhs, params), eval(n->rhs, params));
-      case ExprKind::BitNot:
+      case ExprKind::kBitNot:
         return static_cast<double>(
             ~static_cast<long long>(eval(n->lhs, params)));
-      case ExprKind::LogNot:
+      case ExprKind::kLogNot:
         return eval(n->lhs, params) != 0.0 ? 0.0 : 1.0;
-      case ExprKind::BitAnd: {
+      case ExprKind::kBitAnd: {
         auto l = static_cast<long long>(eval(n->lhs, params));
         auto r = static_cast<long long>(eval(n->rhs, params));
         return static_cast<double>(l & r);
       }
-      case ExprKind::BitOr: {
+      case ExprKind::kBitOr: {
         auto l = static_cast<long long>(eval(n->lhs, params));
         auto r = static_cast<long long>(eval(n->rhs, params));
         return static_cast<double>(l | r);
       }
-      case ExprKind::BitXor: {
+      case ExprKind::kBitXor: {
         auto l = static_cast<long long>(eval(n->lhs, params));
         auto r = static_cast<long long>(eval(n->rhs, params));
         return static_cast<double>(l ^ r);
       }
-      case ExprKind::LShift: {
+      case ExprKind::kLShift: {
         auto l = static_cast<long long>(eval(n->lhs, params));
         auto r = static_cast<long long>(eval(n->rhs, params));
         return static_cast<double>(l << r);
       }
-      case ExprKind::RShift: {
+      case ExprKind::kRShift: {
         auto l = static_cast<long long>(eval(n->lhs, params));
         auto r = static_cast<long long>(eval(n->rhs, params));
         return static_cast<double>(l >> r);
       }
-      case ExprKind::Lt:
+      case ExprKind::kLt:
         return eval(n->lhs, params) < eval(n->rhs, params) ? 1.0 : 0.0;
-      case ExprKind::Gt:
+      case ExprKind::kGt:
         return eval(n->lhs, params) > eval(n->rhs, params) ? 1.0 : 0.0;
-      case ExprKind::Le:
+      case ExprKind::kLe:
         return eval(n->lhs, params) <= eval(n->rhs, params) ? 1.0 : 0.0;
-      case ExprKind::Ge:
+      case ExprKind::kGe:
         return eval(n->lhs, params) >= eval(n->rhs, params) ? 1.0 : 0.0;
-      case ExprKind::Eq:
+      case ExprKind::kEq:
         return eval(n->lhs, params) == eval(n->rhs, params) ? 1.0 : 0.0;
-      case ExprKind::Ne:
+      case ExprKind::kNe:
         return eval(n->lhs, params) != eval(n->rhs, params) ? 1.0 : 0.0;
-      case ExprKind::LogAnd:
+      case ExprKind::kLogAnd:
         return (eval(n->lhs, params) != 0.0 && eval(n->rhs, params) != 0.0)
                    ? 1.0
                    : 0.0;
-      case ExprKind::LogOr:
+      case ExprKind::kLogOr:
         return (eval(n->lhs, params) != 0.0 || eval(n->rhs, params) != 0.0)
                    ? 1.0
                    : 0.0;
-      case ExprKind::Sin:
+      case ExprKind::kSin:
         return std::sin(eval(n->lhs, params));
-      case ExprKind::Cos:
+      case ExprKind::kCos:
         return std::cos(eval(n->lhs, params));
-      case ExprKind::Tan:
+      case ExprKind::kTan:
         return std::tan(eval(n->lhs, params));
-      case ExprKind::Exp:
+      case ExprKind::kExp:
         return std::exp(eval(n->lhs, params));
-      case ExprKind::Sqrt:
+      case ExprKind::kSqrt:
         return std::sqrt(eval(n->lhs, params));
-      case ExprKind::Ln:
+      case ExprKind::kLn:
         return std::log(eval(n->lhs, params));
-      case ExprKind::Arcsin:
+      case ExprKind::kArcsin:
         return std::asin(eval(n->lhs, params));
-      case ExprKind::Arccos:
+      case ExprKind::kArccos:
         return std::acos(eval(n->lhs, params));
-      case ExprKind::Arctan:
+      case ExprKind::kArctan:
         return std::atan(eval(n->lhs, params));
-      case ExprKind::Floor:
+      case ExprKind::kFloor:
         return std::floor(eval(n->lhs, params));
     }
     return 0.0;  // unreachable
@@ -327,7 +327,8 @@ Mat matMul(const Mat& a, const Mat& b, std::size_t dim) {
   return result;
 }
 
-Mat matrixPow(const Mat& m, std::uint8_t n, int power) {
+Mat matrixPow(const Mat& m, int power) {
+  size_t n = m.size();
   const std::size_t dim = std::size_t{1} << n;
   Mat result = identityMatrix(n);
   for (int p = 0; p < power; ++p) {
@@ -382,7 +383,7 @@ Mat embedGate(const Mat& gate_mat, std::uint8_t gate_n,
     std::size_t gateIn = 0;
     for (std::uint8_t k = 0; k < gate_n; ++k) {
       std::uint8_t bit = total_n - 1 - qubit_indices[k];
-      if ((inState & (std::size_t{1} << bit)) != 0u) {
+      if ((inState & (std::size_t{1} << bit)) != 0U) {
         gateIn |= std::size_t{1} << (gate_n - 1 - k);
       }
     }
@@ -391,7 +392,7 @@ Mat embedGate(const Mat& gate_mat, std::uint8_t gate_n,
       std::size_t outState = inState;
       for (std::uint8_t k = 0; k < gate_n; ++k) {
         std::uint8_t bit = total_n - 1 - qubit_indices[k];
-        if ((gateOut & (std::size_t{1} << (gate_n - 1 - k))) != 0u) {
+        if ((gateOut & (std::size_t{1} << (gate_n - 1 - k))) != 0U) {
           outState |= std::size_t{1} << bit;
         } else {
           outState &= ~(std::size_t{1} << bit);
@@ -477,7 +478,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
     const C* existing = lookupScalar(key);
     if (existing == nullptr) {
-      addError(errUndefined(UndefinedKind::Variable, name), ctx);
+      addError(errUndefined(UndefinedKind::kVariable, name), ctx);
       return visitChildren(ctx);
     }
 
@@ -684,7 +685,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     if (scalar->BIT() != nullptr) {
-      if ((bit_map_.count(name) != 0u) || (qubit_map_.count(name) != 0u)) {
+      if ((bit_map_.count(name) != 0U) || (qubit_map_.count(name) != 0U)) {
         addError("redeclaration of '" + name + "'", ctx);
         return visitChildren(ctx);
       }
@@ -1115,7 +1116,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                     gateMat = conjugateTranspose(gateMat, gateN);
                     break;
                   case BodyMod::Kind::kPow:
-                    gateMat = matrixPow(gateMat, gateN, mod.count);
+                    gateMat = matrixPow(gateMat, mod.count);
                     break;
                   case BodyMod::Kind::kCtrl:
                     for (int c = 0; c < mod.count; ++c) {
@@ -1181,14 +1182,14 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     auto* qIndexed = qubitOperand->indexedIdentifier();
     if (qIndexed != nullptr) {
       const std::string qname = qIndexed->Identifier()->getText();
-      if (qubit_map_.count(qname) == 0u) {
+      if (qubit_map_.count(qname) == 0U) {
         addError(errUndefined(UndefinedKind::kQubitRegister, qname), ctx);
         return visitChildren(ctx);
       }
     }
     if (bitTarget != nullptr) {
       const std::string cname = bitTarget->Identifier()->getText();
-      if (bit_map_.count(cname) == 0u) {
+      if (bit_map_.count(cname) == 0U) {
         addError(errUndefined(UndefinedKind::kBitRegister, cname), ctx);
         return visitChildren(ctx);
       }
@@ -1344,7 +1345,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     kSubroutine,
     kQubitRegister,
     kBitRegister,
-    Variable
+    kVariable
   };
   enum class RedeclaredKind { kQubitRegister, kBitRegister, kVariable };
   enum class RedefinedKind { kGate, kSubroutine };
@@ -1394,7 +1395,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         return "undefined qubit register '" + name + "'";
       case UndefinedKind::kBitRegister:
         return "undefined bit register '" + name + "'";
-      case UndefinedKind::Variable:
+      case UndefinedKind::kVariable:
         return "undefined variable '" + name + "'";
     }
 
@@ -1463,7 +1464,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   [[nodiscard]] bool isConst(const std::string& name) const {
     for (auto it = scopes_.rbegin(); it != scopes_.rend(); ++it) {
-      if (it->const_names.count(name) != 0u) {
+      if (it->const_names.count(name) != 0U) {
         return true;
       }
     }
@@ -1472,11 +1473,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   bool checkRedeclared(const std::string& name,
                        antlr4::ParserRuleContext* ctx) {
-    if (qubit_map_.count(name) != 0u) {
+    if (qubit_map_.count(name) != 0U) {
       addError(errRedeclared(RedeclaredKind::kQubitRegister, name), ctx);
       return true;
     }
-    if (bit_map_.count(name) != 0u) {
+    if (bit_map_.count(name) != 0U) {
       addError(errRedeclared(RedeclaredKind::kBitRegister, name), ctx);
       return true;
     }
@@ -1495,15 +1496,15 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         isUndefined = !registry_.contains(name);
         break;
       case UndefinedKind::kSubroutine:
-        isUndefined = (subroutine_map_.count(name) == 0u);
+        isUndefined = (subroutine_map_.count(name) == 0U);
         break;
       case UndefinedKind::kQubitRegister:
-        isUndefined = (qubit_map_.count(name) == 0u);
+        isUndefined = (qubit_map_.count(name) == 0U);
         break;
       case UndefinedKind::kBitRegister:
-        isUndefined = (bit_map_.count(name) == 0u);
+        isUndefined = (bit_map_.count(name) == 0U);
         break;
-      case UndefinedKind::Variable:
+      case UndefinedKind::kVariable:
         isUndefined = (lookupScalar(name) == nullptr);
         break;
     }
@@ -1524,7 +1525,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         isRedefined = registry_.contains(name);
         break;
       case RedefinedKind::kSubroutine:
-        isRedefined = (subroutine_map_.count(name) != 0u);
+        isRedefined = (subroutine_map_.count(name) != 0U);
         break;
     }
 
@@ -1655,7 +1656,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       if (mod->INV() != nullptr) {
         mat = conjugateTranspose(mat, n);
       } else if (mod->POW() != nullptr) {
-        mat = matrixPow(mat, n, modifierCount(mod));
+        mat = matrixPow(mat, modifierCount(mod));
       } else if (mod->CTRL() != nullptr) {
         const int count = modifierCount(mod);
         for (int c = 0; c < count; ++c) {
@@ -1764,7 +1765,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::unordered_map<std::string, int>& param_idx,
       const std::unordered_map<std::string, double>& const_vals) {
     auto n = std::make_shared<ExprNode>();
-    const double dt_ns = config_.dtNs();
+    const double dtNs = config_.dtNs();
 
     // LPAREN expression RPAREN
     if (auto* e =
@@ -1775,10 +1776,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
     if (auto* e = dynamic_cast<qasm3Parser::IndexExpressionContext*>(expr)) {
       std::vector<int> indices;
-      std::string arr_name;
+      std::string arrName;
       auto* cur = e;
-      while (cur) {
-        if (!cur->indexOperator()) break;
+      while (cur != nullptr) {
+        if (cur->indexOperator() == nullptr) {
+          break;
+        }
 
         auto* idxOp = cur->indexOperator();
         // Gate param refs in array indices evaluate to 0.0 here since actual
@@ -1788,112 +1791,120 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
         // handle both [] and comma-separated indices (arr[i][j] and arr[i, j])
         for (size_t i = 0; i < idxOp->expression().size(); ++i) {
-          auto idx_tree =
+          auto idxTree =
               buildExprTreeImpl(idxOp->expression(i), param_idx, const_vals);
 
-          int idx = static_cast<int>(ExprNode::eval(idx_tree, dummy));
+          int idx = static_cast<int>(ExprNode::eval(idxTree, dummy));
           indices.push_back(idx);
         }
 
         auto* base = cur->expression();
         if (auto* lit =
                 dynamic_cast<qasm3Parser::LiteralExpressionContext*>(base)) {
-          if (lit->Identifier()) arr_name = lit->Identifier()->getText();
+          if (lit->Identifier() != nullptr) {
+            arrName = lit->Identifier()->getText();
+          }
           break;
-        } else if (auto* next =
-                       dynamic_cast<qasm3Parser::IndexExpressionContext*>(
-                           base)) {
+        }
+        if (auto* next =
+                dynamic_cast<qasm3Parser::IndexExpressionContext*>(base)) {
           cur = next;
         } else {
           addError("cannot index a non-array expression", expr);
           break;
         }
       }
-      if (!arr_name.empty()) {
-        std::string key = arr_name;
-        for (auto it = indices.rbegin(); it != indices.rend(); ++it)
+      if (!arrName.empty()) {
+        std::string key = arrName;
+        for (auto it = indices.rbegin(); it != indices.rend(); ++it) {
           key += "[" + std::to_string(*it) + "]";
+        }
 
         // Check whether any element of this array was declared.
         // "m[0]" works for 1D; for N-D, look for any "m[..." key.
-        const std::string pfx = arr_name + "[";
-        bool declared = const_vals.count(arr_name) > 0;
+        const std::string pfx = arrName + "[";
+        bool declared = const_vals.count(arrName) > 0;
         if (!declared) {
-          for (const auto& [k, _] : const_vals)
+          for (const auto& [k, _] : const_vals) {
             if (k.size() >= pfx.size() && k.compare(0, pfx.size(), pfx) == 0) {
               declared = true;
               break;
             }
+          }
         }
         if (!declared) {
-          addError(errUndefined(UndefinedKind::Variable, arr_name), expr);
+          addError(errUndefined(UndefinedKind::kVariable, arrName), expr);
         } else {
           auto it = const_vals.find(key);
           if (it != const_vals.end()) {
             n->value = it->second;
             return n;
           }
-          addError(errOutOfBounds(arr_name, key), expr);
+          addError(errOutOfBounds(arrName, key), expr);
         }
       }
 
       // <assoc=right> expression op=DOUBLE_ASTERISK expression
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::PowerExpressionContext*>(expr)) {
-      n->kind = ExprNode::ExprKind::Pow;
+      n->kind = ExprNode::ExprKind::kPow;
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
 
       // op=(TILDE | EXCLAMATION_POINT | MINUS) expression
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::UnaryExpressionContext*>(expr)) {
-      if (e->TILDE())
-        n->kind = ExprNode::ExprKind::BitNot;
-      else if (e->EXCLAMATION_POINT())
-        n->kind = ExprNode::ExprKind::LogNot;
-      else if (e->MINUS())
-        n->kind = ExprNode::ExprKind::Neg;
-      else
+      if (e->TILDE() != nullptr) {
+        n->kind = ExprNode::ExprKind::kBitNot;
+      } else if (e->EXCLAMATION_POINT() != nullptr) {
+        n->kind = ExprNode::ExprKind::kLogNot;
+      } else if (e->MINUS() != nullptr) {
+        n->kind = ExprNode::ExprKind::kNeg;
+      } else {
         assert(false && "unhandled operator in UnaryExpressionContext");
+      }
       n->lhs = buildExprTreeImpl(e->expression(), param_idx, const_vals);
 
       // expression op=(ASTERISK | SLASH | PERCENT) expression
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::MultiplicativeExpressionContext*>(
                        expr)) {
-      if (e->ASTERISK())
-        n->kind = ExprNode::ExprKind::Mul;
-      else if (e->SLASH())
-        n->kind = ExprNode::ExprKind::Div;
-      else if (e->PERCENT())
-        n->kind = ExprNode::ExprKind::Mod;
-      else
+      if (e->ASTERISK() != nullptr) {
+        n->kind = ExprNode::ExprKind::kMul;
+      } else if (e->SLASH() != nullptr) {
+        n->kind = ExprNode::ExprKind::kDiv;
+      } else if (e->PERCENT() != nullptr) {
+        n->kind = ExprNode::ExprKind::kMod;
+      } else {
         assert(false &&
                "unhandled operator in MultiplicativeExpressionContext");
+      }
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
 
       // expression op=(PLUS | MINUS) expression
     } else if (auto* e = dynamic_cast<qasm3Parser::AdditiveExpressionContext*>(
                    expr)) {
-      if (e->PLUS())
-        n->kind = ExprNode::ExprKind::Add;
-      else if (e->MINUS())
-        n->kind = ExprNode::ExprKind::Sub;
-      else
+      if (e->PLUS() != nullptr) {
+        n->kind = ExprNode::ExprKind::kAdd;
+      } else if (e->MINUS() != nullptr) {
+        n->kind = ExprNode::ExprKind::kSub;
+      } else {
         assert(false && "unhandled operator in AdditiveExpressionContext");
+      }
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
 
       // expression op=BitshiftOperator expression
     } else if (auto* e = dynamic_cast<qasm3Parser::BitshiftExpressionContext*>(
                    expr)) {
-      if (e->op->getText() == "<<")
-        n->kind = ExprNode::ExprKind::LShift;
-      else if (e->op->getText() == ">>")
-        n->kind = ExprNode::ExprKind::RShift;
-      else
+      if (e->op->getText() == "<<") {
+        n->kind = ExprNode::ExprKind::kLShift;
+      } else if (e->op->getText() == ">>") {
+        n->kind = ExprNode::ExprKind::kRShift;
+      } else {
         assert(false && "unhandled operator in BitshiftExpressionContext");
+      }
 
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
@@ -1902,28 +1913,30 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::ComparisonExpressionContext*>(
                        expr)) {
-      if (e->op->getText() == ">")
-        n->kind = ExprNode::ExprKind::Gt;
-      else if (e->op->getText() == "<")
-        n->kind = ExprNode::ExprKind::Lt;
-      else if (e->op->getText() == ">=")
-        n->kind = ExprNode::ExprKind::Ge;
-      else if (e->op->getText() == "<=")
-        n->kind = ExprNode::ExprKind::Le;
-      else
+      if (e->op->getText() == ">") {
+        n->kind = ExprNode::ExprKind::kGt;
+      } else if (e->op->getText() == "<") {
+        n->kind = ExprNode::ExprKind::kLt;
+      } else if (e->op->getText() == ">=") {
+        n->kind = ExprNode::ExprKind::kGe;
+      } else if (e->op->getText() == "<=") {
+        n->kind = ExprNode::ExprKind::kLe;
+      } else {
         assert(false && "unhandled operator in ComparisonExpressionContext");
+      }
 
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
       // expression op=EqualityOperator expression
     } else if (auto* e = dynamic_cast<qasm3Parser::EqualityExpressionContext*>(
                    expr)) {
-      if (e->op->getText() == "==")
-        n->kind = ExprNode::ExprKind::Eq;
-      else if (e->op->getText() == "!=")
-        n->kind = ExprNode::ExprKind::Ne;
-      else
+      if (e->op->getText() == "==") {
+        n->kind = ExprNode::ExprKind::kEq;
+      } else if (e->op->getText() == "!=") {
+        n->kind = ExprNode::ExprKind::kNe;
+      } else {
         assert(false && "unhandled operator in EqualityExpressionContext");
+      }
 
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
@@ -1932,7 +1945,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::BitwiseAndExpressionContext*>(
                        expr)) {
-      n->kind = ExprNode::ExprKind::BitAnd;
+      n->kind = ExprNode::ExprKind::kBitAnd;
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
 
@@ -1940,14 +1953,14 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::BitwiseXorExpressionContext*>(
                        expr)) {
-      n->kind = ExprNode::ExprKind::BitXor;
+      n->kind = ExprNode::ExprKind::kBitXor;
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
 
       // expression op=PIPE expression
     } else if (auto* e = dynamic_cast<qasm3Parser::BitwiseOrExpressionContext*>(
                    expr)) {
-      n->kind = ExprNode::ExprKind::BitOr;
+      n->kind = ExprNode::ExprKind::kBitOr;
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
 
@@ -1955,26 +1968,27 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::LogicalAndExpressionContext*>(
                        expr)) {
-      n->kind = ExprNode::ExprKind::LogAnd;
+      n->kind = ExprNode::ExprKind::kLogAnd;
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
 
       // expression op=DOUBLE_PIPE expression
     } else if (auto* e = dynamic_cast<qasm3Parser::LogicalOrExpressionContext*>(
                    expr)) {
-      n->kind = ExprNode::ExprKind::LogOr;
+      n->kind = ExprNode::ExprKind::kLogOr;
       n->lhs = buildExprTreeImpl(e->expression(0), param_idx, const_vals);
       n->rhs = buildExprTreeImpl(e->expression(1), param_idx, const_vals);
 
       // (scalarType | arrayType) LPAREN expression RPAREN
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::CastExpressionContext*>(expr)) {
-      if (e->scalarType()) {
+      if (e->scalarType() != nullptr) {
         n = buildExprTreeImpl(e->expression(), param_idx, const_vals);
-        if (e->scalarType()->INT() || e->scalarType()->UINT()) {
+        if ((e->scalarType()->INT() != nullptr) ||
+            (e->scalarType()->UINT() != nullptr)) {
           auto inner = n;
           n = std::make_shared<ExprNode>();
-          n->kind = ExprNode::ExprKind::Floor;
+          n->kind = ExprNode::ExprKind::kFloor;
           n->lhs = inner;
         }
       } else {
@@ -1994,18 +2008,18 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                    dynamic_cast<qasm3Parser::CallExpressionContext*>(expr)) {
       static const std::unordered_map<std::string, ExprNode::ExprKind> kFnMap =
           {
-              {"sin", ExprNode::ExprKind::Sin},
-              {"cos", ExprNode::ExprKind::Cos},
-              {"tan", ExprNode::ExprKind::Tan},
-              {"exp", ExprNode::ExprKind::Exp},
-              {"sqrt", ExprNode::ExprKind::Sqrt},
-              {"ln", ExprNode::ExprKind::Ln},
-              {"arcsin", ExprNode::ExprKind::Arcsin},
-              {"arccos", ExprNode::ExprKind::Arccos},
-              {"arctan", ExprNode::ExprKind::Arctan},
+              {"sin", ExprNode::ExprKind::kSin},
+              {"cos", ExprNode::ExprKind::kCos},
+              {"tan", ExprNode::ExprKind::kTan},
+              {"exp", ExprNode::ExprKind::kExp},
+              {"sqrt", ExprNode::ExprKind::kSqrt},
+              {"ln", ExprNode::ExprKind::kLn},
+              {"arcsin", ExprNode::ExprKind::kArcsin},
+              {"arccos", ExprNode::ExprKind::kArccos},
+              {"arctan", ExprNode::ExprKind::kArctan},
           };
       auto it = kFnMap.find(e->Identifier()->getText());
-      if (it != kFnMap.end() && e->expressionList() &&
+      if (it != kFnMap.end() && (e->expressionList() != nullptr) &&
           !e->expressionList()->expression().empty()) {
         n->kind = it->second;
         n->lhs = buildExprTreeImpl(e->expressionList()->expression(0),
@@ -2022,38 +2036,41 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       // TimingLiteral | HardwareQubit
     } else if (auto* e =
                    dynamic_cast<qasm3Parser::LiteralExpressionContext*>(expr)) {
-      n->kind = ExprNode::ExprKind::Literal;
-      if (e->DecimalIntegerLiteral()) {
+      n->kind = ExprNode::ExprKind::kLiteral;
+      // NOLINTBEGIN(bugprone-branch-clone)
+      if (e->DecimalIntegerLiteral() != nullptr) {
         n->value = std::stod(e->DecimalIntegerLiteral()->getText());
-      } else if (e->FloatLiteral()) {
+      } else if (e->FloatLiteral() != nullptr) {
         n->value = std::stod(e->FloatLiteral()->getText());
-      } else if (e->HexIntegerLiteral()) {
+      } else if (e->HexIntegerLiteral() != nullptr) {
         n->value = static_cast<double>(
             std::stoul(e->HexIntegerLiteral()->getText(), nullptr, 16));
-      } else if (e->OctalIntegerLiteral()) {
+      } else if (e->OctalIntegerLiteral() != nullptr) {
         std::string s = e->OctalIntegerLiteral()->getText();
-        if (s.size() > 2 && s[1] == 'o') s = s.substr(2);
+        if (s.size() > 2 && s[1] == 'o') {
+          s = s.substr(2);
+        }
         n->value = static_cast<double>(std::stoul(s, nullptr, 8));
-      } else if (e->BinaryIntegerLiteral()) {
+      } else if (e->BinaryIntegerLiteral() != nullptr) {
         std::string s = e->BinaryIntegerLiteral()->getText();
         n->value = static_cast<double>(std::stoul(s.substr(2), nullptr, 2));
-      } else if (e->ImaginaryLiteral()) {
+      } else if (e->ImaginaryLiteral() != nullptr) {
         n->value = 0.0;  // real part of a purely imaginary number is 0
-      } else if (e->TimingLiteral()) {
-        n->value = parseTimingLiteral(e->TimingLiteral()->getText(), dt_ns);
-      } else if (e->BooleanLiteral()) {
+      } else if (e->TimingLiteral() != nullptr) {
+        n->value = parseTimingLiteral(e->TimingLiteral()->getText(), dtNs);
+      } else if (e->BooleanLiteral() != nullptr) {
         n->value = e->BooleanLiteral()->getText() == "true" ? 1.0 : 0.0;
-      } else if (e->BitstringLiteral()) {
+      } else if (e->BitstringLiteral() != nullptr) {
         std::string bs = e->BitstringLiteral()->getText();
         bs = bs.substr(1, bs.size() - 2);  // strip surrounding quotes
         n->value = static_cast<double>(std::stoul(bs, nullptr, 2));
-      } else if (e->HardwareQubit()) {
+      } else if (e->HardwareQubit() != nullptr) {
         n->value = 0.0;  // hardware qubit refs not meaningful as doubles
-      } else if (e->Identifier()) {
+      } else if (e->Identifier() != nullptr) {
         std::string id = e->Identifier()->getText();
         auto pit = param_idx.find(id);
         if (pit != param_idx.end()) {
-          n->kind = ExprNode::ExprKind::ParamRef;
+          n->kind = ExprNode::ExprKind::kParamRef;
           n->param_idx = pit->second;
         } else {
           auto cit = const_vals.find(id);
@@ -2065,12 +2082,16 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
             n->value = kTau;
           } else if (id == "euler") {
             n->value = kEuler;
-          } else
-            addError(errUndefined(UndefinedKind::Variable, id), expr);
+          } else {
+            {
+              addError(errUndefined(UndefinedKind::kVariable, id), expr);
+            }
+          }
         }
       } else {
         assert(false && "unhandled literal type in LiteralExpressionContext");
       }
+      // NOLINTEND(bugprone-branch-clone)
     } else {
       const std::string msg =
           "unhandled expression type: " + std::string(typeid(*expr).name()) +

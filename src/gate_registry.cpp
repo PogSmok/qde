@@ -81,45 +81,112 @@ M makeMatrix(std::size_t n, std::initializer_list<Swap> swaps = {},
 
 // ---- fixed single-qubit gates ---------------------------------------------
 
-const M kMatI = mat2(1, 0, 0, 1);
-const M kMatH = mat2(kIS2, kIS2, kIS2, -kIS2);
-const M kMatX = mat2(0, 1, 1, 0);
-const M kMatY = mat2(0, kMI, kI, 0);
-const M kMatZ = mat2(1, 0, 0, -1);
-const M kMatS = mat2(1, 0, 0, kI);
-const M kMatSdg = mat2(1, 0, 0, kMI);
-const M kMatT = mat2(1, 0, 0, C{kIS2, kIS2});
-const M kMatTdg = mat2(1, 0, 0, C{kIS2, -kIS2});
-const M kMatSX = mat2(C{0.5, 0.5}, C{0.5, -0.5}, C{0.5, -0.5}, C{0.5, 0.5});
-const M kMatSXdg = mat2(C{0.5, -0.5}, C{0.5, 0.5}, C{0.5, 0.5}, C{0.5, -0.5});
+inline const M& kMatI() {
+  static const M v = mat2(1, 0, 0, 1);
+  return v;
+}
+
+inline const M& kMatH() {
+  static const M v = mat2(kIS2, kIS2, kIS2, -kIS2);
+  return v;
+}
+
+inline const M& kMatX() {
+  static const M v = mat2(0, 1, 1, 0);
+  return v;
+}
+
+inline const M& kMatY() {
+  static const M v = mat2(0, kMI, kI, 0);
+  return v;
+}
+
+inline const M& kMatZ() {
+  static const M v = mat2(1, 0, 0, -1);
+  return v;
+}
+
+inline const M& kMatS() {
+  static const M v = mat2(1, 0, 0, kI);
+  return v;
+}
+
+inline const M& kMatSdg() {
+  static const M v = mat2(1, 0, 0, kMI);
+  return v;
+}
+
+inline const M& kMatT() {
+  static const M v = mat2(1, 0, 0, C{kIS2, kIS2});
+  return v;
+}
+
+inline const M& kMatTdg() {
+  static const M v = mat2(1, 0, 0, C{kIS2, -kIS2});
+  return v;
+}
+
+inline const M& kMatSX() {
+  static const M v = mat2(C{0.5, 0.5}, C{0.5, -0.5}, C{0.5, -0.5}, C{0.5, 0.5});
+  return v;
+}
+
+inline const M& kMatSXdg() {
+  static const M v = mat2(C{0.5, -0.5}, C{0.5, 0.5}, C{0.5, 0.5}, C{0.5, -0.5});
+  return v;
+}
 
 // ---- fixed two-qubit gates ------------------------------------------------
 
 // CX: |10⟩ ↔ |11⟩
-const M kMatCX = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0);
+inline const M& kMatCX() {
+  static const M v = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0);
+  return v;
+}
 
 // CZ: phase flip on |11⟩
-const M kMatCZ = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1);
+inline const M& kMatCZ() {
+  static const M v = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1);
+  return v;
+}
 
 // CY: |10⟩ ↔ |11⟩ with Y factors
-const M kMatCY = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, kMI, 0, 0, kI, 0);
+inline const M& kMatCY() {
+  static const M v = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, kMI, 0, 0, kI, 0);
+  return v;
+}
 
 // SWAP: |01⟩ ↔ |10⟩
-const M kMatSWAP = mat4(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
+inline const M& kMatSWAP() {
+  static const M v = mat4(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
+  return v;
+}
 
 // iSWAP: |01⟩ ↔ i|10⟩
-const M kMatISWAP = mat4(1, 0, 0, 0, 0, 0, kI, 0, 0, kI, 0, 0, 0, 0, 0, 1);
+inline const M& kMatISWAP() {
+  static const M v = mat4(1, 0, 0, 0, 0, 0, kI, 0, 0, kI, 0, 0, 0, 0, 0, 1);
+  return v;
+}
 
 // ---- fixed three-qubit gates ----------------------------------------------
 
 // CCX (Toffoli): |110⟩ ↔ |111⟩  (rows 6 ↔ 7)
-const M kMatCCX = makeMatrix(3, {{6, 7}});
+inline const M& kMatCCX() {
+  static const M v = makeMatrix(3, {{6, 7}});
+  return v;
+}
 
 // CCZ: phase flip on |111⟩  (row 7 diagonal = -1)
-const M kMatCCZ = makeMatrix(3, {}, {{7, C{-1.0, 0.0}}});
+inline const M& kMatCCZ() {
+  static const M v = makeMatrix(3, {}, {{7, C{-1.0, 0.0}}});
+  return v;
+}
 
 // CSWAP (Fredkin): |101⟩ ↔ |110⟩  (rows 5 ↔ 6)
-const M kMatCSWAP = makeMatrix(3, {{5, 6}});
+inline const M& kMatCSWAP() {
+  static const M v = makeMatrix(3, {{5, 6}});
+  return v;
+}
 
 }  // namespace
 
@@ -127,17 +194,17 @@ GateRegistry GateRegistry::withBuiltins() {
   GateRegistry reg;
 
   // ---- fixed single-qubit -------------------------------------------------
-  reg.add({"id", 1, kMatI});
-  reg.add({"h", 1, kMatH});
-  reg.add({"x", 1, kMatX});
-  reg.add({"y", 1, kMatY});
-  reg.add({"z", 1, kMatZ});
-  reg.add({"s", 1, kMatS});
-  reg.add({"sdg", 1, kMatSdg});
-  reg.add({"t", 1, kMatT});
-  reg.add({"tdg", 1, kMatTdg});
-  reg.add({"sx", 1, kMatSX});
-  reg.add({"sxdg", 1, kMatSXdg});
+  reg.add({"id", 1, kMatI()});
+  reg.add({"h", 1, kMatH()});
+  reg.add({"x", 1, kMatX()});
+  reg.add({"y", 1, kMatY()});
+  reg.add({"z", 1, kMatZ()});
+  reg.add({"s", 1, kMatS()});
+  reg.add({"sdg", 1, kMatSdg()});
+  reg.add({"t", 1, kMatT()});
+  reg.add({"tdg", 1, kMatTdg()});
+  reg.add({"sx", 1, kMatSX()});
+  reg.add({"sxdg", 1, kMatSXdg()});
 
   // ---- parametric single-qubit --------------------------------------------
 
@@ -184,11 +251,11 @@ GateRegistry GateRegistry::withBuiltins() {
            }});
 
   // ---- fixed two-qubit ----------------------------------------------------
-  reg.add({"cx", 2, kMatCX});
-  reg.add({"cz", 2, kMatCZ});
-  reg.add({"cy", 2, kMatCY});
-  reg.add({"swap", 2, kMatSWAP});
-  reg.add({"iswap", 2, kMatISWAP});
+  reg.add({"cx", 2, kMatCX()});
+  reg.add({"cz", 2, kMatCZ()});
+  reg.add({"cy", 2, kMatCY()});
+  reg.add({"swap", 2, kMatSWAP()});
+  reg.add({"iswap", 2, kMatISWAP()});
 
   // ---- parametric two-qubit -----------------------------------------------
 
@@ -217,9 +284,9 @@ GateRegistry GateRegistry::withBuiltins() {
            }});
 
   // ---- three-qubit --------------------------------------------------------
-  reg.add({"ccx", 3, kMatCCX});
-  reg.add({"ccz", 3, kMatCCZ});
-  reg.add({"cswap", 3, kMatCSWAP});
+  reg.add({"ccx", 3, kMatCCX()});
+  reg.add({"ccz", 3, kMatCCZ()});
+  reg.add({"cswap", 3, kMatCSWAP()});
 
   return reg;
 }
