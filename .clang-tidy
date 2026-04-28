@@ -19,7 +19,7 @@ Checks: >
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -hicpp-signed-bitwise
 
-WarningsAsErrors: ''
+WarningsAsErrors: '*'
 
 # Only report issues in our own headers, not Qt/ANTLR/system headers
 HeaderFilterRegex: '^.*include/qde/.*$'
