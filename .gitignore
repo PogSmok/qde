@@ -33,6 +33,7 @@ qrc_*.cpp
 ui_*.h
 .qmake.stash
 .qtc_clangd/
+.qtcreator
 
 # ANTLR generated sources
 grammar/generated/

@@ -13,6 +13,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  QT_QPA_PLATFORM: offscreen
+
 jobs:
   build-and-test:
     name: Build & Test (${{ matrix.os }})
