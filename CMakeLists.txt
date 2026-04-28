@@ -67,10 +67,7 @@ FetchContent_MakeAvailable(googletest)
 # -------------------------
 foreach(dep antlr4_static antlr4_shared gtest gtest_main)
     if(TARGET ${dep})
-        # remove clang-tidy completely
-        set_target_properties(${dep} PROPERTIES
-            CXX_CLANG_TIDY ""
-        )
+        set_target_properties(${dep} PROPERTIES CXX_CLANG_TIDY "")
 
         # Suppress all compiler warnings inside external dependencies
         target_compile_options(${dep} PRIVATE
