@@ -2095,7 +2095,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
       // NOLINTEND(bugprone-branch-clone)
     } else {
-      const std::string msg =
+      [[maybe_unused]] const std::string msg =
           "unhandled expression type: " + std::string(typeid(*expr).name()) +
           " at line " + std::to_string(expr->getStart()->getLine()) + ":" +
           std::to_string(expr->getStart()->getCharPositionInLine());
