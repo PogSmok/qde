@@ -189,7 +189,12 @@ jobs:
           restore-keys: ${{ runner.os }}-cmake-analysis-
 
       - name: Install clang-tidy
-        run: sudo apt-get install -y clang-tidy
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22
+          sudo apt-get install -y clang-tidy-22
+          sudo ln -sf /usr/bin/clang-tidy-22 /usr/local/bin/clang-tidy
 
       - name: Set up Java
         uses: actions/setup-java@v5
