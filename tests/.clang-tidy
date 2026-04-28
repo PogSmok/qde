@@ -1,0 +1,43 @@
+---
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  cppcoreguidelines-*,
+  -fuchsia-*,
+  -llvm-*,
+  -llvmlibc-*,
+  -google-*,
+  -altera-*,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+  -hicpp-signed-bitwise
+
+# Only fail CI on high-signal checks
+WarningsAsErrors: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+
+# Only report issues in our own headers, not Qt/ANTLR/system headers
+HeaderFilterRegex: '^.*include/qde/.*$'
+
+FormatStyle: file
+
+CheckOptions:
+  - key:   readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:   readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key:   readability-identifier-naming.VariableCase
+    value: camelBack
+  - key:   readability-identifier-naming.EnumConstantPrefix
+    value: 'k'
+  - key:   readability-identifier-naming.EnumConstantCase
+    value: CamelCase
