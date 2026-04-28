@@ -1,4 +1,5 @@
 #include "qde/gui/app_controller.hpp"
+#include "qde/backend_config.hpp"
 
 namespace qde::gui {
 
@@ -24,7 +25,8 @@ AppController::AppController(QuantumCircuitView* circuitView,
 void AppController::onTextChanged() { debounceTimer_.start(); }
 
 void AppController::parseNow() {
-  auto result = parser_->parse(textEditor_->plainText().toStdString());
+  auto result = parser_->parse(textEditor_->plainText().toStdString(),
+                               qde::BackendConfig{});
   if (result.isOk()) {
     circuit_ = result.circuit();
     textEditor_->clearErrors();

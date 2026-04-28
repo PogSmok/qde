@@ -19,12 +19,6 @@ namespace qde {
 
 class GateRegistry {
  public:
-  GateRegistry() = default;
-  GateRegistry(const GateRegistry&) = delete;
-  GateRegistry& operator=(const GateRegistry&) = delete;
-  GateRegistry(GateRegistry&&) = default;
-  GateRegistry& operator=(GateRegistry&&) = default;
-
   // Returns a registry pre-populated with every standard OpenQASM 3.0 gate.
   static GateRegistry withBuiltins();
 
