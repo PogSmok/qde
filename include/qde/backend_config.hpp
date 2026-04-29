@@ -1,6 +1,7 @@
 #ifndef BACKEND_CONFIG_HPP_
 #define BACKEND_CONFIG_HPP_
 
+#include <chrono>
 #include <stdexcept>
 
 namespace qde {
@@ -12,17 +13,26 @@ class BackendConfig {
  public:
   BackendConfig() = default;
 
-  [[nodiscard]] double dtNs() const noexcept { return dt_ns_; }
+  [[nodiscard]] std::chrono::nanoseconds device_cycle_time_ns() const noexcept {
+    return device_cycle_time_ns_;
+  }
 
-  void setDtNs(double dt_ns) {
-    if (dt_ns < 0.0) {
-      throw std::invalid_argument("BackendConfig: dt_ns must be >= 0");
+  void set_device_cycle_time_ns(std::chrono::nanoseconds val) {
+    if (val < std::chrono::nanoseconds{0}) {
+      throw std::invalid_argument(
+          "BackendConfig: device_cycle_time_ns must be >= 0");
     }
-    dt_ns_ = dt_ns;
+    device_cycle_time_ns_ = val;
+  }
+
+  void reset_device_cycle_time_ns() {
+    device_cycle_time_ns_ = kDefaultDeviceCycleTimeNs;
   }
 
  private:
-  double dt_ns_ = 0.0;  // device cycle time in nanoseconds; 0 = unknown
+  // no timing modelling
+  static constexpr std::chrono::nanoseconds kDefaultDeviceCycleTimeNs{0};
+  std::chrono::nanoseconds device_cycle_time_ns_ = kDefaultDeviceCycleTimeNs;
 };
 
 }  // namespace qde

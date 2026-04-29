@@ -75,6 +75,14 @@ TEST(GateDefinition, ParametricGateNullFnThrows) {
   EXPECT_THROW(GateDefinition("bad", 1, 1, nullptr), std::invalid_argument);
 }
 
+TEST(GateDefinition, ParametricGateNoParamsThrows) {
+  EXPECT_THROW(GateDefinition("bad", 1, 0,
+                              [](const std::vector<double>&) {
+                                return std::vector<C>(4);
+                              }),
+               std::invalid_argument);
+}
+
 TEST(GateDefinition, ParametricGateEvaluatesCorrectly) {
   GateDefinition g("phase", 1, 1, [](const std::vector<double>& p) {
     return std::vector<C>{1, 0, 0, std::exp(C{0, p[0]})};

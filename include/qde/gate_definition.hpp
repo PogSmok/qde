@@ -45,7 +45,7 @@ class GateDefinition {
     };
   }
 
-  // Parametric gate constructor
+  // Parametric gate constructor (num_params != 0)
   // matrix_fn must return a vector of size (2^num_qubits)^2.
   GateDefinition(std::string name, std::uint8_t num_qubits,
                  std::uint8_t num_params, MatrixFn matrix_fn)
@@ -58,6 +58,12 @@ class GateDefinition {
     }
     if (!matrix_fn_) {
       throw std::invalid_argument("GateDefinition: matrix_fn must not be null");
+    }
+    if (num_params == 0) {
+      throw std::invalid_argument(
+          "GateDefinition: cannot create a parameterized gate with zero "
+          "parameters. Use GateDefinition(std::string, std::uint8_t, "
+          "std::vector<std::complex<double>>) for parameterless gates");
     }
   }
 

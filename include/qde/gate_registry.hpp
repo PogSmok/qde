@@ -33,7 +33,7 @@ class GateRegistry {
   [[nodiscard]] bool contains(const std::string& name) const;
 
  private:
-  std::unordered_map<std::string, std::shared_ptr<GateDefinition>> gates_;
+  std::unordered_map<std::string, std::shared_ptr<const GateDefinition>> gates_;
 };
 
 }  // namespace qde

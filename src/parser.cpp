@@ -1767,7 +1767,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::unordered_map<std::string, int>& param_idx,
       const std::unordered_map<std::string, double>& const_vals) {
     auto n = std::make_shared<ExprNode>();
-    const double dtNs = config_.dtNs();
+    const double deviceCycleTimeNs =
+        static_cast<double>(config_.device_cycle_time_ns().count());
 
     // LPAREN expression RPAREN
     if (auto* e =
@@ -2059,7 +2060,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       } else if (e->ImaginaryLiteral() != nullptr) {
         n->value = 0.0;  // real part of a purely imaginary number is 0
       } else if (e->TimingLiteral() != nullptr) {
-        n->value = parseTimingLiteral(e->TimingLiteral()->getText(), dtNs);
+        n->value = parseTimingLiteral(e->TimingLiteral()->getText(),
+                                      deviceCycleTimeNs);
       } else if (e->BooleanLiteral() != nullptr) {
         n->value = e->BooleanLiteral()->getText() == "true" ? 1.0 : 0.0;
       } else if (e->BitstringLiteral() != nullptr) {
