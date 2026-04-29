@@ -132,9 +132,11 @@ void MainWindow::saveFileAs() {
   QString path = QFileDialog::getSaveFileName(
       this, "Save As", {}, "QASM Files (*.qasm);;All Files (*)");
   if (!path.isEmpty()) {
-    editor_->saveFileAs(path);
+    bool isOk = editor_->saveFileAs(path);
+    if (isOk) {
+      updateTitle();
+    }
     // TODO: Handle error
-    updateTitle();
   }
 }
 

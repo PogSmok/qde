@@ -1,5 +1,6 @@
 # QDE Library
 set(LIB_SOURCES
+    gate_registry.cpp
     parser.cpp
 )
 

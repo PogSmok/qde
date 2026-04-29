@@ -5,10 +5,10 @@
 
 int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
-  app.setApplicationDisplayName("Quantum Development Environment");
-  app.setOrganizationName("StormWave");
+  QApplication::setApplicationDisplayName("Quantum Development Environment");
+  QApplication::setOrganizationName("StormWave");
 
   qde::gui::MainWindow window;
   window.show();
-  return app.exec();
+  return QApplication::exec();
 }

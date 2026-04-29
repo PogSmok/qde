@@ -22,7 +22,6 @@ class AppController : public QObject {
     return circuit_.has_value() ? &circuit_.value() : nullptr;
   }
 
- public slots:
   void onTextChanged();
   void parseNow();
 

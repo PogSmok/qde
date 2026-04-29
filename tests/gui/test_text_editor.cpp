@@ -29,7 +29,7 @@ TEST_F(TextEditorTest, TypingUpdatesDocumentAndEmitsSignal) {
 
   // We simulate user typing by calling the slot that handles code editor
   // changes Alternatively, we can find the CodeEditor child and set its text
-  CodeEditor* innerEditor = editor->findChild<CodeEditor*>();
+  auto* innerEditor = editor->findChild<CodeEditor*>();
   ASSERT_NE(innerEditor, nullptr);
 
   innerEditor->setPlainText("user typed text");
@@ -55,7 +55,7 @@ TEST_F(TextEditorTest, OpenAndSaveFile) {
   EXPECT_EQ(editor->filePath(), tempPath);
 
   // Now edit and save
-  CodeEditor* innerEditor = editor->findChild<CodeEditor*>();
+  auto* innerEditor = editor->findChild<CodeEditor*>();
   ASSERT_NE(innerEditor, nullptr);
   innerEditor->setPlainText("modified content");
 
@@ -95,7 +95,7 @@ TEST_F(TextEditorTest, ErrorHandling) {
 
   editor->setErrors(errors);
 
-  CodeEditor* innerEditor = editor->findChild<CodeEditor*>();
+  auto* innerEditor = editor->findChild<CodeEditor*>();
   ASSERT_NE(innerEditor, nullptr);
   EXPECT_EQ(innerEditor->extraSelections().size(), 1);
 

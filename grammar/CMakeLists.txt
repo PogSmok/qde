@@ -1,6 +1,5 @@
 if(DEFINED ANTLR4_JAR_LOCATION)
-    find_package(Java COMPONENTS Runtime REQUIRED)
-    set(ANTLR4_COMMAND ${Java_JAVA_EXECUTABLE} -jar ${ANTLR4_JAR_LOCATION})
+    set(ANTLR4_COMMAND java -jar ${ANTLR4_JAR_LOCATION})
 else()
     find_program(ANTLR4_EXECUTABLE antlr4 REQUIRED
         DOC "ANTLR4 tool for generating parser sources"
@@ -20,8 +19,8 @@ set(ANTLR_OUTPUTS
     ${ANTLR_SOURCES}
     ${ANTLR_GEN_DIR}/qasm3Lexer.h
     ${ANTLR_GEN_DIR}/qasm3Parser.h
-    ${ANTLR_GEN_DIR}/qasm3BaseVisitor.h
-    ${ANTLR_GEN_DIR}/qasm3Visitor.h
+    ${ANTLR_GEN_DIR}/qasm3ParserBaseVisitor.h
+    ${ANTLR_GEN_DIR}/qasm3ParserVisitor.h
 )
 
 add_custom_command(
@@ -45,3 +44,5 @@ target_link_libraries(qasm3_parser PUBLIC antlr4_static)
 
 target_include_directories(qasm3_parser PUBLIC  ${ANTLR_GEN_DIR})
 target_include_directories(qasm3_parser PRIVATE ${antlr4_runtime_SOURCE_DIR}/runtime/src)
+
+set_target_properties(qasm3_parser PROPERTIES CXX_CLANG_TIDY "")

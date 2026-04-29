@@ -2,6 +2,8 @@ set(TEST_SOURCES
     test_syntax_error_listener.cpp
     test_parse_result.cpp
     test_parser.cpp
+    test_gate_definition.cpp
+    test_gate_registry.cpp
 )
 
 if(TEST_SOURCES)
