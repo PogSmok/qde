@@ -58,3 +58,32 @@ target_link_libraries(qde
         qde_lib
         qde_gui
 )
+
+if (WIN32)
+    # Use windeployqt tool to create self-contained windows application binary
+    if (NOT WINDEPLOYQT_EXECUTABLE)
+        message(FATAL_ERROR "windeployqt not found.\nThe tool was not found in"
+                "the Qt installation directory linked to this project."
+                "\nEnsure your CMAKE_PREFIX_PATH points to a valid Qt installation"
+                "and that the 'bin' directory contains windeployqt.exe.")
+    endif ()
+
+    get_target_property(_qmake_executable Qt::qmake IMPORTED_LOCATION)
+    get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND "${WINDEPLOYQT_EXECUTABLE}"
+            --no-compiler-runtime
+            --verbose 0
+            "$<TARGET_FILE:${PROJECT_NAME}>"
+            COMMENT "Deploying Qt dependencies..."
+    )
+elseif (APPLE)
+    # macdeployqt logic could go here for macOS users
+    message(STATUS "macOS detected: windeployqt skipped.")
+
+else ()
+    # Linux typically uses RPATH or AppImage tools
+    message(STATUS "Linux/Unix detected: windeployqt skipped.")
+endif ()
