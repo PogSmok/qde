@@ -39,6 +39,11 @@ class TextEditor : public QWidget {
 
  public slots:
   void onEditorTextChanged();
+  void toggleComment();
+  void indentBlock();
+  void outdentBlock();
+  void moveBlockUp();
+  void moveBlockDown();
 
  private:
   QPointer<CodeEditor> editor_;

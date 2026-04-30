@@ -1,5 +1,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTextBlock>
 #include <QVBoxLayout>
 
 #include "qde/gui/code_editor.hpp"
@@ -70,6 +71,69 @@ void TextEditor::onEditorTextChanged() {
   document_->setContent(editor_->toPlainText());
   emit textChanged();
 }
+
+void TextEditor::toggleComment() {
+  QTextCursor cursor = editor_->textCursor();
+
+  cursor.beginEditBlock();
+
+  int start = cursor.selectionStart();
+  int end = cursor.selectionEnd();
+
+  QTextBlock startBlock = editor_->document()->findBlock(start);
+  QTextBlock endBlock = editor_->document()->findBlock(end);
+
+  // Common convention: If the cursor is at the very beginning of a block
+  // at the end of a selection, don't include that block.
+  if (end > start && endBlock.position() == end) {
+    endBlock = endBlock.previous();
+  }
+
+  // Logic: If any line in selection is NOT commented, we add comments to all
+  bool allCommented = true;
+  for (QTextBlock block = startBlock;
+       block.isValid() && block.blockNumber() <= endBlock.blockNumber();
+       block = block.next()) {
+    QString text = block.text().trimmed();
+    if (!text.isEmpty() && !text.startsWith("//")) {
+      allCommented = false;
+      break;
+    }
+  }
+
+  for (QTextBlock block = startBlock;
+       block.isValid() && block.blockNumber() <= endBlock.blockNumber();
+       block = block.next()) {
+    cursor.setPosition(block.position());
+    cursor.movePosition(QTextCursor::StartOfBlock);
+
+    QString text = block.text();
+    if (allCommented) {
+      // Remove "//" (and potentially one trailing space)
+      int commentPos = text.indexOf("//");
+      if (commentPos != -1) {
+        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
+                            commentPos);
+        cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
+        // Optional: handle the extra space if you use "// " style
+        if (text.size() > commentPos + 2 && text.at(commentPos + 2) == ' ') {
+          cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
+        }
+        cursor.removeSelectedText();
+      }
+    } else {
+      // Add "// " at the very beginning of the block
+      cursor.insertText("// ");
+    }
+  }
+
+  cursor.endEditBlock();
+}
+
+void TextEditor::indentBlock() {}
+void TextEditor::outdentBlock() {}
+void TextEditor::moveBlockUp() {}
+void TextEditor::moveBlockDown() {}
 
 void TextEditor::syncEditorToDoc() {
   QSignalBlocker block(editor_);
