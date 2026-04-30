@@ -67,14 +67,9 @@ TEST_F(AppControllerTest, DebounceTimerWorks) {
   innerEditor->setPlainText("OPENQASM 3.0;\nqreg q[1];");
 
   // The signal textChanged triggers debounce timer (400ms).
-  // It should not parse instantly.
-  EXPECT_EQ(successSpy.count(), 0);
-
-  // Wait more than 400ms
-  QTest::qWait(800);
-
-  // Now it should have parsed
-  EXPECT_EQ(successSpy.count(), 1);
+  EXPECT_EQ(successSpy.count(), 0); // It should not parse instantly.
+  EXPECT_TRUE(successSpy.wait(2000));
+  EXPECT_EQ(successSpy.count(), 1); // It should be parsed.
 }
 
 }  // namespace qde::gui
