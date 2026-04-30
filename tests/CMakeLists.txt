@@ -42,6 +42,7 @@ set(GUI_TEST_SOURCES
     gui/test_quantum_circuit_view.cpp
     gui/test_main_window.cpp
     gui/test_token_patterns.cpp
+    gui/test_syntax_highlighter.cpp
 )
 
 if(GUI_TEST_SOURCES)
