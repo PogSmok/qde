@@ -40,6 +40,16 @@ inline constexpr auto kEditorTabStop = 4;
 
 inline constexpr auto kTextBlockLeftPadding = 4;
 
+// Editor syntax colours
+inline constexpr auto kKeywordColor = "#163298";
+inline constexpr auto kTypeColor = "#e288c0";
+inline constexpr auto kVariableColor = "#9CDCFE";
+inline constexpr auto kGateColor = "#e2c790";
+inline constexpr auto kConstantColor = "#4FC1FF";
+inline constexpr auto kNumberColor = "#73ca44";
+inline constexpr auto kStringColor = "#b5e39c";
+inline constexpr auto kCommentColor = "#90988c";  
+
 }  // namespace qde::gui::theme
 
 #endif  // GUI_THEME_HPP_
