@@ -18,14 +18,13 @@ class ShortcutManager {
     shortcuts_["file.new"] = QKeySequence::New;
     shortcuts_["file.open"] = QKeySequence::Open;
     shortcuts_["file.save"] = QKeySequence::Save;
-    shortcuts_["file.saveas"] = QKeySequence::SaveAs;
-    shortcuts_["file.close"] = QKeySequence::Close;
+    shortcuts_["file.save_as"] = QKeySequence::SaveAs;
 
     shortcuts_["edit.indent"] = QKeySequence(Qt::Key_Tab);
     shortcuts_["edit.outdent"] = QKeySequence(Qt::Key_Shift | Qt::Key_Tab);
     shortcuts_["edit.comment"] = QKeySequence(Qt::Key_Control | Qt::Key_Slash);
-    shortcuts_["edit.moveblock_up"] = QKeySequence(Qt::Key_Alt | Qt::Key_Up);
-    shortcuts_["edit.moveblock_dow"] = QKeySequence(Qt::Key_Alt | Qt::Key_Down);
+    shortcuts_["edit.move_block_up"] = QKeySequence(Qt::Key_Alt | Qt::Key_Up);
+    shortcuts_["edit.move_block_dow"] = QKeySequence(Qt::Key_Alt | Qt::Key_Down);
 
     shortcuts_["navigate.next_match"] = QKeySequence(Qt::Key_F3);
     shortcuts_["navigate.prev_match"] =
