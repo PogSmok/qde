@@ -2,6 +2,7 @@
 #include <QTextBlock>
 
 #include "qde/gui/code_editor.hpp"
+#include "qde/gui/syntax_highlighter.hpp"
 #include "qde/gui/theme.hpp"
 
 namespace qde::gui {
@@ -43,6 +44,8 @@ CodeEditor::CodeEditor(QWidget* parent)
           &CodeEditor::updateLineNumberArea);
 
   updateLineNumberAreaWidth(0);
+
+  new SyntaxHighlighter(document());
 }
 
 int CodeEditor::lineNumberAreaWidth() const {
