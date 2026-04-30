@@ -14,35 +14,32 @@ class ShortcutManager {
     return inst;
   }
 
-  void loadDefaults() {
-    shortcuts_["file.new"] = QKeySequence::New;
-    shortcuts_["file.open"] = QKeySequence::Open;
-    shortcuts_["file.save"] = QKeySequence::Save;
-    shortcuts_["file.save_as"] = QKeySequence::SaveAs;
+  ShortcutManager() {
+    config_["file.new"] = QKeySequence::New;
+    config_["file.open"] = QKeySequence::Open;
+    config_["file.save"] = QKeySequence::Save;
+    config_["file.save_as"] = QKeySequence::SaveAs;
 
-    shortcuts_["edit.indent"] = QKeySequence(Qt::Key_Tab);
-    shortcuts_["edit.outdent"] = QKeySequence(Qt::Key_Shift | Qt::Key_Tab);
-    shortcuts_["edit.comment"] = QKeySequence(Qt::Key_Control | Qt::Key_Slash);
-    shortcuts_["edit.move_block_up"] = QKeySequence(Qt::Key_Alt | Qt::Key_Up);
-    shortcuts_["edit.move_block_dow"] = QKeySequence(Qt::Key_Alt | Qt::Key_Down);
+    config_["edit.indent"] = QKeySequence("Tab");
+    config_["edit.outdent"] = QKeySequence("Shift+Tab");
+    config_["edit.comment"] = QKeySequence("Ctrl+/");
+    config_["edit.move_block_up"] = QKeySequence("Alt+Up");
+    config_["edit.move_block_dow"] = QKeySequence("Alt+Down");
 
-    shortcuts_["navigate.next_match"] = QKeySequence(Qt::Key_F3);
-    shortcuts_["navigate.prev_match"] =
-        QKeySequence(Qt::Key_Shift | Qt::Key_F3);
-    shortcuts_["navigate.goto_definition"] =
-        QKeySequence(Qt::Key_Control | Qt::Key_F12);
-    shortcuts_["navigate.fuzzy_search"] =
-        QKeySequence(Qt::Key_Control | Qt::Key_P);
+    config_["navigate.next_match"] = QKeySequence("F3");
+    config_["navigate.prev_match"] = QKeySequence("Shift+F3");
+    config_["navigate.goto_definition"] = QKeySequence("Ctrl+F12");
+    config_["navigate.fuzzy_search"] = QKeySequence("Ctrl+P");
 
-    shortcuts_["build.run"] = QKeySequence(Qt::Key_F5);
+    config_["build.run"] = QKeySequence("F5");
   }
 
   QKeySequence get(const QString& actionId) const {
-    return shortcuts_.value(actionId);
+    return config_.value(actionId);
   }
 
  private:
-  QMap<QString, QKeySequence> shortcuts_;
+  QMap<QString, QKeySequence> config_;
 };
 
 }  // namespace qde::gui
