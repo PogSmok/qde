@@ -2,9 +2,11 @@
 #define GUI_SYNTAX_HIGHLIGHTER_HPP_
 
 #include <QRegularExpression>
+#include <QString>
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
-#include <vector>
+#include <QTextDocument>
+#include <QVector>
 
 namespace qde::gui {
 
@@ -21,11 +23,11 @@ class SyntaxHighlighter : public QSyntaxHighlighter {
     QRegularExpression pattern;
     QTextCharFormat format;
   };
-  std::vector<Rule> rules_;
+  QVector<Rule> rules_;
 
   // comments are handled separately
-  QRegularExpression block_comment_start_;
-  QRegularExpression block_comment_end_;
+  QString block_comment_start_;
+  QString block_comment_end_;
   QTextCharFormat comment_format_;
 };
 

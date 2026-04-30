@@ -1,7 +1,8 @@
 #include "qde/gui/syntax_highlighter.hpp"
 
 #include <array>
-#include <vector>
+
+#include <QVector>
 
 #include "qde/gui/theme.hpp"
 #include "qde/gui/token_patterns.hpp"
@@ -10,7 +11,7 @@ namespace qde::gui {
 
 namespace {
 
-enum class TokenType {
+enum class TokenType : uint8_t {
   kKeyword,
   kType,
   kGate,
@@ -25,6 +26,8 @@ enum class TokenType {
 };
 
 constexpr std::size_t idx(TokenType t) { return static_cast<std::size_t>(t); }
+
+enum class BlockState : uint8_t { kCode = 0, kCommented = 1 };
 
 }  // namespace
 
@@ -79,10 +82,8 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* parent)
   addRule(patterns::kOperator, TokenType::kOperator);
   addRule(patterns::kLineComment, TokenType::kComment);
 
-  block_comment_start_ =
-      QRegularExpression(QString::fromUtf8(patterns::kBlockCommentStart));
-  block_comment_end_ =
-      QRegularExpression(QString::fromUtf8(patterns::kBlockCommentEnd));
+  block_comment_start_ = QStringLiteral("/*");
+  block_comment_end_ = QStringLiteral("*/");
 }
 
 void SyntaxHighlighter::highlightBlock(const QString& text) {
@@ -95,18 +96,18 @@ void SyntaxHighlighter::highlightBlock(const QString& text) {
   }
 
   // Multi-line BlockComment — overrides all single-line rules above
-  setCurrentBlockState(0);
-  int start =
-      (previousBlockState() == 1) ? 0 : text.indexOf(block_comment_start_);
+  setCurrentBlockState(static_cast<int>(BlockState::kCode));
+  int start = (previousBlockState() == static_cast<int>(BlockState::kCommented))
+                  ? 0
+                  : text.indexOf(block_comment_start_);
   while (start >= 0) {
-    const auto endMatch = block_comment_end_.match(text, start);
-    if (!endMatch.hasMatch()) {
-      setCurrentBlockState(1);
+    const int end = text.indexOf(block_comment_end_, start);
+    if (end == -1) {
+      setCurrentBlockState(static_cast<int>(BlockState::kCommented));
       setFormat(start, text.length() - start, comment_format_);
       break;
     }
-    const int len =
-        endMatch.capturedStart() + endMatch.capturedLength() - start;
+    const int len = end + block_comment_end_.length() - start;
     setFormat(start, len, comment_format_);
     start = text.indexOf(block_comment_start_, start + len);
   }
