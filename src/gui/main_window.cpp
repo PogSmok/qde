@@ -6,7 +6,6 @@
 #include <QStatusBar>
 
 #include "qde/gui/main_window.hpp"
-#include "qde/gui/shortcut_manager.hpp"
 #include "qde/gui/theme.hpp"
 
 namespace qde::gui {
