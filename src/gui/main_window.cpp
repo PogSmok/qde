@@ -6,6 +6,7 @@
 #include <QStatusBar>
 
 #include "qde/gui/main_window.hpp"
+#include "qde/gui/shortcut_manager.hpp"
 #include "qde/gui/theme.hpp"
 
 namespace qde::gui {
@@ -40,6 +41,7 @@ MainWindow::MainWindow(QWidget* parent)
 
   setupMenuBar();
   setupStatusBar();
+  setupActions();
 
   connect(editor_, &TextEditor::modifiedChanged, this,
           &MainWindow::onModifiedChanged);
@@ -98,6 +100,46 @@ void MainWindow::setupStatusBar() {
   statusBar()->addWidget(statusLabel_);
   statusBar()->setStyleSheet(QString("QStatusBar { background: %1; }")
                                  .arg(theme::kStatusBarBackground));
+}
+
+void MainWindow::setupActions() {
+  auto& sm = ShortcutManager::instance();
+
+  createAction("New File", sm.get("file.new"), &MainWindow::newFile);
+  createAction("Open File", sm.get("file.open"), &MainWindow::openFile);
+  createAction("Save File", sm.get("file.save"), &MainWindow::saveFile);
+  createAction("Save File As", sm.get("file.save_as"), &MainWindow::saveFileAs);
+
+  createAction("Indent block", sm.get("edit.indent"), editor_,
+               &TextEditor::indentBlock);
+  createAction("Outdent block", sm.get("edit.outdent"), editor_,
+               &TextEditor::outdentBlock);
+  createAction("Comment block", sm.get("edit.comment"), editor_,
+               &TextEditor::toggleComment);
+  createAction("Move block up", sm.get("edit.move_block_up"), editor_,
+               &TextEditor::moveBlockUp);
+  createAction("Move block down", sm.get("edit.move_block_down"), editor_,
+               &TextEditor::moveBlockDown);
+}
+
+template <typename Func>
+void MainWindow::createAction(const QString& text, const QKeySequence& ks,
+                              Func slot) {
+  auto* action = new QAction(text, this);
+  action->setShortcut(ks);
+  action->setShortcutContext(Qt::WindowShortcut);
+  this->addAction(action);
+  connect(action, &QAction::triggered, this, slot);
+}
+
+template <typename ObjPtr, typename Func>
+void MainWindow::createAction(const QString& text, const QKeySequence& ks,
+                              ObjPtr obj, Func slot) {
+  auto* action = new QAction(text, this);
+  action->setShortcut(ks);
+  action->setShortcutContext(Qt::WindowShortcut);
+  this->addAction(action);
+  connect(action, &QAction::triggered, obj, slot);
 }
 
 void MainWindow::newFile() {
