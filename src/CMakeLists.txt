@@ -23,6 +23,7 @@ set(LIB_GUI_SOURCES
     gui/quantum_circuit_view.cpp
     gui/text_editor.cpp
     gui/code_editor.cpp
+    gui/syntax_highlighter.cpp
     gui/text_document.cpp
     # explicitly list Q_OBJECT headers:
     ${PROJECT_SOURCE_DIR}/include/qde/gui/app_controller.hpp
@@ -31,6 +32,7 @@ set(LIB_GUI_SOURCES
     ${PROJECT_SOURCE_DIR}/include/qde/gui/text_editor.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/code_editor.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/text_document.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/syntax_highlighter.hpp
 )
 
 add_library(qde_gui STATIC ${LIB_GUI_SOURCES})

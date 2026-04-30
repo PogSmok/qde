@@ -30,8 +30,8 @@ inline constexpr auto kMenuBarBackground = "#1e1e1e";
 inline constexpr auto kMenuBarText = "#ccc";
 inline constexpr auto kStatusBarText = "#aaa";
 inline constexpr auto kStatusBarBackground = "#1e1e1e";
-inline constexpr auto kSuccessText = "#4CAF50";
-inline constexpr auto kErrorText = "#F44336";
+inline constexpr auto kSuccessText = "#4caf50";
+inline constexpr auto kErrorText = "#f44336";
 
 // Editor font
 inline constexpr auto kEditorFontFamily = "Cascadia Code";
@@ -39,6 +39,18 @@ inline constexpr auto kEditorFontSize = 11;
 inline constexpr auto kEditorTabStop = 4;
 
 inline constexpr auto kTextBlockLeftPadding = 4;
+
+// Editor syntax colours
+inline constexpr auto kKeywordColor = "#2252ff";
+inline constexpr auto kTypeColor = "#e288c0";
+inline constexpr auto kVariableColor = "#9cdcfe";
+inline constexpr auto kGateColor = "#e2c790";
+inline constexpr auto kFunctionColor = "#c586c0";
+inline constexpr auto kConstantColor = "#4fc1ff";
+inline constexpr auto kNumberColor = "#73ca44";
+inline constexpr auto kStringColor = "#b5e39c";
+inline constexpr auto kOperatorColor = "#c8c8c8";
+inline constexpr auto kCommentColor = "#90988c";
 
 }  // namespace qde::gui::theme
 

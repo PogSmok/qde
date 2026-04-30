@@ -223,6 +223,17 @@ GateRegistry GateRegistry::withBuiltins() {
                          std::exp(kI * (phi + lam)) * kIS2);
            }});
 
+  reg.add({"U", 1, 3, [](const P& p) {
+             const double theta = p[0];
+             const double phi = p[1];
+             const double lam = p[2];
+             const double c = std::cos(theta / 2.0);
+             const double s = std::sin(theta / 2.0);
+             return mat2(c, -std::exp(kI * lam) * s, std::exp(kI * phi) * s,
+                         std::exp(kI * (phi + lam)) * c);
+           }});
+
+  // legacy OpenQASM 2.0 alias for unitary gate (U)
   reg.add({"u3", 1, 3, [](const P& p) {
              const double theta = p[0];
              const double phi = p[1];

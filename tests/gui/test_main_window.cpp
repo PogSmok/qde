@@ -1,10 +1,12 @@
 #include <gtest/gtest.h>
 #include <QSignalSpy>
 #include <QTest>
+
 #include "qde/gui/app_controller.hpp"
 #include "qde/gui/main_window.hpp"
 #include "qde/gui/quantum_circuit_view.hpp"
 #include "qde/gui/text_editor.hpp"
+#include "qde/gui/theme.hpp"
 
 namespace qde::gui {
 
@@ -56,7 +58,7 @@ TEST_F(MainWindowTest, OnParseSuccessUpdatesStatus) {
   ASSERT_NE(statusLabel, nullptr);
 
   EXPECT_EQ(statusLabel->text(), "Parsed successfully");
-  EXPECT_TRUE(statusLabel->styleSheet().contains("#4CAF50"));  // Green color
+  EXPECT_TRUE(statusLabel->styleSheet().contains(theme::kSuccessText));
 }
 
 TEST_F(MainWindowTest, OnParseFailUpdatesStatus) {
@@ -65,7 +67,7 @@ TEST_F(MainWindowTest, OnParseFailUpdatesStatus) {
   ASSERT_NE(statusLabel, nullptr);
 
   EXPECT_EQ(statusLabel->text(), "Syntax Error: 2 errors");
-  EXPECT_TRUE(statusLabel->styleSheet().contains("#F44336"));  // Red color
+  EXPECT_TRUE(statusLabel->styleSheet().contains(theme::kErrorText));
 }
 
 TEST_F(MainWindowTest, NewFileWhenUnmodified) {
