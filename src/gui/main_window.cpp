@@ -6,6 +6,7 @@
 #include <QStatusBar>
 
 #include "qde/gui/main_window.hpp"
+#include "qde/gui/shortcut_manager.hpp"
 #include "qde/gui/theme.hpp"
 
 namespace qde::gui {
@@ -98,6 +99,26 @@ void MainWindow::setupStatusBar() {
   statusBar()->addWidget(statusLabel_);
   statusBar()->setStyleSheet(QString("QStatusBar { background: %1; }")
                                  .arg(theme::kStatusBarBackground));
+}
+
+void MainWindow::setupActions() {
+  auto& sm = ShortcutManager::instance();
+
+  auto* actFileNew = new QAction(tr("&New"), this);
+  actFileNew->setShortcut(sm.get("file.new"));
+  connect(actFileNew, &QAction::triggered, this, &MainWindow::newFile);
+
+  auto* actFileOpen = new QAction(tr("&Open..."), this);
+  actFileOpen->setShortcut(sm.get("file.open"));
+  connect(actFileOpen, &QAction::triggered, this, &MainWindow::openFile);
+
+  auto* actFileSave = new QAction(tr("&Save"), this);
+  actFileSave->setShortcut(sm.get("file.save"));
+  connect(actFileSave, &QAction::triggered, this, &MainWindow::saveFile);
+
+  auto* actFileSaveAs = new QAction(tr("Save &As..."), this);
+  actFileSaveAs->setShortcut(sm.get("file.save_as"));
+  connect(actFileSaveAs, &QAction::triggered, this, &MainWindow::saveFileAs);
 }
 
 void MainWindow::newFile() {

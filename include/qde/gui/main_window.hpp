@@ -31,6 +31,7 @@ class MainWindow : public QMainWindow {
  private:
   void setupMenuBar();
   void setupStatusBar();
+  void setupActions();
   void updateTitle();
 
   QPointer<TextEditor> editor_;
