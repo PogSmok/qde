@@ -58,3 +58,18 @@ target_link_libraries(qde
         qde_lib
         qde_gui
 )
+
+# Use windeployqt tool to create self-contained windows application binary
+if (WIN32)
+    get_target_property(_qmake_executable Qt::qmake IMPORTED_LOCATION)
+    get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+    find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND "${WINDEPLOYQT_EXECUTABLE}"
+            --no-compiler-runtime
+            --verbose 0
+            "$<TARGET_FILE:${PROJECT_NAME}>"
+            COMMENT "Deploying Qt dependencies..."
+    )
+endif ()
