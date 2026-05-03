@@ -2,6 +2,7 @@
 set(LIB_SOURCES
     gate_registry.cpp
     parser.cpp
+    qubit_allocator.cpp
 )
 
 add_library(qde_lib STATIC ${LIB_SOURCES})
