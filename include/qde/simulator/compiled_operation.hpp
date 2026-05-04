@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "qde/gate_definition.hpp"
@@ -16,6 +17,7 @@ struct CompiledOperation {
   std::vector<double> gate_params;
   std::vector<std::size_t> qubits;
   std::vector<std::size_t> measure_target;
+  std::optional<std::pair<std::size_t, std::uint8_t>> condition;
 };
 
 }  // namespace qde
