@@ -4,6 +4,8 @@ set(TEST_SOURCES
     test_parser.cpp
     test_gate_definition.cpp
     test_gate_registry.cpp
+    test_qubit_allocator.cpp
+    simulator/test_simulation_circuit.cpp
 )
 
 if(TEST_SOURCES)
@@ -17,6 +19,7 @@ if(TEST_SOURCES)
     target_link_libraries(qde_tests
         PRIVATE
             qde_lib
+            qde_sim
             qasm3_parser
             GTest::gtest_main
     )

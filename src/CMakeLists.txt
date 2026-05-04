@@ -53,6 +53,23 @@ target_link_libraries(qde_gui
         Qt6::Widgets
 )
 
+# QDE Simulation Library
+set(LIB_SIM_SOURCES
+    simulator/simulation_circuit.cpp
+)
+
+add_library(qde_sim STATIC ${LIB_SIM_SOURCES})
+
+target_include_directories(qde_lib
+    PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(qde_sim
+    PRIVATE
+        qde_lib
+)
+
 
 qt_add_executable(qde main.cpp)
 
