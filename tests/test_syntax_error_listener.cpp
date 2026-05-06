@@ -9,7 +9,7 @@
 
 namespace {
 
-void parse(const std::string& source, qde::SyntaxErrorListener& listener) {
+void Parse(const std::string& source, qde::SyntaxErrorListener& listener) {
   antlr4::ANTLRInputStream input(source);
   qasm3Lexer lexer(&input);
   antlr4::CommonTokenStream tokens(&lexer);
@@ -27,26 +27,26 @@ void parse(const std::string& source, qde::SyntaxErrorListener& listener) {
 
 TEST(SyntaxErrorListener, NoErrorsOnValidProgram) {
   qde::SyntaxErrorListener listener;
-  parse("OPENQASM 3.0;\nqubit q;\nh q;\n", listener);
+  Parse("OPENQASM 3.0;\nqubit q;\nh q;\n", listener);
   EXPECT_FALSE(listener.hasErrors());
   EXPECT_TRUE(listener.errors().empty());
 }
 
 TEST(SyntaxErrorListener, DetectsErrorOnInvalidToken) {
   qde::SyntaxErrorListener listener;
-  parse("OPENQASM 3.0;\n???\n", listener);
+  Parse("OPENQASM 3.0;\n???\n", listener);
   EXPECT_TRUE(listener.hasErrors());
 }
 
 TEST(SyntaxErrorListener, ErrorContainsLineNumber) {
   qde::SyntaxErrorListener listener;
-  parse("OPENQASM 3.0;\nqubit q;\n???\n", listener);
+  Parse("OPENQASM 3.0;\nqubit q;\n???\n", listener);
   ASSERT_FALSE(listener.errors().empty());
   EXPECT_EQ(listener.errors().front().line, 3U);
 }
 
 TEST(SyntaxErrorListener, AccumulatesMultipleErrors) {
   qde::SyntaxErrorListener listener;
-  parse("OPENQASM 3.0;\n???\n!!!\n", listener);
+  Parse("OPENQASM 3.0;\n???\n!!!\n", listener);
   EXPECT_GT(listener.errors().size(), 1U);
 }

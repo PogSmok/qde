@@ -87,7 +87,7 @@ void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
   painter.fillRect(event->rect(), theme::kLineNumberBackground);
 
   QTextBlock block = firstVisibleBlock();
-  int blockNum = block.blockNumber();
+  int block_num = block.blockNumber();
   int top =
       qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
   int bottom = top + qRound(blockBoundingRect(block).height());
@@ -98,12 +98,12 @@ void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
       painter.drawText(0, top,
                        lineNumberArea_->width() - theme::kTextBlockLeftPadding,
                        fontMetrics().height(), Qt::AlignRight,
-                       QString::number(blockNum + 1));
+                       QString::number(block_num + 1));
     }
     block = block.next();
     top = bottom;
     bottom = top + qRound(blockBoundingRect(block).height());
-    ++blockNum;
+    ++block_num;
   }
 }
 

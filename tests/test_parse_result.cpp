@@ -5,12 +5,12 @@
 #include "qde/parse_result.hpp"
 #include "qde/syntax_error.hpp"
 
-static qde::Circuit makeEmptyCircuit() {
+static qde::Circuit MakeEmptyCircuit() {
   return {qde::GateRegistry{}, {}, {}, {}};
 }
 
 TEST(ParseResult, OkIsOk) {
-  auto result = qde::ParseResult::ok(makeEmptyCircuit());
+  auto result = qde::ParseResult::ok(MakeEmptyCircuit());
   EXPECT_TRUE(result.isOk());
 }
 
@@ -20,7 +20,7 @@ TEST(ParseResult, FailIsNotOk) {
 }
 
 TEST(ParseResult, OkHasNoErrors) {
-  auto result = qde::ParseResult::ok(makeEmptyCircuit());
+  auto result = qde::ParseResult::ok(MakeEmptyCircuit());
   EXPECT_TRUE(result.errors().empty());
 }
 
@@ -34,7 +34,7 @@ TEST(ParseResult, FailStoresErrors) {
 }
 
 TEST(ParseResult, OkCircuitIsAccessible) {
-  auto result = qde::ParseResult::ok(makeEmptyCircuit());
+  auto result = qde::ParseResult::ok(MakeEmptyCircuit());
   EXPECT_NO_FATAL_FAILURE(result.circuit());
 }
 

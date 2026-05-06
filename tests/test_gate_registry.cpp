@@ -87,11 +87,11 @@ TEST_F(GateRegistryTest, XGateMatrix) {
 
 TEST_F(GateRegistryTest, HGateMatrix) {
   auto mat = reg_.find("h")->matrix();
-  const double kIS2 = 0.7071067811865475;
-  EXPECT_NEAR(mat[0].real(), kIS2, 1e-10);
-  EXPECT_NEAR(mat[1].real(), kIS2, 1e-10);
-  EXPECT_NEAR(mat[2].real(), kIS2, 1e-10);
-  EXPECT_NEAR(mat[3].real(), -kIS2, 1e-10);
+  const double i_s2 = 0.7071067811865475;
+  EXPECT_NEAR(mat[0].real(), i_s2, 1e-10);
+  EXPECT_NEAR(mat[1].real(), i_s2, 1e-10);
+  EXPECT_NEAR(mat[2].real(), i_s2, 1e-10);
+  EXPECT_NEAR(mat[3].real(), -i_s2, 1e-10);
 }
 
 TEST_F(GateRegistryTest, RxGateAtZeroIsIdentity) {

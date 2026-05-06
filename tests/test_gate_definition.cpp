@@ -36,7 +36,7 @@ TEST(GateDefinition, FixedGateWrongMatrixSizeThrows) {
 
 TEST(GateDefinition, FixedGateWrongMatrixSizeMessageContainsSizes) {
   try {
-    GateDefinition giveMeAName("bad", 1, {1, 0});
+    GateDefinition give_me_a_name("bad", 1, {1, 0});
     FAIL();
   } catch (const std::invalid_argument& e) {
     EXPECT_NE(std::string(e.what()).find('4'), std::string::npos);

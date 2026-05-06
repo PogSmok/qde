@@ -3,19 +3,19 @@
 
 namespace qde::gui {
 
-AppController::AppController(QuantumCircuitView* circuitView,
-                             TextEditor* textEditor, QObject* parent)
+AppController::AppController(QuantumCircuitView* circuit_view,
+                             TextEditor* text_editor, QObject* parent)
     : QObject{parent},
-      circuitView_(circuitView),
-      textEditor_(textEditor),
+      circuitView_(circuit_view),
+      textEditor_(text_editor),
       parser_(std::make_unique<qde::Parser>()) {
-  Q_ASSERT(circuitView);
-  Q_ASSERT(textEditor);
+  Q_ASSERT(circuit_view);
+  Q_ASSERT(text_editor);
 
-  constexpr int debounceTimeMs = 400;
+  constexpr int debounce_time_ms = 400;
 
   debounceTimer_.setSingleShot(true);
-  debounceTimer_.setInterval(debounceTimeMs);  // 400ms debounce
+  debounceTimer_.setInterval(debounce_time_ms);  // 400ms debounce
 
   connect(textEditor_, &TextEditor::textChanged, this,
           &AppController::onTextChanged);
@@ -35,11 +35,11 @@ void AppController::parseNow() {
     circuit_.reset();
     textEditor_->setErrors(result.errors());
 
-    QStringList errorList;
+    QStringList error_list;
     for (const auto& err : result.errors()) {
-      errorList << QString::fromStdString(err.message);
+      error_list << QString::fromStdString(err.message);
     }
-    emit parseError(errorList);
+    emit parseError(error_list);
   }
 }
 

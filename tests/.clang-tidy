@@ -30,13 +30,97 @@ HeaderFilterRegex: '^.*include/qde/.*$'
 FormatStyle: file
 
 CheckOptions:
+  # ---- Types ------------------------------------------------------------------
+
+  # Classes, structs, unions: MyClass
   - key:   readability-identifier-naming.ClassCase
     value: CamelCase
+  - key:   readability-identifier-naming.StructCase
+    value: CamelCase
+  - key:   readability-identifier-naming.UnionCase
+    value: CamelCase
+
+  # Type aliases and typedefs: MyAlias
+  - key:   readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+  - key:   readability-identifier-naming.TypedefCase
+    value: CamelCase
+
+  # Template parameters: T, Container
+  - key:   readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+  - key:   readability-identifier-naming.TemplateTemplateParameterCase
+    value: CamelCase
+  - key:   readability-identifier-naming.ValueTemplateParameterCase
+    value: CamelCase
+
+  # Enums: MyEnum
+  - key:   readability-identifier-naming.EnumCase
+    value: CamelCase
+
+  # ---- Functions --------------------------------------------------------------
+
+  # Free and member functions: MyFunction
   - key:   readability-identifier-naming.FunctionCase
-    value: camelBack
+    value: CamelCase
+  - key:   readability-identifier-naming.MethodCase
+    value: CamelCase
+
+  # ---- Variables --------------------------------------------------------------
+
+  # Local variables and parameters: my_variable
   - key:   readability-identifier-naming.VariableCase
-    value: camelBack
-  - key:   readability-identifier-naming.EnumConstantPrefix
+    value: lower_case
+  - key:   readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key:   readability-identifier-naming.LocalVariableCase
+    value: lower_case
+
+  # Member variables: member_ (trailing underscore for private/protected)
+  - key:   readability-identifier-naming.MemberCase
+    value: lower_case
+  - key:   readability-identifier-naming.PrivateMemberSuffix
+    value: '_'
+  - key:   readability-identifier-naming.ProtectedMemberSuffix
+    value: '_'
+
+  # Global variables: snake_case
+  - key:   readability-identifier-naming.GlobalVariableCase
+    value: lower_case
+
+  # ---- Constants --------------------------------------------------------------
+
+  # Constants: kMyConstant
+  - key:   readability-identifier-naming.GlobalConstantCase
+    value: CamelCase
+  - key:   readability-identifier-naming.GlobalConstantPrefix
     value: 'k'
+  - key:   readability-identifier-naming.StaticConstantCase
+    value: CamelCase
+  - key:   readability-identifier-naming.StaticConstantPrefix
+    value: 'k'
+  - key:   readability-identifier-naming.ClassConstantCase
+    value: CamelCase
+  - key:   readability-identifier-naming.ClassConstantPrefix
+    value: 'k'
+  # Local constants are snake_case without prefix
+  - key:   readability-identifier-naming.LocalConstantCase
+    value: lower_case
+  - key:   readability-identifier-naming.LocalConstantPrefix
+    value: ""
+
+  # Enum constants: kMyValue
   - key:   readability-identifier-naming.EnumConstantCase
     value: CamelCase
+  - key:   readability-identifier-naming.EnumConstantPrefix
+    value: 'k'
+
+  # ---- Other ------------------------------------------------------------------
+
+  # Namespaces: my_namespace
+  - key:   readability-identifier-naming.NamespaceCase
+    value: lower_case
+
+  # Macros: ALL_CAPS
+  - key:   readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
