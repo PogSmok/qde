@@ -5,16 +5,16 @@ namespace qde::gui {
 
 class QuantumCircuitViewTest : public ::testing::Test {
  protected:
-  void SetUp() override { view = new QuantumCircuitView(); }
+  void SetUp() override { view_ = new QuantumCircuitView(); }
 
-  void TearDown() override { delete view; }
+  void TearDown() override { delete view_; }
 
-  QuantumCircuitView* view{};
+  QuantumCircuitView* view_{};
 };
 
 TEST_F(QuantumCircuitViewTest, Instantiation) {
   // Currently WIP, just testing that it constructs and destructs properly
-  EXPECT_NE(view, nullptr);
+  EXPECT_NE(view_, nullptr);
 }
 
 }  // namespace qde::gui

@@ -12,9 +12,9 @@ TextEditor::TextEditor(QWidget* parent)
       editor_(new CodeEditor(this)),
       document_(new TextDocument(this)),
       undoStack_(new QUndoStack(this)) {
-  QPointer<QVBoxLayout> const layout = new QVBoxLayout(this);
-  layout->setContentsMargins(0, 0, 0, 0);
-  layout->addWidget(editor_);
+  QPointer<QVBoxLayout> const kLayout = new QVBoxLayout(this);
+  kLayout->setContentsMargins(0, 0, 0, 0);
+  kLayout->addWidget(editor_);
 
   connect(editor_, &QPlainTextEdit::textChanged, this,
           &TextEditor::onEditorTextChanged);

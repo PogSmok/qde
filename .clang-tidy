@@ -91,11 +91,7 @@ CheckOptions:
 
   # ---- Constants --------------------------------------------------------------
 
-  # All constants get kPrefix: local, global, static, class-level
-  - key:   readability-identifier-naming.ConstantCase
-    value: CamelCase
-  - key:   readability-identifier-naming.ConstantPrefix
-    value: 'k'
+  # Constants: kMyConstant
   - key:   readability-identifier-naming.GlobalConstantCase
     value: CamelCase
   - key:   readability-identifier-naming.GlobalConstantPrefix

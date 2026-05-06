@@ -52,33 +52,33 @@ MainWindow::MainWindow(QWidget* parent)
 }
 
 void MainWindow::setupMenuBar() {
-  auto* fileMenu = menuBar()->addMenu("&File");
-  fileMenu->setStyleSheet(QString("QMenu { background: %1; color: %2; }"
-                                  "QMenu::item:selected { background: %3; }")
-                              .arg(theme::kMenuBackground, theme::kMenuText,
-                                   theme::kMenuSelectedBackground));
+  auto* file_menu = menuBar()->addMenu("&File");
+  file_menu->setStyleSheet(QString("QMenu { background: %1; color: %2; }"
+                                   "QMenu::item:selected { background: %3; }")
+                               .arg(theme::kMenuBackground, theme::kMenuText,
+                                    theme::kMenuSelectedBackground));
 
-  const QPointer<QAction> newAct = fileMenu->addAction(
+  const QPointer<QAction> kNewAct = file_menu->addAction(
       "&New", QKeySequence::New, this, &MainWindow::newFile);
-  const QPointer<QAction> openAct = fileMenu->addAction(
+  const QPointer<QAction> kOpenAct = file_menu->addAction(
       "&Open...", QKeySequence::Open, this, &MainWindow::openFile);
-  fileMenu->addSeparator();
-  const QPointer<QAction> saveAct = fileMenu->addAction(
+  file_menu->addSeparator();
+  const QPointer<QAction> kSaveAct = file_menu->addAction(
       "&Save", QKeySequence::Save, this, &MainWindow::saveFile);
-  const QPointer<QAction> saveAsAct =
-      fileMenu->addAction("Save &As…", this, &MainWindow::saveFileAs);
-  fileMenu->addSeparator();
-  fileMenu->addAction("&Quit", QKeySequence::Quit, this, &QWidget::close);
+  const QPointer<QAction> kSaveAsAct =
+      file_menu->addAction("Save &As…", this, &MainWindow::saveFileAs);
+  file_menu->addSeparator();
+  file_menu->addAction("&Quit", QKeySequence::Quit, this, &QWidget::close);
 
-  Q_UNUSED(newAct)
-  Q_UNUSED(openAct)
-  Q_UNUSED(saveAct)
-  Q_UNUSED(saveAsAct)
+  Q_UNUSED(kNewAct)
+  Q_UNUSED(kOpenAct)
+  Q_UNUSED(kSaveAct)
+  Q_UNUSED(kSaveAsAct)
 
-  auto* viewMenu = menuBar()->addMenu("&View");
-  viewMenu->setStyleSheet(fileMenu->styleSheet());
-  auto* splitAct = viewMenu->addAction("Toggle Layout");
-  connect(splitAct, &QAction::triggered, this, [this] {
+  auto* view_menu = menuBar()->addMenu("&View");
+  view_menu->setStyleSheet(file_menu->styleSheet());
+  auto* split_act = view_menu->addAction("Toggle Layout");
+  connect(split_act, &QAction::triggered, this, [this] {
     splitter_->setOrientation(splitter_->orientation() == Qt::Vertical
                                   ? Qt::Horizontal
                                   : Qt::Vertical);
@@ -132,8 +132,8 @@ void MainWindow::saveFileAs() {
   QString path = QFileDialog::getSaveFileName(
       this, "Save As", {}, "QASM Files (*.qasm);;All Files (*)");
   if (!path.isEmpty()) {
-    bool isOk = editor_->saveFileAs(path);
-    if (isOk) {
+    bool is_ok = editor_->saveFileAs(path);
+    if (is_ok) {
       updateTitle();
     }
     // TODO: Handle error

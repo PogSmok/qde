@@ -36,7 +36,7 @@ TEST(GateDefinition, FixedGateWrongMatrixSizeThrows) {
 
 TEST(GateDefinition, FixedGateWrongMatrixSizeMessageContainsSizes) {
   try {
-    GateDefinition giveMeAName("bad", 1, {1, 0});
+    GateDefinition give_me_a_name("bad", 1, {1, 0});
     FAIL();
   } catch (const std::invalid_argument& e) {
     EXPECT_NE(std::string(e.what()).find('4'), std::string::npos);
@@ -54,9 +54,9 @@ TEST(GateDefinition, FixedGateAcceptsCorrectMatrix) {
 
 TEST(GateDefinition, ParametricGateStoresMetadata) {
   GateDefinition g("rx", 1, 1, [](const std::vector<double>& p) {
-    const double c = std::cos(p[0] / 2.0);
-    const double s = std::sin(p[0] / 2.0);
-    return std::vector<C>{{c, 0}, {0, -s}, {0, -s}, {c, 0}};
+    const double kC = std::cos(p[0] / 2.0);
+    const double kS = std::sin(p[0] / 2.0);
+    return std::vector<C>{{kC, 0}, {0, -kS}, {0, -kS}, {kC, 0}};
   });
   EXPECT_EQ(g.name(), "rx");
   EXPECT_EQ(g.numQubits(), 1U);

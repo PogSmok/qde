@@ -10,66 +10,66 @@ namespace qde::gui {
 class AppControllerTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    circuitView = new QuantumCircuitView();
-    textEditor = new TextEditor();
-    controller = new AppController(circuitView, textEditor);
+    circuit_view = new QuantumCircuitView();
+    text_editor = new TextEditor();
+    controller = new AppController(circuit_view, text_editor);
   }
 
   void TearDown() override {
     delete controller;
-    delete textEditor;
-    delete circuitView;
+    delete text_editor;
+    delete circuit_view;
   }
 
  public:
-  QPointer<QuantumCircuitView> circuitView;
-  QPointer<TextEditor> textEditor;
+  QPointer<QuantumCircuitView> circuit_view;
+  QPointer<TextEditor> text_editor;
   QPointer<AppController> controller;
 };
 
 TEST_F(AppControllerTest, ParseNowSuccess) {
-  QSignalSpy successSpy(controller, &AppController::parseSuccess);
-  QSignalSpy errorSpy(controller, &AppController::parseError);
+  QSignalSpy success_spy(controller, &AppController::parseSuccess);
+  QSignalSpy error_spy(controller, &AppController::parseError);
 
-  auto* innerEditor = textEditor->findChild<CodeEditor*>();
-  ASSERT_NE(innerEditor, nullptr);
-  innerEditor->setPlainText("OPENQASM 3.0;\nqreg q[1];");
+  auto* inner_editor = text_editor->findChild<CodeEditor*>();
+  ASSERT_NE(inner_editor, nullptr);
+  inner_editor->setPlainText("OPENQASM 3.0;\nqreg q[1];");
 
   controller->parseNow();
 
-  EXPECT_EQ(successSpy.count(), 1);
-  EXPECT_EQ(errorSpy.count(), 0);
+  EXPECT_EQ(success_spy.count(), 1);
+  EXPECT_EQ(error_spy.count(), 0);
   EXPECT_NE(controller->circuit(), nullptr);
 }
 
 TEST_F(AppControllerTest, ParseNowError) {
-  QSignalSpy successSpy(controller, &AppController::parseSuccess);
-  QSignalSpy errorSpy(controller, &AppController::parseError);
+  QSignalSpy success_spy(controller, &AppController::parseSuccess);
+  QSignalSpy error_spy(controller, &AppController::parseError);
 
-  auto* innerEditor = textEditor->findChild<CodeEditor*>();
-  ASSERT_NE(innerEditor, nullptr);
-  innerEditor->setPlainText("INVALID SYNTAX");
+  auto* inner_editor = text_editor->findChild<CodeEditor*>();
+  ASSERT_NE(inner_editor, nullptr);
+  inner_editor->setPlainText("INVALID SYNTAX");
 
   controller->parseNow();
 
-  EXPECT_EQ(successSpy.count(), 0);
-  EXPECT_EQ(errorSpy.count(), 1);
+  EXPECT_EQ(success_spy.count(), 0);
+  EXPECT_EQ(error_spy.count(), 1);
   EXPECT_EQ(controller->circuit(), nullptr);
 }
 
 TEST_F(AppControllerTest, DebounceTimerWorks) {
-  QSignalSpy successSpy(controller, &AppController::parseSuccess);
+  QSignalSpy success_spy(controller, &AppController::parseSuccess);
 
-  auto* innerEditor = textEditor->findChild<CodeEditor*>();
-  ASSERT_NE(innerEditor, nullptr);
+  auto* inner_editor = text_editor->findChild<CodeEditor*>();
+  ASSERT_NE(inner_editor, nullptr);
 
   // Type something
-  innerEditor->setPlainText("OPENQASM 3.0;\nqreg q[1];");
+  inner_editor->setPlainText("OPENQASM 3.0;\nqreg q[1];");
 
   // The signal textChanged triggers debounce timer (400ms).
-  EXPECT_EQ(successSpy.count(), 0);  // It should not parse instantly.
-  EXPECT_TRUE(successSpy.wait(2000));
-  EXPECT_EQ(successSpy.count(), 1);  // It should be parsed.
+  EXPECT_EQ(success_spy.count(), 0);  // It should not parse instantly.
+  EXPECT_TRUE(success_spy.wait(2000));
+  EXPECT_EQ(success_spy.count(), 1);  // It should be parsed.
 }
 
 }  // namespace qde::gui
