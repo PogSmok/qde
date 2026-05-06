@@ -82,112 +82,112 @@ M MakeMatrix(std::size_t n, std::initializer_list<Swap> swaps = {},
 // ---- fixed single-qubit gates ---------------------------------------------
 
 inline const M& MatI() {
-  static const M v = Mat2(1, 0, 0, 1);
-  return v;
+  static const M kV = Mat2(1, 0, 0, 1);
+  return kV;
 }
 
 inline const M& MatH() {
-  static const M v = Mat2(kIS2, kIS2, kIS2, -kIS2);
-  return v;
+  static const M kV = Mat2(kIS2, kIS2, kIS2, -kIS2);
+  return kV;
 }
 
 inline const M& MatX() {
-  static const M v = Mat2(0, 1, 1, 0);
-  return v;
+  static const M kV = Mat2(0, 1, 1, 0);
+  return kV;
 }
 
 inline const M& MatY() {
-  static const M v = Mat2(0, kMI, kI, 0);
-  return v;
+  static const M kV = Mat2(0, kMI, kI, 0);
+  return kV;
 }
 
 inline const M& MatZ() {
-  static const M v = Mat2(1, 0, 0, -1);
-  return v;
+  static const M kV = Mat2(1, 0, 0, -1);
+  return kV;
 }
 
 inline const M& MatS() {
-  static const M v = Mat2(1, 0, 0, kI);
-  return v;
+  static const M kV = Mat2(1, 0, 0, kI);
+  return kV;
 }
 
 inline const M& MatSdg() {
-  static const M v = Mat2(1, 0, 0, kMI);
-  return v;
+  static const M kV = Mat2(1, 0, 0, kMI);
+  return kV;
 }
 
 inline const M& MatT() {
-  static const M v = Mat2(1, 0, 0, C{kIS2, kIS2});
-  return v;
+  static const M kV = Mat2(1, 0, 0, C{kIS2, kIS2});
+  return kV;
 }
 
 inline const M& MatTdg() {
-  static const M v = Mat2(1, 0, 0, C{kIS2, -kIS2});
-  return v;
+  static const M kV = Mat2(1, 0, 0, C{kIS2, -kIS2});
+  return kV;
 }
 
 inline const M& MatSx() {
-  static const M v =
+  static const M kV =
       Mat2(C{0.5, 0.5}, C{0.5, -0.5}, C{0.5, -0.5}, C{0.5, 0.5});
-  return v;
+  return kV;
 }
 
 inline const M& MatSXdg() {
-  static const M v =
+  static const M kV =
       Mat2(C{0.5, -0.5}, C{0.5, 0.5}, C{0.5, 0.5}, C{0.5, -0.5});
-  return v;
+  return kV;
 }
 
 // ---- fixed two-qubit gates ------------------------------------------------
 
 // CX: |10⟩ ↔ |11⟩
 inline const M& MatCx() {
-  static const M v = Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0);
-  return v;
+  static const M kV = Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0);
+  return kV;
 }
 
 // CZ: phase flip on |11⟩
 inline const M& MatCz() {
-  static const M v = Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1);
-  return v;
+  static const M kV = Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1);
+  return kV;
 }
 
 // CY: |10⟩ ↔ |11⟩ with Y factors
 inline const M& MatCy() {
-  static const M v = Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, kMI, 0, 0, kI, 0);
-  return v;
+  static const M kV = Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, kMI, 0, 0, kI, 0);
+  return kV;
 }
 
 // SWAP: |01⟩ ↔ |10⟩
 inline const M& MatSwap() {
-  static const M v = Mat4(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
-  return v;
+  static const M kV = Mat4(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
+  return kV;
 }
 
 // iSWAP: |01⟩ ↔ i|10⟩
 inline const M& MatIswap() {
-  static const M v = Mat4(1, 0, 0, 0, 0, 0, kI, 0, 0, kI, 0, 0, 0, 0, 0, 1);
-  return v;
+  static const M kV = Mat4(1, 0, 0, 0, 0, 0, kI, 0, 0, kI, 0, 0, 0, 0, 0, 1);
+  return kV;
 }
 
 // ---- fixed three-qubit gates ----------------------------------------------
 
 // CCX (Toffoli): |110⟩ ↔ |111⟩  (rows 6 ↔ 7)
 inline const M& MatCcx() {
-  static const M v = MakeMatrix(3, {{6, 7}});
-  return v;
+  static const M kV = MakeMatrix(3, {{6, 7}});
+  return kV;
 }
 
 // CCZ: phase flip on |111⟩  (row 7 diagonal = -1)
 inline const M& MatCcz() {
-  static const M v = MakeMatrix(3, {}, {{7, C{-1.0, 0.0}}});
-  return v;
+  static const M kV = MakeMatrix(3, {}, {{7, C{-1.0, 0.0}}});
+  return kV;
 }
 
 // CSWAP (Fredkin): |101⟩ ↔ |110⟩  (rows 5 ↔ 6)
 inline const M& MatCswap() {
-  static const M v = MakeMatrix(3, {{5, 6}});
-  return v;
+  static const M kV = MakeMatrix(3, {{5, 6}});
+  return kV;
 }
 
 }  // namespace
