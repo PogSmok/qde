@@ -54,9 +54,9 @@ TEST(GateDefinition, FixedGateAcceptsCorrectMatrix) {
 
 TEST(GateDefinition, ParametricGateStoresMetadata) {
   GateDefinition g("rx", 1, 1, [](const std::vector<double>& p) {
-    const double kC = std::cos(p[0] / 2.0);
-    const double kS = std::sin(p[0] / 2.0);
-    return std::vector<C>{{kC, 0}, {0, -kS}, {0, -kS}, {kC, 0}};
+    const double c = std::cos(p[0] / 2.0);
+    const double s = std::sin(p[0] / 2.0);
+    return std::vector<C>{{c, 0}, {0, -s}, {0, -s}, {c, 0}};
   });
   EXPECT_EQ(g.name(), "rx");
   EXPECT_EQ(g.numQubits(), 1U);

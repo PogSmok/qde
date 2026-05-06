@@ -103,10 +103,11 @@ CheckOptions:
     value: CamelCase
   - key:   readability-identifier-naming.ClassConstantPrefix
     value: 'k'
+  # Local constants are snake_case without prefix
   - key:   readability-identifier-naming.LocalConstantCase
-    value: CamelCase
+    value: lower_case
   - key:   readability-identifier-naming.LocalConstantPrefix
-    value: 'k'
+    value: ""
 
   # Enum constants: kMyValue
   - key:   readability-identifier-naming.EnumConstantCase

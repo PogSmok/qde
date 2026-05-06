@@ -296,20 +296,20 @@ int ModifierCount(qasm3Parser::GateModifierContext* mod) {
 // ---------------------------------------------------------------------------
 
 Mat IdentityMatrix(std::uint8_t n) {
-  const std::size_t kDim = std::size_t{1} << n;
-  Mat m(kDim * kDim, C{0.0, 0.0});
-  for (std::size_t i = 0; i < kDim; ++i) {
-    m[(i * kDim) + i] = C{1.0, 0.0};
+  const std::size_t dim = std::size_t{1} << n;
+  Mat m(dim * dim, C{0.0, 0.0});
+  for (std::size_t i = 0; i < dim; ++i) {
+    m[(i * dim) + i] = C{1.0, 0.0};
   }
   return m;
 }
 
 Mat ConjugateTranspose(const Mat& m, std::uint8_t n) {
-  const std::size_t kDim = std::size_t{1} << n;
-  Mat result(kDim * kDim);
-  for (std::size_t i = 0; i < kDim; ++i) {
-    for (std::size_t j = 0; j < kDim; ++j) {
-      result[(i * kDim) + j] = std::conj(m[(j * kDim) + i]);
+  const std::size_t dim = std::size_t{1} << n;
+  Mat result(dim * dim);
+  for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t j = 0; j < dim; ++j) {
+      result[(i * dim) + j] = std::conj(m[(j * dim) + i]);
     }
   }
   return result;
@@ -331,25 +331,25 @@ Mat MatrixPow(const Mat& m,
               std::uint8_t n,  // NOLINT(bugprone-easily-swappable-parameters)
               int power        // NOLINT(bugprone-easily-swappable-parameters)
 ) {
-  const std::size_t kDim = std::size_t{1} << n;
+  const std::size_t dim = std::size_t{1} << n;
   Mat result = IdentityMatrix(n);
   for (int p = 0; p < power; ++p) {
-    result = MatMul(result, m, kDim);
+    result = MatMul(result, m, dim);
   }
   return result;
 }
 
 // Prepends one control qubit: identity on |0⟩, U on |1⟩.
 Mat AddControl(const Mat& m, std::uint8_t n) {
-  const std::size_t kDim = std::size_t{1} << n;
-  const std::size_t kNewDim = kDim * 2;
-  Mat result(kNewDim * kNewDim, C{0.0, 0.0});
-  for (std::size_t i = 0; i < kDim; ++i) {
-    result[(i * kNewDim) + i] = C{1.0, 0.0};
+  const std::size_t dim = std::size_t{1} << n;
+  const std::size_t new_dim = dim * 2;
+  Mat result(new_dim * new_dim, C{0.0, 0.0});
+  for (std::size_t i = 0; i < dim; ++i) {
+    result[(i * new_dim) + i] = C{1.0, 0.0};
   }
-  for (std::size_t i = 0; i < kDim; ++i) {
-    for (std::size_t j = 0; j < kDim; ++j) {
-      result[((kDim + i) * kNewDim) + (kDim + j)] = m[(i * kDim) + j];
+  for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t j = 0; j < dim; ++j) {
+      result[((dim + i) * new_dim) + (dim + j)] = m[(i * dim) + j];
     }
   }
   return result;
@@ -357,16 +357,16 @@ Mat AddControl(const Mat& m, std::uint8_t n) {
 
 // Prepends one negated control qubit: U on |0⟩, identity on |1⟩.
 Mat AddNegControl(const Mat& m, std::uint8_t n) {
-  const std::size_t kDim = std::size_t{1} << n;
-  const std::size_t kNewDim = kDim * 2;
-  Mat result(kNewDim * kNewDim, C{0.0, 0.0});
-  for (std::size_t i = 0; i < kDim; ++i) {
-    for (std::size_t j = 0; j < kDim; ++j) {
-      result[(i * kNewDim) + j] = m[(i * kDim) + j];
+  const std::size_t dim = std::size_t{1} << n;
+  const std::size_t new_dim = dim * 2;
+  Mat result(new_dim * new_dim, C{0.0, 0.0});
+  for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t j = 0; j < dim; ++j) {
+      result[(i * new_dim) + j] = m[(i * dim) + j];
     }
   }
-  for (std::size_t i = 0; i < kDim; ++i) {
-    result[((kDim + i) * kNewDim) + (kDim + i)] = C{1.0, 0.0};
+  for (std::size_t i = 0; i < dim; ++i) {
+    result[((dim + i) * new_dim) + (dim + i)] = C{1.0, 0.0};
   }
   return result;
 }
@@ -378,10 +378,10 @@ Mat EmbedGate(const Mat& gate_mat, std::uint8_t gate_n,
   if (gate_n == total_n) {
     return gate_mat;
   }
-  const std::size_t kTotalDim = std::size_t{1} << total_n;
-  const std::size_t kGateDim = std::size_t{1} << gate_n;
-  Mat result(kTotalDim * kTotalDim, C{0.0, 0.0});
-  for (std::size_t in_state = 0; in_state < kTotalDim; ++in_state) {
+  const std::size_t total_dim = std::size_t{1} << total_n;
+  const std::size_t gate_dim = std::size_t{1} << gate_n;
+  Mat result(total_dim * total_dim, C{0.0, 0.0});
+  for (std::size_t in_state = 0; in_state < total_dim; ++in_state) {
     std::size_t gate_in = 0;
     for (std::uint8_t k = 0; k < gate_n; ++k) {
       std::uint8_t bit = total_n - 1 - qubit_indices[k];
@@ -389,8 +389,8 @@ Mat EmbedGate(const Mat& gate_mat, std::uint8_t gate_n,
         gate_in |= std::size_t{1} << (gate_n - 1 - k);
       }
     }
-    for (std::size_t gate_out = 0; gate_out < kGateDim; ++gate_out) {
-      C amp = gate_mat[(gate_out * kGateDim) + gate_in];
+    for (std::size_t gate_out = 0; gate_out < gate_dim; ++gate_out) {
+      C amp = gate_mat[(gate_out * gate_dim) + gate_in];
       std::size_t out_state = in_state;
       for (std::uint8_t k = 0; k < gate_n; ++k) {
         std::uint8_t bit = total_n - 1 - qubit_indices[k];
@@ -400,7 +400,7 @@ Mat EmbedGate(const Mat& gate_mat, std::uint8_t gate_n,
           out_state &= ~(std::size_t{1} << bit);
         }
       }
-      result[(out_state * kTotalDim) + in_state] = amp;
+      result[(out_state * total_dim) + in_state] = amp;
     }
   }
   return result;
@@ -447,15 +447,15 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       qasm3Parser::AssignmentStatementContext* ctx) override {
     // c[i] = measure q[i];
     if (auto* meas = ctx->measureExpression()) {
-      const std::string kLhsName =
+      const std::string lhs_name =
           ctx->indexedIdentifier()->Identifier()->getText();
-      if (CheckUndefined(UndefinedKind::kBitRegister, kLhsName, ctx)) {
+      if (CheckUndefined(UndefinedKind::kBitRegister, lhs_name, ctx)) {
         return visitChildren(ctx);
       }
-      const QubitReference kQubit = ResolveQubit(meas->gateOperand(), ctx);
-      const BitReference kTarget = ResolveBit(ctx->indexedIdentifier(), ctx);
+      const QubitReference qubit = ResolveQubit(meas->gateOperand(), ctx);
+      const BitReference target = ResolveBit(ctx->indexedIdentifier(), ctx);
       operations_.push_back(
-          {OperationType::kMeasure, nullptr, {}, {kQubit}, {kTarget}});
+          {OperationType::kMeasure, nullptr, {}, {qubit}, {target}});
       return visitChildren(ctx);
     }
 
@@ -464,36 +464,36 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     auto* lhs = ctx->indexedIdentifier();
-    const std::string kName = lhs->Identifier()->getText();
-    if (CheckConstReassignment(kName, ctx)) {
+    const std::string name = lhs->Identifier()->getText();
+    if (CheckConstReassignment(name, ctx)) {
       return visitChildren(ctx);
     }
 
     // Build lookup key: "name" for scalar, "name[i]" for array element
-    std::string key = kName;
+    std::string key = name;
     if (!lhs->indexOperator().empty() &&
         !lhs->indexOperator(0)->expression().empty()) {
-      const int kIdx = static_cast<int>(ExprNode::Eval(
+      const int idx = static_cast<int>(ExprNode::Eval(
           BuildExprTree(lhs->indexOperator(0)->expression(0)), {}));
-      key = kName + "[" + std::to_string(kIdx) + "]";
+      key = name + "[" + std::to_string(idx) + "]";
     }
 
     const C* existing = LookupScalar(key);
     if (existing == nullptr) {
-      AddError(ErrUndefined(UndefinedKind::kVariable, kName), ctx);
+      AddError(ErrUndefined(UndefinedKind::kVariable, name), ctx);
       return visitChildren(ctx);
     }
 
-    const std::string kOp = ctx->op->getText();
+    const std::string op = ctx->op->getText();
 
     // Plain assignment preserves the full complex value via evalC.
-    if (kOp == "=") {
-      const C kVal = EvalC(ctx->expression());
+    if (op == "=") {
+      const C val = EvalC(ctx->expression());
       for (auto it = scopes_.rbegin(); it != scopes_.rend(); ++it) {
         auto found = it->scalar_map.find(key);
         if (found != it->scalar_map.end()) {
-          found->second = kVal;
-          const_vals_[key] = kVal.real();
+          found->second = val;
+          const_vals_[key] = val.real();
           break;
         }
       }
@@ -501,55 +501,55 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     // Compound operators work on the real component only.
-    const double kRhs = ExprNode::Eval(BuildExprTree(ctx->expression()), {});
+    const double rhs = ExprNode::Eval(BuildExprTree(ctx->expression()), {});
     double cur = existing->real();
 
-    if (kOp == "+=") {
+    if (op == "+=") {
       {
-        cur += kRhs;
+        cur += rhs;
       }
-    } else if (kOp == "-=") {
+    } else if (op == "-=") {
       {
-        cur -= kRhs;
+        cur -= rhs;
       }
-    } else if (kOp == "*=") {
+    } else if (op == "*=") {
       {
-        cur *= kRhs;
+        cur *= rhs;
       }
-    } else if (kOp == "/=") {
+    } else if (op == "/=") {
       {
-        cur = (kRhs != 0.0) ? cur / kRhs : 0.0;
+        cur = (rhs != 0.0) ? cur / rhs : 0.0;
       }
-    } else if (kOp == "%=") {
+    } else if (op == "%=") {
       {
-        cur = std::fmod(cur, kRhs);
+        cur = std::fmod(cur, rhs);
       }
-    } else if (kOp == "**=") {
+    } else if (op == "**=") {
       {
-        cur = std::pow(cur, kRhs);
+        cur = std::pow(cur, rhs);
       }
-    } else if (kOp == "&=") {
+    } else if (op == "&=") {
       auto l = static_cast<long long>(cur);
-      auto r = static_cast<long long>(kRhs);
+      auto r = static_cast<long long>(rhs);
       cur = static_cast<double>(l & r);
-    } else if (kOp == "|=") {
+    } else if (op == "|=") {
       auto l = static_cast<long long>(cur);
-      auto r = static_cast<long long>(kRhs);
+      auto r = static_cast<long long>(rhs);
       cur = static_cast<double>(l | r);
-    } else if (kOp == "^=") {
+    } else if (op == "^=") {
       auto l = static_cast<long long>(cur);
-      auto r = static_cast<long long>(kRhs);
+      auto r = static_cast<long long>(rhs);
       cur = static_cast<double>(l ^ r);
-    } else if (kOp == "<<=") {
+    } else if (op == "<<=") {
       auto l = static_cast<long long>(cur);
-      auto r = static_cast<long long>(kRhs);
+      auto r = static_cast<long long>(rhs);
       cur = static_cast<double>(l << r);
-    } else if (kOp == ">>=") {
+    } else if (op == ">>=") {
       auto l = static_cast<long long>(cur);
-      auto r = static_cast<long long>(kRhs);
+      auto r = static_cast<long long>(rhs);
       cur = static_cast<double>(l >> r);
     } else {
-      AddError("unknown assignment operator '" + kOp + "'", ctx);
+      AddError("unknown assignment operator '" + op + "'", ctx);
       return visitChildren(ctx);
     }
 
@@ -625,8 +625,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   //   SEMICOLON;
   std::any visitClassicalDeclarationStatement(
       qasm3Parser::ClassicalDeclarationStatementContext* ctx) override {
-    const std::string kName = ctx->Identifier()->getText();
-    if (CheckRedeclared(kName, ctx)) {
+    const std::string name = ctx->Identifier()->getText();
+    if (CheckRedeclared(name, ctx)) {
       return visitChildren(ctx);
     }
 
@@ -641,12 +641,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                     dynamic_cast<qasm3Parser::LiteralExpressionContext*>(
                         cast->expression())) {
               if (src_lit->Identifier() != nullptr) {
-                const std::string kSrc = src_lit->Identifier()->getText();
-                const std::string kPfx = kSrc + "[";
+                const std::string src = src_lit->Identifier()->getText();
+                const std::string pfx = src + "[";
                 for (const auto& kv : scopes_.back().scalar_map) {
-                  if (kv.first.size() >= kPfx.size() &&
-                      kv.first.compare(0, kPfx.size(), kPfx) == 0) {
-                    SetScalar(kName + kv.first.substr(kSrc.size()),
+                  if (kv.first.size() >= pfx.size() &&
+                      kv.first.compare(0, pfx.size(), pfx) == 0) {
+                    SetScalar(name + kv.first.substr(src.size()),
                               kv.second.real());
                   }
                 }
@@ -675,7 +675,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
               }
             }
           };
-          store(arr, kName);
+          store(arr, name);
         }
       }
       return visitChildren(ctx);
@@ -687,39 +687,39 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     if (scalar->BIT() != nullptr) {
-      if ((bit_map_.count(kName) != 0U) || (qubit_map_.count(kName) != 0U)) {
-        AddError("redeclaration of '" + kName + "'", ctx);
+      if ((bit_map_.count(name) != 0U) || (qubit_map_.count(name) != 0U)) {
+        AddError("redeclaration of '" + name + "'", ctx);
         return visitChildren(ctx);
       }
-      const std::size_t kSize =
+      const std::size_t size =
           (scalar->designator() != nullptr)
               ? static_cast<std::size_t>(ExprNode::Eval(
                     BuildExprTree(scalar->designator()->expression()), {}))
               : 1;
-      bit_map_[kName] = {bit_registers_.size(), kSize};
-      bit_registers_.push_back({kName, kSize});
+      bit_map_[name] = {bit_registers_.size(), size};
+      bit_registers_.push_back({name, size});
     } else if ((scalar->FLOAT() != nullptr) || (scalar->INT() != nullptr) ||
                (scalar->UINT() != nullptr) || (scalar->ANGLE() != nullptr)) {
       if (ctx->declarationExpression() != nullptr) {
         if (auto* expr = ctx->declarationExpression()->expression()) {
-          SetScalar(kName, ExprNode::Eval(BuildExprTree(expr), {}));
+          SetScalar(name, ExprNode::Eval(BuildExprTree(expr), {}));
         }
       }
     } else if (scalar->COMPLEX() != nullptr) {
       if (ctx->declarationExpression() != nullptr) {
         if (auto* expr = ctx->declarationExpression()->expression()) {
-          SetComplexScalar(kName, EvalC(expr));
+          SetComplexScalar(name, EvalC(expr));
         }
       }
     } else if (scalar->DURATION() != nullptr) {
-      SetScalar(kName, 0.0);
+      SetScalar(name, 0.0);
       if (ctx->declarationExpression() != nullptr) {
         if (auto* expr = ctx->declarationExpression()->expression()) {
-          SetScalar(kName, ExprNode::Eval(BuildExprTree(expr), {}));
+          SetScalar(name, ExprNode::Eval(BuildExprTree(expr), {}));
         }
       }
     } else if (scalar->STRETCH() != nullptr) {
-      SetScalar(kName, 0.0);
+      SetScalar(name, 0.0);
     }
     return visitChildren(ctx);
   }
@@ -727,14 +727,14 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   // CONST scalarType Identifier EQUALS declarationExpression SEMICOLON;
   std::any visitConstDeclarationStatement(
       qasm3Parser::ConstDeclarationStatementContext* ctx) override {
-    const std::string kName = ctx->Identifier()->getText();
-    if (CheckRedeclared(kName, ctx)) {
+    const std::string name = ctx->Identifier()->getText();
+    if (CheckRedeclared(name, ctx)) {
       return visitChildren(ctx);
     }
 
     if (auto* expr = ctx->declarationExpression()->expression()) {
-      SetScalar(kName, ExprNode::Eval(BuildExprTree(expr), {}));
-      scopes_.back().const_names.insert(kName);
+      SetScalar(name, ExprNode::Eval(BuildExprTree(expr), {}));
+      scopes_.back().const_names.insert(name);
     } else {
       AddError("const initializer must be a scalar expression", ctx);
     }
@@ -834,11 +834,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     // ---- normal gate call --------------------------------------------------
-    const std::string kGateName = ctx->Identifier()->getText();
-    if (CheckUndefined(UndefinedKind::kGate, kGateName, ctx)) {
+    const std::string gate_name = ctx->Identifier()->getText();
+    if (CheckUndefined(UndefinedKind::kGate, gate_name, ctx)) {
       return visitChildren(ctx);
     }
-    auto gate = registry_.find(kGateName);
+    auto gate = registry_.find(gate_name);
 
     // Evaluate parameter expressions with the current scalar scope
     std::vector<double> params;
@@ -851,7 +851,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     auto modifiers = ctx->gateModifier();
 
     if (modifiers.empty() && params.size() != gate->numParams()) {
-      AddError("gate '" + kGateName + "' expects " +
+      AddError("gate '" + gate_name + "' expects " +
                    std::to_string(gate->numParams()) + " parameter(s), got " +
                    std::to_string(params.size()),
                ctx);
@@ -868,7 +868,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
     auto* operand_list = ctx->gateOperandList();
     if (operand_list == nullptr) {
-      AddError("gate '" + kGateName + "' called with no qubit operands", ctx);
+      AddError("gate '" + gate_name + "' called with no qubit operands", ctx);
       return visitChildren(ctx);
     }
     auto operands = operand_list->gateOperand();
@@ -912,16 +912,16 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         regs.push_back(&it->second);
       }
       if (all_whole && regs.size() > 1) {
-        const std::size_t kSz = regs[0]->size;
+        const std::size_t sz = regs[0]->size;
         bool same = true;
         for (auto* r : regs) {
-          if (r->size != kSz) {
+          if (r->size != sz) {
             same = false;
             break;
           }
         }
         if (same) {
-          for (std::size_t q = 0; q < kSz; ++q) {
+          for (std::size_t q = 0; q < sz; ++q) {
             std::vector<QubitReference> qubits;
             qubits.reserve(regs.size());
             for (auto* r : regs) {
@@ -958,8 +958,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   // GATE Identifier (LPAREN params=identifierList? RPAREN)?
   //   qubits=identifierList scope;
   std::any visitGateStatement(qasm3Parser::GateStatementContext* ctx) override {
-    const std::string kName = ctx->Identifier()->getText();
-    if (CheckRedefined(RedefinedKind::kGate, kName, ctx)) {
+    const std::string name = ctx->Identifier()->getText();
+    if (CheckRedefined(RedefinedKind::kGate, name, ctx)) {
       return {};
     }
 
@@ -978,7 +978,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     }
 
     if (qubit_names.empty()) {
-      AddError("gate '" + kName + "' must operate on at least one qubit", ctx);
+      AddError("gate '" + name + "' must operate on at least one qubit", ctx);
       return {};
     }
 
@@ -992,8 +992,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       local_qubit_idx[qubit_names[i]] = static_cast<std::uint8_t>(i);
     }
 
-    const auto kNumQubits = static_cast<std::uint8_t>(qubit_names.size());
-    const auto kNumParams = static_cast<std::uint8_t>(param_names.size());
+    const auto num_qubits = static_cast<std::uint8_t>(qubit_names.size());
+    const auto num_params = static_cast<std::uint8_t>(param_names.size());
 
     // Deferred modifier kind — used when base gate is parametric
     struct BodyMod {
@@ -1019,10 +1019,10 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         continue;
       }
 
-      const std::string kCallName = call->Identifier()->getText();
-      auto call_gate = registry_.find(kCallName);
+      const std::string call_name = call->Identifier()->getText();
+      auto call_gate = registry_.find(call_name);
       if (!call_gate) {
-        AddError(ErrUndefined(UndefinedKind::kGate, kCallName), call);
+        AddError(ErrUndefined(UndefinedKind::kGate, call_name), call);
         continue;
       }
 
@@ -1070,13 +1070,13 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
           if (indexed == nullptr) {
             continue;
           }
-          const std::string kQname = indexed->Identifier()->getText();
-          auto it = local_qubit_idx.find(kQname);
+          const std::string qname = indexed->Identifier()->getText();
+          auto it = local_qubit_idx.find(qname);
           if (it != local_qubit_idx.end()) {
             bc.qubit_indices.push_back(it->second);
           } else {
-            AddError("undefined qubit parameter '" + kQname +
-                         "' in body of gate '" + kName + "'",
+            AddError("undefined qubit parameter '" + qname +
+                         "' in body of gate '" + name + "'",
                      call);
           }
         }
@@ -1084,24 +1084,24 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       body.push_back(std::move(bc));
     }
 
-    if (kNumParams == 0) {
+    if (num_params == 0) {
       // Parameterless: compute full matrix immediately
-      const std::size_t kDim = std::size_t{1} << kNumQubits;
-      Mat result = IdentityMatrix(kNumQubits);
+      const std::size_t dim = std::size_t{1} << num_qubits;
+      Mat result = IdentityMatrix(num_qubits);
       for (auto& bc : body) {
         Mat gate_mat = bc.gate->matrix({});
         Mat embedded = EmbedGate(gate_mat, bc.gate->numQubits(),
-                                 bc.qubit_indices, kNumQubits);
-        result = MatMul(embedded, result, kDim);
+                                 bc.qubit_indices, num_qubits);
+        result = MatMul(embedded, result, dim);
       }
-      registry_.add(GateDefinition(kName, kNumQubits, std::move(result)));
+      registry_.add(GateDefinition(name, num_qubits, std::move(result)));
     } else {
       // Parametric: defer matrix computation to each call site
       registry_.add(GateDefinition(
-          kName, kNumQubits, kNumParams,
-          [body, kNumQubits](const std::vector<double>& params) -> Mat {
-            const std::size_t kDim = std::size_t{1} << kNumQubits;
-            Mat result = IdentityMatrix(kNumQubits);
+          name, num_qubits, num_params,
+          [body, num_qubits](const std::vector<double>& params) -> Mat {
+            const std::size_t dim = std::size_t{1} << num_qubits;
+            Mat result = IdentityMatrix(num_qubits);
             for (const auto& bc : body) {
               std::vector<double> call_params;
               call_params.reserve(bc.param_exprs.size());
@@ -1135,8 +1135,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                 }
               }
               Mat embedded =
-                  EmbedGate(gate_mat, gate_n, bc.qubit_indices, kNumQubits);
-              result = MatMul(embedded, result, kDim);
+                  EmbedGate(gate_mat, gate_n, bc.qubit_indices, num_qubits);
+              result = MatMul(embedded, result, dim);
             }
             return result;
           }));
@@ -1183,16 +1183,16 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     // Validate register names before resolving
     auto* q_indexed = qubit_operand->indexedIdentifier();
     if (q_indexed != nullptr) {
-      const std::string kQname = q_indexed->Identifier()->getText();
-      if (qubit_map_.count(kQname) == 0U) {
-        AddError(ErrUndefined(UndefinedKind::kQubitRegister, kQname), ctx);
+      const std::string qname = q_indexed->Identifier()->getText();
+      if (qubit_map_.count(qname) == 0U) {
+        AddError(ErrUndefined(UndefinedKind::kQubitRegister, qname), ctx);
         return visitChildren(ctx);
       }
     }
     if (bit_target != nullptr) {
-      const std::string kCname = bit_target->Identifier()->getText();
-      if (bit_map_.count(kCname) == 0U) {
-        AddError(ErrUndefined(UndefinedKind::kBitRegister, kCname), ctx);
+      const std::string cname = bit_target->Identifier()->getText();
+      if (bit_map_.count(cname) == 0U) {
+        AddError(ErrUndefined(UndefinedKind::kBitRegister, cname), ctx);
         return visitChildren(ctx);
       }
     }
@@ -1225,13 +1225,13 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
     }
 
-    const QubitReference kQubit = ResolveQubit(qubit_operand, ctx);
+    const QubitReference qubit = ResolveQubit(qubit_operand, ctx);
     std::vector<BitReference> targets;
     if (bit_target != nullptr) {
       targets.push_back(ResolveBit(bit_target, ctx));
     }
     operations_.push_back(
-        {OperationType::kMeasure, nullptr, {}, {kQubit}, std::move(targets)});
+        {OperationType::kMeasure, nullptr, {}, {qubit}, std::move(targets)});
     return visitChildren(ctx);
   }
 
@@ -1243,21 +1243,21 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   // (CREG | QREG) Identifier designator? SEMICOLON;
   std::any visitOldStyleDeclarationStatement(
       qasm3Parser::OldStyleDeclarationStatementContext* ctx) override {
-    const std::string kName = ctx->Identifier()->getText();
-    if (CheckRedeclared(kName, ctx)) {
+    const std::string name = ctx->Identifier()->getText();
+    if (CheckRedeclared(name, ctx)) {
       return visitChildren(ctx);
     }
-    const std::size_t kSize =
+    const std::size_t size =
         (ctx->designator() != nullptr)
             ? static_cast<std::size_t>(ExprNode::Eval(
                   BuildExprTree(ctx->designator()->expression()), {}))
             : 1;
     if (ctx->QREG() != nullptr) {
-      qubit_map_[kName] = {qubit_registers_.size(), kSize};
-      qubit_registers_.push_back({kName, kSize});
+      qubit_map_[name] = {qubit_registers_.size(), size};
+      qubit_registers_.push_back({name, size});
     } else {  // CREG
-      bit_map_[kName] = {bit_registers_.size(), kSize};
-      bit_registers_.push_back({kName, kSize});
+      bit_map_[name] = {bit_registers_.size(), size};
+      bit_registers_.push_back({name, size});
     }
     return visitChildren(ctx);
   }
@@ -1265,18 +1265,18 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   // qubitType Identifier SEMICOLON;
   std::any visitQuantumDeclarationStatement(
       qasm3Parser::QuantumDeclarationStatementContext* ctx) override {
-    const std::string kName = ctx->Identifier()->getText();
-    if (CheckRedeclared(kName, ctx)) {
+    const std::string name = ctx->Identifier()->getText();
+    if (CheckRedeclared(name, ctx)) {
       return visitChildren(ctx);
     }
-    const std::size_t kSize =
+    const std::size_t size =
         (ctx->qubitType()->designator() != nullptr)
             ? static_cast<std::size_t>(ExprNode::Eval(
                   BuildExprTree(ctx->qubitType()->designator()->expression()),
                   {}))
             : 1;
-    qubit_map_[kName] = {qubit_registers_.size(), kSize};
-    qubit_registers_.push_back({kName, kSize});
+    qubit_map_[name] = {qubit_registers_.size(), size};
+    qubit_registers_.push_back({name, size});
     return visitChildren(ctx);
   }
 
@@ -1286,8 +1286,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     auto* indexed = ctx->gateOperand()->indexedIdentifier();
     // Whole-register reset: reset q; expands to N per-qubit resets
     if ((indexed != nullptr) && indexed->indexOperator().empty()) {
-      const std::string kName = indexed->Identifier()->getText();
-      auto it = qubit_map_.find(kName);
+      const std::string name = indexed->Identifier()->getText();
+      auto it = qubit_map_.find(name);
       if (it != qubit_map_.end()) {
         for (std::size_t q = 0; q < it->second.size; ++q) {
           operations_.push_back({OperationType::kReset,
@@ -1299,11 +1299,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         }
         return visitChildren(ctx);
       }
-      CheckUndefined(UndefinedKind::kQubitRegister, kName, ctx);
+      CheckUndefined(UndefinedKind::kQubitRegister, name, ctx);
       return visitChildren(ctx);
     }
-    const QubitReference kQubit = ResolveQubit(ctx->gateOperand(), ctx);
-    operations_.push_back({OperationType::kReset, nullptr, {}, {kQubit}, {}});
+    const QubitReference qubit = ResolveQubit(ctx->gateOperand(), ctx);
+    operations_.push_back({OperationType::kReset, nullptr, {}, {qubit}, {}});
     return visitChildren(ctx);
   }
 
@@ -1561,10 +1561,10 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       AddError("hardware qubit references ($N) are not supported", error_ctx);
       return {0, 0};
     }
-    const std::string kName = indexed->Identifier()->getText();
-    auto it = qubit_map_.find(kName);
+    const std::string name = indexed->Identifier()->getText();
+    auto it = qubit_map_.find(name);
     if (it == qubit_map_.end()) {
-      AddError(ErrUndefined(UndefinedKind::kQubitRegister, kName), error_ctx);
+      AddError(ErrUndefined(UndefinedKind::kQubitRegister, name), error_ctx);
       return {0, 0};
     }
     std::size_t qubit_idx = 0;
@@ -1581,10 +1581,10 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
   BitReference ResolveBit(qasm3Parser::IndexedIdentifierContext* indexed,
                           antlr4::ParserRuleContext* error_ctx) {
-    const std::string kName = indexed->Identifier()->getText();
-    auto it = bit_map_.find(kName);
+    const std::string name = indexed->Identifier()->getText();
+    auto it = bit_map_.find(name);
     if (it == bit_map_.end()) {
-      AddError(ErrUndefined(UndefinedKind::kBitRegister, kName), error_ctx);
+      AddError(ErrUndefined(UndefinedKind::kBitRegister, name), error_ctx);
       return {0, 0};
     }
     std::size_t bit_idx = 0;
@@ -1644,9 +1644,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::vector<double>& base_params,
       const std::vector<qasm3Parser::GateModifierContext*>& modifiers,
       antlr4::ParserRuleContext* error_ctx) {
-    const std::string kName =
+    const std::string name =
         BuildModifiedName(base->name(), base_params, modifiers);
-    auto it = derived_gates_.find(kName);
+    auto it = derived_gates_.find(name);
     if (it != derived_gates_.end()) {
       return it->second;
     }
@@ -1661,14 +1661,14 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       } else if (mod->POW() != nullptr) {
         mat = MatrixPow(mat, n, ModifierCount(mod));
       } else if (mod->CTRL() != nullptr) {
-        const int kCount = ModifierCount(mod);
-        for (int c = 0; c < kCount; ++c) {
+        const int count = ModifierCount(mod);
+        for (int c = 0; c < count; ++c) {
           mat = AddControl(mat, n);
           ++n;
         }
       } else if (mod->NEGCTRL() != nullptr) {
-        const int kCount = ModifierCount(mod);
-        for (int c = 0; c < kCount; ++c) {
+        const int count = ModifierCount(mod);
+        for (int c = 0; c < count; ++c) {
           mat = AddNegControl(mat, n);
           ++n;
         }
@@ -1678,8 +1678,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
     }
 
-    auto gate = std::make_shared<GateDefinition>(kName, n, std::move(mat));
-    derived_gates_[kName] = gate;
+    auto gate = std::make_shared<GateDefinition>(name, n, std::move(mat));
+    derived_gates_[name] = gate;
     return gate;
   }
 
@@ -1726,14 +1726,14 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         }
         mat[0] = result;
       } else if (mod->CTRL() != nullptr) {
-        const int kCount = ModifierCount(mod);
-        for (int c = 0; c < kCount; ++c) {
+        const int count = ModifierCount(mod);
+        for (int c = 0; c < count; ++c) {
           mat = AddControl(mat, n);
           ++n;
         }
       } else if (mod->NEGCTRL() != nullptr) {
-        const int kCount = ModifierCount(mod);
-        for (int c = 0; c < kCount; ++c) {
+        const int count = ModifierCount(mod);
+        for (int c = 0; c < count; ++c) {
           mat = AddNegControl(mat, n);
           ++n;
         }
@@ -1768,7 +1768,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::unordered_map<std::string, int>& param_idx,
       const std::unordered_map<std::string, double>& const_vals) {
     auto n = std::make_shared<ExprNode>();
-    const double kDeviceCycleTimeNs =
+    const double device_cycle_time_ns =
         static_cast<double>(config_.device_cycle_time_ns().count());
 
     // LPAREN expression RPAREN
@@ -1826,12 +1826,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
         // Check whether any element of this array was declared.
         // "m[0]" works for 1D; for N-D, look for any "m[..." key.
-        const std::string kPfx = arr_name + "[";
+        const std::string pfx = arr_name + "[";
         bool declared = const_vals.count(arr_name) > 0;
         if (!declared) {
           for (const auto& [k, _] : const_vals) {
-            if (k.size() >= kPfx.size() &&
-                k.compare(0, kPfx.size(), kPfx) == 0) {
+            if (k.size() >= pfx.size() && k.compare(0, pfx.size(), pfx) == 0) {
               declared = true;
               break;
             }
@@ -2063,7 +2062,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         n->value = 0.0;  // real part of a purely imaginary number is 0
       } else if (e->TimingLiteral() != nullptr) {
         n->value = ParseTimingLiteral(e->TimingLiteral()->getText(),
-                                      kDeviceCycleTimeNs);
+                                      device_cycle_time_ns);
       } else if (e->BooleanLiteral() != nullptr) {
         n->value = e->BooleanLiteral()->getText() == "true" ? 1.0 : 0.0;
       } else if (e->BitstringLiteral() != nullptr) {
@@ -2099,11 +2098,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
       // NOLINTEND(bugprone-branch-clone)
     } else {
-      [[maybe_unused]] const std::string kMsg =
+      [[maybe_unused]] const std::string msg =
           "unhandled expression type: " + std::string(typeid(*expr).name()) +
           " at line " + std::to_string(expr->getStart()->getLine()) + ":" +
           std::to_string(expr->getStart()->getCharPositionInLine());
-      assert(false && kMsg.c_str());
+      assert(false && msg.c_str());
     }
 
     return n;
@@ -2115,21 +2114,21 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   C EvalC(qasm3Parser::ExpressionContext* expr) {
     if (auto* e = dynamic_cast<qasm3Parser::LiteralExpressionContext*>(expr)) {
       if (e->ImaginaryLiteral() != nullptr) {
-        const std::string kT = e->ImaginaryLiteral()->getText();
-        return {0.0, std::stod(kT.substr(0, kT.size() - 2))};
+        const std::string t = e->ImaginaryLiteral()->getText();
+        return {0.0, std::stod(t.substr(0, t.size() - 2))};
       }
       if (e->Identifier() != nullptr) {
-        const std::string kId = e->Identifier()->getText();
-        if (const C* v = LookupScalar(kId)) {
+        const std::string id = e->Identifier()->getText();
+        if (const C* v = LookupScalar(id)) {
           return *v;
         }
-        if (kId == "pi") {
+        if (id == "pi") {
           return {kPi, 0.0};
         }
-        if (kId == "tau") {
+        if (id == "tau") {
           return {kTau, 0.0};
         }
-        if (kId == "euler") {
+        if (id == "euler") {
           return {kEuler, 0.0};
         }
         return {0.0, 0.0};
@@ -2147,21 +2146,21 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       return EvalC(e->expression());
     }
     if (auto* e = dynamic_cast<qasm3Parser::AdditiveExpressionContext*>(expr)) {
-      const C kL = EvalC(e->expression(0));
-      const C kR = EvalC(e->expression(1));
-      return (e->PLUS() != nullptr) ? kL + kR : kL - kR;
+      const C l = EvalC(e->expression(0));
+      const C r = EvalC(e->expression(1));
+      return (e->PLUS() != nullptr) ? l + r : l - r;
     }
     if (auto* e =
             dynamic_cast<qasm3Parser::MultiplicativeExpressionContext*>(expr)) {
-      const C kL = EvalC(e->expression(0));
-      const C kR = EvalC(e->expression(1));
+      const C l = EvalC(e->expression(0));
+      const C r = EvalC(e->expression(1));
       if (e->ASTERISK() != nullptr) {
-        return kL * kR;
+        return l * r;
       }
       if (e->SLASH() != nullptr) {
-        return kR != C{0.0, 0.0} ? kL / kR : C{0.0, 0.0};
+        return r != C{0.0, 0.0} ? l / r : C{0.0, 0.0};
       }
-      return {std::fmod(kL.real(), kR.real()), 0.0};
+      return {std::fmod(l.real(), r.real()), 0.0};
     }
     if (auto* e = dynamic_cast<qasm3Parser::PowerExpressionContext*>(expr)) {
       return std::pow(EvalC(e->expression(0)), EvalC(e->expression(1)));
@@ -2169,34 +2168,34 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     if (auto* e = dynamic_cast<qasm3Parser::CallExpressionContext*>(expr)) {
       if ((e->expressionList() != nullptr) &&
           !e->expressionList()->expression().empty()) {
-        const C kArg = EvalC(e->expressionList()->expression(0));
-        const std::string kFn = e->Identifier()->getText();
-        if (kFn == "sin") {
-          return std::sin(kArg);
+        const C arg = EvalC(e->expressionList()->expression(0));
+        const std::string fn = e->Identifier()->getText();
+        if (fn == "sin") {
+          return std::sin(arg);
         }
-        if (kFn == "cos") {
-          return std::cos(kArg);
+        if (fn == "cos") {
+          return std::cos(arg);
         }
-        if (kFn == "tan") {
-          return std::tan(kArg);
+        if (fn == "tan") {
+          return std::tan(arg);
         }
-        if (kFn == "exp") {
-          return std::exp(kArg);
+        if (fn == "exp") {
+          return std::exp(arg);
         }
-        if (kFn == "sqrt") {
-          return std::sqrt(kArg);
+        if (fn == "sqrt") {
+          return std::sqrt(arg);
         }
-        if (kFn == "ln") {
-          return std::log(kArg);
+        if (fn == "ln") {
+          return std::log(arg);
         }
-        if (kFn == "arcsin") {
-          return std::asin(kArg);
+        if (fn == "arcsin") {
+          return std::asin(arg);
         }
-        if (kFn == "arccos") {
-          return std::acos(kArg);
+        if (fn == "arccos") {
+          return std::acos(arg);
         }
-        if (kFn == "arctan") {
-          return std::atan(kArg);
+        if (fn == "arctan") {
+          return std::atan(arg);
         }
       }
     }

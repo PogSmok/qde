@@ -90,8 +90,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text) {
   for (const auto& [pattern, format] : rules_) {
     auto it = pattern.globalMatch(text);
     while (it.hasNext()) {
-      const auto kM = it.next();
-      setFormat(kM.capturedStart(), kM.capturedLength(), format);
+      const auto m = it.next();
+      setFormat(m.capturedStart(), m.capturedLength(), format);
     }
   }
 
@@ -101,15 +101,15 @@ void SyntaxHighlighter::highlightBlock(const QString& text) {
                   ? 0
                   : text.indexOf(block_comment_start_);
   while (start >= 0) {
-    const int kEnd = text.indexOf(block_comment_end_, start);
-    if (kEnd == -1) {
+    const int end = text.indexOf(block_comment_end_, start);
+    if (end == -1) {
       setCurrentBlockState(static_cast<int>(BlockState::kCommented));
       setFormat(start, text.length() - start, comment_format_);
       break;
     }
-    const int kLen = kEnd + block_comment_end_.length() - start;
-    setFormat(start, kLen, comment_format_);
-    start = text.indexOf(block_comment_start_, start + kLen);
+    const int len = end + block_comment_end_.length() - start;
+    setFormat(start, len, comment_format_);
+    start = text.indexOf(block_comment_start_, start + len);
   }
 }
 

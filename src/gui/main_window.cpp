@@ -58,22 +58,22 @@ void MainWindow::setupMenuBar() {
                                .arg(theme::kMenuBackground, theme::kMenuText,
                                     theme::kMenuSelectedBackground));
 
-  const QPointer<QAction> kNewAct = file_menu->addAction(
+  const QPointer<QAction> new_act = file_menu->addAction(
       "&New", QKeySequence::New, this, &MainWindow::newFile);
-  const QPointer<QAction> kOpenAct = file_menu->addAction(
+  const QPointer<QAction> open_act = file_menu->addAction(
       "&Open...", QKeySequence::Open, this, &MainWindow::openFile);
   file_menu->addSeparator();
-  const QPointer<QAction> kSaveAct = file_menu->addAction(
+  const QPointer<QAction> save_act = file_menu->addAction(
       "&Save", QKeySequence::Save, this, &MainWindow::saveFile);
-  const QPointer<QAction> kSaveAsAct =
+  const QPointer<QAction> save_as_act =
       file_menu->addAction("Save &As…", this, &MainWindow::saveFileAs);
   file_menu->addSeparator();
   file_menu->addAction("&Quit", QKeySequence::Quit, this, &QWidget::close);
 
-  Q_UNUSED(kNewAct)
-  Q_UNUSED(kOpenAct)
-  Q_UNUSED(kSaveAct)
-  Q_UNUSED(kSaveAsAct)
+  Q_UNUSED(new_act)
+  Q_UNUSED(open_act)
+  Q_UNUSED(save_act)
+  Q_UNUSED(save_as_act)
 
   auto* view_menu = menuBar()->addMenu("&View");
   view_menu->setStyleSheet(file_menu->styleSheet());

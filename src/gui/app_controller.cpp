@@ -12,10 +12,10 @@ AppController::AppController(QuantumCircuitView* circuit_view,
   Q_ASSERT(circuit_view);
   Q_ASSERT(text_editor);
 
-  constexpr int kDebounceTimeMs = 400;
+  constexpr int debounce_time_ms = 400;
 
   debounceTimer_.setSingleShot(true);
-  debounceTimer_.setInterval(kDebounceTimeMs);  // 400ms debounce
+  debounceTimer_.setInterval(debounce_time_ms);  // 400ms debounce
 
   connect(textEditor_, &TextEditor::textChanged, this,
           &AppController::onTextChanged);
