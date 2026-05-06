@@ -6,6 +6,7 @@ set(TEST_SOURCES
     test_gate_registry.cpp
     test_qubit_allocator.cpp
     simulator/test_simulation_circuit.cpp
+    simulator/test_simulator.cpp
 )
 
 if(TEST_SOURCES)

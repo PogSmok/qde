@@ -56,6 +56,7 @@ target_link_libraries(qde_gui
 # QDE Simulation Library
 set(LIB_SIM_SOURCES
     simulator/simulation_circuit.cpp
+    simulator/simulator.cpp
 )
 
 add_library(qde_sim STATIC ${LIB_SIM_SOURCES})
@@ -77,6 +78,7 @@ target_link_libraries(qde
     PRIVATE
         qde_lib
         qde_gui
+        qde_sim
 )
 
 if (WIN32)
