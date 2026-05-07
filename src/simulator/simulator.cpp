@@ -4,7 +4,6 @@
 #include <cassert>
 #include <cmath>
 #include <complex>
-#include <execution>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -26,7 +25,7 @@ std::size_t EmbedIndex(std::size_t gate_idx, std::size_t non_gate_idx,
   // Place gate qubits at their qubit positions (MSB-first).
   const std::size_t gate_arity = gate_qubits.size();
   for (std::size_t i = 0; i < gate_arity; i++) {
-    if (((gate_idx >> (gate_arity - 1 - i)) & 1) != 0u) {
+    if (((gate_idx >> (gate_arity - 1 - i)) & 1) != 0U) {
       result |= std::size_t{1} << gate_qubits[i];
     }
   }
@@ -45,7 +44,7 @@ std::size_t EmbedIndex(std::size_t gate_idx, std::size_t non_gate_idx,
       continue;  // gate qubits are already placed
     }
 
-    if (((non_gate_idx >> non_gate_pos) & 1) != 0u) {
+    if (((non_gate_idx >> non_gate_pos) & 1) != 0U) {
       result |= std::size_t{1} << qubit_idx;
     }
     non_gate_pos++;
@@ -79,43 +78,39 @@ void ApplyGate(DensityMatrix& rho, std::size_t total_qubits,
   // Pass 1: A = U * ρ  (left multiply in gate subspace)
   // row mixing — each column k of A is independent, safe to parallelise.
   DensityMatrix a(dim * dim, {0.0, 0.0});
-  std::vector<std::size_t> col_range(dim);
-  std::iota(col_range.begin(), col_range.end(), 0);
-  std::for_each(std::execution::par_unseq, col_range.begin(), col_range.end(),
-                [&](std::size_t k) {
-                  for (std::size_t i = 0; i < gate_dim; i++) {
-                    for (std::size_t j = 0; j < non_gate_dim; j++) {
-                      std::complex<double> sum{0.0, 0.0};
-                      // for each gate_dim compute dot product of U row i with ρ
-                      for (std::size_t l = 0; l < gate_dim; l++) {
-                        sum +=
-                            u[(i * gate_dim) + l] *
-                            rho[(idx_table[(l * non_gate_dim) + j] * dim) + k];
-                      }
-                      a[(idx_table[(i * non_gate_dim) + j] * dim) + k] = sum;
-                    }
-                  }
-                });
+#pragma omp parallel for collapse(2) schedule(static) proc_bind(close)
+  for (std::size_t k = 0; k < dim; k++) {
+    for (std::size_t i = 0; i < gate_dim; i++) {
+      for (std::size_t j = 0; j < non_gate_dim; j++) {
+        std::complex<double> sum{0.0, 0.0};
+        // for each gate_dim compute dot product of U row i with ρ
+        for (std::size_t l = 0; l < gate_dim; l++) {
+          sum += u[(i * gate_dim) + l] *
+                 rho[(idx_table[(l * non_gate_dim) + j] * dim) + k];
+        }
+
+        a[(idx_table[(i * non_gate_dim) + j] * dim) + k] = sum;
+      }
+    }
+  }
 
   // Pass 2: ρ' = A * U†  (right multiply in gate subspace)
   // column mixing — each row k of ρ' is independent, safe to parallelise.
-  rho.assign(dim * dim, {0.0, 0.0});
-  std::vector<std::size_t> row_range(dim);
-  std::iota(row_range.begin(), row_range.end(), 0);
-  std::for_each(std::execution::par_unseq, row_range.begin(), row_range.end(),
-                [&](std::size_t k) {
-                  for (std::size_t i = 0; i < gate_dim; i++) {
-                    for (std::size_t j = 0; j < non_gate_dim; j++) {
-                      std::complex<double> sum{0.0, 0.0};
-                      for (std::size_t l = 0; l < gate_dim; l++) {
-                        sum +=
-                            a[(k * dim) + idx_table[(l * non_gate_dim) + j]] *
-                            std::conj(u[(i * gate_dim) + l]);
-                      }
-                      rho[(k * dim) + idx_table[(i * non_gate_dim) + j]] = sum;
-                    }
-                  }
-                });
+#pragma omp parallel for collapse(2) schedule(static) proc_bind(close)
+  for (std::size_t k = 0; k < dim; k++) {
+    for (std::size_t i = 0; i < gate_dim; i++) {
+      for (std::size_t j = 0; j < non_gate_dim; j++) {
+        std::complex<double> sum{0.0, 0.0};
+        // for each gate_dim compute dot product of U column i with ρ
+        for (std::size_t l = 0; l < gate_dim; l++) {
+          sum += a[(k * dim) + idx_table[(l * non_gate_dim) + j]] *
+                 std::conj(u[(i * gate_dim) + l]);
+        }
+
+        rho[(k * dim) + idx_table[(i * non_gate_dim) + j]] = sum;
+      }
+    }
+  }
 }
 
 std::uint8_t Measure(DensityMatrix& rho, std::size_t total_qubits,
@@ -161,11 +156,11 @@ void Reset(DensityMatrix& rho, std::size_t total_qubits, std::size_t qubit) {
   DensityMatrix new_rho(dim * dim, {0.0, 0.0});
 
   for (std::size_t i = 0; i < dim; i++) {
-    if ((i & qubit_mask) != 0u) {
+    if ((i & qubit_mask) != 0U) {
       continue;
     }
     for (std::size_t j = 0; j < dim; j++) {
-      if ((j & qubit_mask) != 0u) {
+      if ((j & qubit_mask) != 0U) {
         continue;
       }
       // K0 term: keep existing |0> amplitude; K1 term: fold |1> back into |0>

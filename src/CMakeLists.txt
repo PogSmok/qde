@@ -61,6 +61,8 @@ set(LIB_SIM_SOURCES
 
 add_library(qde_sim STATIC ${LIB_SIM_SOURCES})
 
+find_package(OpenMP REQUIRED)
+
 target_include_directories(qde_lib
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
@@ -69,6 +71,7 @@ target_include_directories(qde_lib
 target_link_libraries(qde_sim
     PRIVATE
         qde_lib
+        OpenMP::OpenMP_CXX
 )
 
 

@@ -15,6 +15,8 @@ concurrency:
 
 env:
   QT_QPA_PLATFORM: offscreen
+  OMP_PROC_BIND: close
+  OMP_PLACES: cores
 
 jobs:
   build-and-test:
@@ -56,9 +58,18 @@ jobs:
         shell: bash
         run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
 
+      - name: Install libomp (macOS)
+        if: runner.os == 'macOS'
+        run: brew install libomp
+
       - name: Configure
         shell: bash
-        run: cmake --preset default -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
+        run: |
+          EXTRA=""
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            EXTRA="-DOpenMP_ROOT=$(brew --prefix libomp)"
+          fi
+          cmake --preset default -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar" $EXTRA
 
       - name: Build
         shell: bash
@@ -107,9 +118,18 @@ jobs:
         shell: bash
         run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
 
+      - name: Install libomp (macOS)
+        if: runner.os == 'macOS'
+        run: brew install libomp
+
       - name: Configure
         shell: bash
-        run: cmake --preset release -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
+        run: |
+          EXTRA=""
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            EXTRA="-DOpenMP_ROOT=$(brew --prefix libomp)"
+          fi
+          cmake --preset release -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar" $EXTRA
 
       - name: Build
         shell: bash
