@@ -16,15 +16,17 @@ class SimulationCircuit {
   [[nodiscard]] std::size_t qubitCount() const noexcept { return qubit_count_; }
 
   [[nodiscard]] std::size_t bitCount() const noexcept { return bit_count_; }
-  
-  [[nodiscard]] const std::vector<std::vector<CompiledOperation>>& layers() 
-      const noexcept { return layers_; }
+
+  [[nodiscard]] const std::vector<std::vector<CompiledOperation>>& layers()
+      const noexcept {
+    return layers_;
+  }
 
  private:
   std::size_t qubit_count_;
   std::size_t bit_count_;
 
-  std::vector<std::vector<CompiledOperation>> layers_; // ASAP scheduling
+  std::vector<std::vector<CompiledOperation>> layers_;  // ASAP scheduling
 };
 
 }  // namespace qde

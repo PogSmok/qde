@@ -17,8 +17,8 @@ namespace {
 constexpr double kTol = 1e-9;
 
 Circuit makeCircuit(std::vector<QubitRegister> qregs,
-                    std::vector<BitRegister>   bregs,
-                    std::vector<Operation>     ops) {
+                    std::vector<BitRegister> bregs,
+                    std::vector<Operation> ops) {
   return Circuit(GateRegistry::withBuiltins(), std::move(qregs),
                  std::move(bregs), std::move(ops));
 }
@@ -30,7 +30,7 @@ Operation gateOp(const GateRegistry& reg, const std::string& name,
 }
 
 Operation measureOp(std::vector<QubitReference> qubits,
-                    std::vector<BitReference>   bits) {
+                    std::vector<BitReference> bits) {
   return {OperationType::kMeasure, nullptr, {}, qubits, bits};
 }
 
@@ -42,10 +42,11 @@ Operation resetOp(std::vector<QubitReference> qubits) {
 class SimulatorTest : public ::testing::Test {
  protected:
   GateRegistry registry_ = GateRegistry::withBuiltins();
-  Simulator    sim_;
+  Simulator sim_;
 };
 
-// ---- Initial state -----------------------------------------------------------
+// ---- Initial state
+// -----------------------------------------------------------
 
 TEST_F(SimulatorTest, InitialStateIsAllZeros) {
   auto states = sim_.run(SimulationCircuit(makeCircuit({{"q", 2}}, {}, {})));
@@ -83,19 +84,21 @@ TEST_F(SimulatorTest, HGateProducesPlusState) {
 }
 
 TEST_F(SimulatorTest, HHIsIdentity) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {}, {
-      gateOp(registry_, "h", {{0, 0}}),
-      gateOp(registry_, "h", {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {},
+                                          {
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                          }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.basis_probabilities[0], 1.0, kTol);
   EXPECT_NEAR(s.basis_probabilities[1], 0.0, kTol);
 }
 
 TEST_F(SimulatorTest, XGateFlipsQubit) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {}, {
-      gateOp(registry_, "x", {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {},
+                                          {
+                                              gateOp(registry_, "x", {{0, 0}}),
+                                          }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.basis_probabilities[0], 0.0, kTol);
   EXPECT_NEAR(s.basis_probabilities[1], 1.0, kTol);
@@ -105,9 +108,11 @@ TEST_F(SimulatorTest, XGateFlipsQubit) {
 
 TEST_F(SimulatorTest, CXOnZeroStateNoChange) {
   // |00> with CX (control=q0, target=q1): control=0, no flip.
-  auto sc = SimulationCircuit(makeCircuit({{"q", 2}}, {}, {
-      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 2}}, {},
+                  {
+                      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
+                  }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.basis_probabilities[0], 1.0, kTol);
 }
@@ -115,10 +120,12 @@ TEST_F(SimulatorTest, CXOnZeroStateNoChange) {
 TEST_F(SimulatorTest, BellStateCreation) {
   // H on q0, then CX(q0, q1) → (|00>+|11>)/√2
   // q0 = qubit 0 = bit 0 of index → |11> = index 3
-  auto sc = SimulationCircuit(makeCircuit({{"q", 2}}, {}, {
-      gateOp(registry_, "h",  {{0, 0}}),
-      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 2}}, {},
+                  {
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
+                  }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.basis_probabilities[0], 0.5, kTol);
   EXPECT_NEAR(s.basis_probabilities[1], 0.0, kTol);
@@ -130,9 +137,10 @@ TEST_F(SimulatorTest, BellStateCreation) {
 
 TEST_F(SimulatorTest, PureStateHasUnitEigenvalue) {
   // Any pure state has exactly one eigenvalue = 1, rest = 0.
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {}, {
-      gateOp(registry_, "h", {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {},
+                                          {
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                          }));
   const auto s = sim_.runFinal(sc);
   ASSERT_EQ(s.eigenvalues.size(), 2U);
   EXPECT_NEAR(s.eigenvalues[0], 1.0, kTol);
@@ -140,21 +148,25 @@ TEST_F(SimulatorTest, PureStateHasUnitEigenvalue) {
 }
 
 TEST_F(SimulatorTest, EigenvaluesSumToOne) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 2}}, {}, {
-      gateOp(registry_, "h",  {{0, 0}}),
-      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 2}}, {},
+                  {
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
+                  }));
   const auto s = sim_.runFinal(sc);
-  const double sum = std::accumulate(s.eigenvalues.begin(),
-                                     s.eigenvalues.end(), 0.0);
+  const double sum =
+      std::accumulate(s.eigenvalues.begin(), s.eigenvalues.end(), 0.0);
   EXPECT_NEAR(sum, 1.0, kTol);
 }
 
 TEST_F(SimulatorTest, PurityOfPureStateIsOne) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 2}}, {}, {
-      gateOp(registry_, "h",  {{0, 0}}),
-      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 2}}, {},
+                  {
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
+                  }));
   const auto s = sim_.runFinal(sc);
   double purity = 0.0;
   for (double e : s.eigenvalues) purity += e * e;
@@ -165,9 +177,10 @@ TEST_F(SimulatorTest, PurityOfPureStateIsOne) {
 
 TEST_F(SimulatorTest, MeasureDefiniteZeroStateGivesZero) {
   // Qubit in |0>, measure → classical bit must be 0.
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {{"c", 1}}, {
-      measureOp({{0, 0}}, {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {{"c", 1}},
+                                          {
+                                              measureOp({{0, 0}}, {{0, 0}}),
+                                          }));
   const auto s = sim_.runFinal(sc);
   EXPECT_EQ(s.classical_bits[0], 0);
   EXPECT_NEAR(s.basis_probabilities[0], 1.0, kTol);
@@ -175,10 +188,11 @@ TEST_F(SimulatorTest, MeasureDefiniteZeroStateGivesZero) {
 
 TEST_F(SimulatorTest, MeasureDefiniteOneStateGivesOne) {
   // X gate puts qubit in |1>, measure → classical bit must be 1.
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {{"c", 1}}, {
-      gateOp(registry_, "x", {{0, 0}}),
-      measureOp({{0, 0}}, {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {{"c", 1}},
+                                          {
+                                              gateOp(registry_, "x", {{0, 0}}),
+                                              measureOp({{0, 0}}, {{0, 0}}),
+                                          }));
   const auto s = sim_.runFinal(sc);
   EXPECT_EQ(s.classical_bits[0], 1);
   EXPECT_NEAR(s.basis_probabilities[1], 1.0, kTol);
@@ -186,10 +200,11 @@ TEST_F(SimulatorTest, MeasureDefiniteOneStateGivesOne) {
 
 TEST_F(SimulatorTest, MeasurementCollapsesState) {
   // After measuring a superposition, state is collapsed (purity = 1).
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {{"c", 1}}, {
-      gateOp(registry_, "h", {{0, 0}}),
-      measureOp({{0, 0}}, {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {{"c", 1}},
+                                          {
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                              measureOp({{0, 0}}, {{0, 0}}),
+                                          }));
   const auto s = sim_.runFinal(sc);
   // Outcome is 0 or 1 — either way the state must be a definite basis state.
   const double p0 = s.basis_probabilities[0];
@@ -201,20 +216,22 @@ TEST_F(SimulatorTest, MeasurementCollapsesState) {
 // ---- Reset ------------------------------------------------------------------
 
 TEST_F(SimulatorTest, ResetFromOneReturnsToZero) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {}, {
-      gateOp(registry_, "x", {{0, 0}}),
-      resetOp({{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {},
+                                          {
+                                              gateOp(registry_, "x", {{0, 0}}),
+                                              resetOp({{0, 0}}),
+                                          }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.basis_probabilities[0], 1.0, kTol);
   EXPECT_NEAR(s.basis_probabilities[1], 0.0, kTol);
 }
 
 TEST_F(SimulatorTest, ResetFromSuperpositionReturnsToZero) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {}, {
-      gateOp(registry_, "h", {{0, 0}}),
-      resetOp({{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {},
+                                          {
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                              resetOp({{0, 0}}),
+                                          }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.basis_probabilities[0], 1.0, kTol);
   EXPECT_NEAR(s.basis_probabilities[1], 0.0, kTol);
@@ -223,49 +240,58 @@ TEST_F(SimulatorTest, ResetFromSuperpositionReturnsToZero) {
 // ---- Layer count / API ------------------------------------------------------
 
 TEST_F(SimulatorTest, RunReturnsOneStatePerLayerPlusInitial) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {}, {
-      gateOp(registry_, "h", {{0, 0}}),
-      gateOp(registry_, "x", {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {},
+                                          {
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                              gateOp(registry_, "x", {{0, 0}}),
+                                          }));
   auto states = sim_.run(sc);
   // Two gates → two layers + one initial state.
   EXPECT_EQ(states.size(), sc.layers().size() + 1);
 }
 
 TEST_F(SimulatorTest, RunFinalMatchesLastStateOfRun) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {}, {
-      gateOp(registry_, "h", {{0, 0}}),
-  }));
-  auto all   = sim_.run(sc);
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {},
+                                          {
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                          }));
+  auto all = sim_.run(sc);
   auto final = sim_.runFinal(sc);
   ASSERT_EQ(all.back().basis_probabilities.size(),
             final.basis_probabilities.size());
   for (std::size_t i = 0; i < final.basis_probabilities.size(); ++i)
-    EXPECT_NEAR(all.back().basis_probabilities[i],
-                final.basis_probabilities[i], kTol);
+    EXPECT_NEAR(all.back().basis_probabilities[i], final.basis_probabilities[i],
+                kTol);
 }
 
 TEST_F(SimulatorTest, LayerIndicesAreSequential) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {}, {
-      gateOp(registry_, "h", {{0, 0}}),
-      gateOp(registry_, "h", {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {},
+                                          {
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                              gateOp(registry_, "h", {{0, 0}}),
+                                          }));
   auto states = sim_.run(sc);
-  for (std::size_t i = 0; i < states.size(); ++i)
-    EXPECT_EQ(states[i].layer, i);
+  for (std::size_t i = 0; i < states.size(); ++i) EXPECT_EQ(states[i].layer, i);
 }
 
 // ---- Conditional gates ------------------------------------------------------
 
 TEST_F(SimulatorTest, ConditionalGateFiresWhenConditionMet) {
   // X puts qubit in |1>, measure -> c[0]=1, conditional X flips back to |0>.
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {{"c", 1}}, {
-      gateOp(registry_, "x", {{0, 0}}),
-      measureOp({{0, 0}}, {{0, 0}}),
-      // if (c[0]==1) x q[0]
-      {OperationType::kGate, registry_.find("x"), {}, {{0, 0}}, {},
-       std::make_optional(std::pair<BitReference, std::uint8_t>{{0, 0}, 1})},
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 1}}, {{"c", 1}},
+                  {
+                      gateOp(registry_, "x", {{0, 0}}),
+                      measureOp({{0, 0}}, {{0, 0}}),
+                      // if (c[0]==1) x q[0]
+                      {OperationType::kGate,
+                       registry_.find("x"),
+                       {},
+                       {{0, 0}},
+                       {},
+                       std::make_optional(
+                           std::pair<BitReference, std::uint8_t>{{0, 0}, 1})},
+                  }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.basis_probabilities[0], 1.0, kTol);
   EXPECT_EQ(s.classical_bits[0], 1);
@@ -273,12 +299,19 @@ TEST_F(SimulatorTest, ConditionalGateFiresWhenConditionMet) {
 
 TEST_F(SimulatorTest, ConditionalGateSkippedWhenConditionNotMet) {
   // Qubit stays in |0>, measure -> c[0]=0, conditional X (if c==1) is skipped.
-  auto sc = SimulationCircuit(makeCircuit({{"q", 1}}, {{"c", 1}}, {
-      measureOp({{0, 0}}, {{0, 0}}),
-      // if (c[0]==1) x q[0]  — condition not met, must stay |0>
-      {OperationType::kGate, registry_.find("x"), {}, {{0, 0}}, {},
-       std::make_optional(std::pair<BitReference, std::uint8_t>{{0, 0}, 1})},
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 1}}, {{"c", 1}},
+                  {
+                      measureOp({{0, 0}}, {{0, 0}}),
+                      // if (c[0]==1) x q[0]  — condition not met, must stay |0>
+                      {OperationType::kGate,
+                       registry_.find("x"),
+                       {},
+                       {{0, 0}},
+                       {},
+                       std::make_optional(
+                           std::pair<BitReference, std::uint8_t>{{0, 0}, 1})},
+                  }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.basis_probabilities[0], 1.0, kTol);
   EXPECT_EQ(s.classical_bits[0], 0);
@@ -291,9 +324,9 @@ namespace {
 // Compute the 2x2 reduced density matrix of a single qubit by tracing out
 // all other qubits.  Returns {rho[0][0], rho[0][1], rho[1][0], rho[1][1]}.
 std::array<std::complex<double>, 4> partialTrace(const DensityMatrix& rho,
-                                                  std::size_t n,
-                                                  std::size_t qubit) {
-  const std::size_t d   = std::size_t{1} << n;
+                                                 std::size_t n,
+                                                 std::size_t qubit) {
+  const std::size_t d = std::size_t{1} << n;
   const std::size_t bit = std::size_t{1} << qubit;
   std::array<std::complex<double>, 4> out{};
   for (std::size_t bg = 0; bg < d; ++bg) {
@@ -307,30 +340,44 @@ std::array<std::complex<double>, 4> partialTrace(const DensityMatrix& rho,
 
 Circuit buildTeleportationCircuit(const GateRegistry& reg) {
   constexpr double pi = 3.14159265358979323846;
-  return Circuit(GateRegistry::withBuiltins(),
-    {{"q", 3}}, {{"c1", 1}, {"c2", 1}},
-    {
-      // Prepare state to teleport on q[0]: u3(pi/4, pi/2, pi/4)
-      {OperationType::kGate,    reg.find("u3"), {pi/4, pi/2, pi/4}, {{0,0}}, {}},
-      // Bell pair on q[1]/q[2]
-      {OperationType::kGate,    reg.find("h"),  {}, {{0,1}}, {}},
-      {OperationType::kGate,    reg.find("cx"), {}, {{0,1},{0,2}}, {}},
-      {OperationType::kBarrier, nullptr,        {}, {{0,0},{0,1},{0,2}}, {}},
-      // Bell measurement
-      {OperationType::kGate,    reg.find("cx"), {}, {{0,0},{0,1}}, {}},
-      {OperationType::kGate,    reg.find("h"),  {}, {{0,0}}, {}},
-      {OperationType::kBarrier, nullptr,        {}, {{0,0},{0,1},{0,2}}, {}},
-      // measure q[1]->c1, q[0]->c2
-      {OperationType::kMeasure, nullptr, {}, {{0,1}}, {{0,0}}},
-      {OperationType::kMeasure, nullptr, {}, {{0,0}}, {{1,0}}},
-      {OperationType::kBarrier, nullptr, {}, {{0,2}}, {}},
-      // if (c1==1) x q[2]
-      {OperationType::kGate, reg.find("x"), {}, {{0,2}}, {},
-       std::make_optional(std::pair<BitReference, std::uint8_t>{{0,0}, 1})},
-      // if (c2==1) z q[2]
-      {OperationType::kGate, reg.find("z"), {}, {{0,2}}, {},
-       std::make_optional(std::pair<BitReference, std::uint8_t>{{1,0}, 1})},
-    });
+  return Circuit(
+      GateRegistry::withBuiltins(), {{"q", 3}}, {{"c1", 1}, {"c2", 1}},
+      {
+          // Prepare state to teleport on q[0]: u3(pi/4, pi/2, pi/4)
+          {OperationType::kGate,
+           reg.find("u3"),
+           {pi / 4, pi / 2, pi / 4},
+           {{0, 0}},
+           {}},
+          // Bell pair on q[1]/q[2]
+          {OperationType::kGate, reg.find("h"), {}, {{0, 1}}, {}},
+          {OperationType::kGate, reg.find("cx"), {}, {{0, 1}, {0, 2}}, {}},
+          {OperationType::kBarrier, nullptr, {}, {{0, 0}, {0, 1}, {0, 2}}, {}},
+          // Bell measurement
+          {OperationType::kGate, reg.find("cx"), {}, {{0, 0}, {0, 1}}, {}},
+          {OperationType::kGate, reg.find("h"), {}, {{0, 0}}, {}},
+          {OperationType::kBarrier, nullptr, {}, {{0, 0}, {0, 1}, {0, 2}}, {}},
+          // measure q[1]->c1, q[0]->c2
+          {OperationType::kMeasure, nullptr, {}, {{0, 1}}, {{0, 0}}},
+          {OperationType::kMeasure, nullptr, {}, {{0, 0}}, {{1, 0}}},
+          {OperationType::kBarrier, nullptr, {}, {{0, 2}}, {}},
+          // if (c1==1) x q[2]
+          {OperationType::kGate,
+           reg.find("x"),
+           {},
+           {{0, 2}},
+           {},
+           std::make_optional(
+               std::pair<BitReference, std::uint8_t>{{0, 0}, 1})},
+          // if (c2==1) z q[2]
+          {OperationType::kGate,
+           reg.find("z"),
+           {},
+           {{0, 2}},
+           {},
+           std::make_optional(
+               std::pair<BitReference, std::uint8_t>{{1, 0}, 1})},
+      });
 }
 
 }  // namespace
@@ -340,26 +387,26 @@ TEST_F(SimulatorTest, TeleportationPreservesState) {
   // Reduced density matrix of that state:
   //   rho[0][0] = cos²(pi/8),  rho[1][1] = sin²(pi/8)
   //   rho[0][1] = -i * sin(pi/8)*cos(pi/8)
-  constexpr double pi    = 3.14159265358979323846;
-  const double     c2    = std::cos(pi / 8) * std::cos(pi / 8);
-  const double     s2    = std::sin(pi / 8) * std::sin(pi / 8);
-  const double     sc    = std::sin(pi / 8) * std::cos(pi / 8);
+  constexpr double pi = 3.14159265358979323846;
+  const double c2 = std::cos(pi / 8) * std::cos(pi / 8);
+  const double s2 = std::sin(pi / 8) * std::sin(pi / 8);
+  const double sc = std::sin(pi / 8) * std::cos(pi / 8);
 
-  const auto s = sim_.runFinal(
-      SimulationCircuit(buildTeleportationCircuit(registry_)));
+  const auto s =
+      sim_.runFinal(SimulationCircuit(buildTeleportationCircuit(registry_)));
 
   const auto rho_q2 = partialTrace(s.density_matrix, 3, 2);
 
-  EXPECT_NEAR(rho_q2[0].real(), c2,   kTol);   // rho[0][0]
-  EXPECT_NEAR(rho_q2[3].real(), s2,   kTol);   // rho[1][1]
-  EXPECT_NEAR(rho_q2[1].real(), 0.0,  kTol);   // rho[0][1] real
-  EXPECT_NEAR(rho_q2[1].imag(), -sc,  kTol);   // rho[0][1] imag
-  EXPECT_NEAR(rho_q2[2].imag(), +sc,  kTol);   // rho[1][0] imag
+  EXPECT_NEAR(rho_q2[0].real(), c2, kTol);   // rho[0][0]
+  EXPECT_NEAR(rho_q2[3].real(), s2, kTol);   // rho[1][1]
+  EXPECT_NEAR(rho_q2[1].real(), 0.0, kTol);  // rho[0][1] real
+  EXPECT_NEAR(rho_q2[1].imag(), -sc, kTol);  // rho[0][1] imag
+  EXPECT_NEAR(rho_q2[2].imag(), +sc, kTol);  // rho[1][0] imag
 }
 
 TEST_F(SimulatorTest, TeleportationYieldsPureState) {
-  const auto s = sim_.runFinal(
-      SimulationCircuit(buildTeleportationCircuit(registry_)));
+  const auto s =
+      sim_.runFinal(SimulationCircuit(buildTeleportationCircuit(registry_)));
   // Teleportation is lossless — global state must remain pure.
   EXPECT_NEAR(s.eigenvalues[0], 1.0, kTol);
   EXPECT_NEAR(s.eigenvalues[1], 0.0, kTol);
@@ -370,11 +417,13 @@ TEST_F(SimulatorTest, TeleportationYieldsPureState) {
 TEST_F(SimulatorTest, GHZStateHasCorrectProbabilities) {
   // H q[0]; CX(q[0],q[1]); CX(q[1],q[2]) → (|000⟩+|111⟩)/√2
   // In our encoding: qubit k = bit k → |111⟩ = index 7.
-  auto sc = SimulationCircuit(makeCircuit({{"q", 3}}, {}, {
-      gateOp(registry_, "h",  {{0, 0}}),
-      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
-      gateOp(registry_, "cx", {{0, 1}, {0, 2}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 3}}, {},
+                  {
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
+                      gateOp(registry_, "cx", {{0, 1}, {0, 2}}),
+                  }));
   const auto s = sim_.runFinal(sc);
 
   EXPECT_NEAR(s.basis_probabilities[0], 0.5, kTol);
@@ -384,11 +433,13 @@ TEST_F(SimulatorTest, GHZStateHasCorrectProbabilities) {
 }
 
 TEST_F(SimulatorTest, GHZStateIsPure) {
-  auto sc = SimulationCircuit(makeCircuit({{"q", 3}}, {}, {
-      gateOp(registry_, "h",  {{0, 0}}),
-      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
-      gateOp(registry_, "cx", {{0, 1}, {0, 2}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 3}}, {},
+                  {
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),
+                      gateOp(registry_, "cx", {{0, 1}, {0, 2}}),
+                  }));
   const auto s = sim_.runFinal(sc);
   EXPECT_NEAR(s.eigenvalues[0], 1.0, kTol);
   EXPECT_NEAR(s.eigenvalues[1], 0.0, kTol);
@@ -400,27 +451,31 @@ TEST_F(SimulatorTest, GHZStateIsPure) {
 
 TEST_F(SimulatorTest, DeutschConstantFunctionMeasuresZero) {
   // f(x) = 0 — no oracle gates.
-  auto sc = SimulationCircuit(makeCircuit({{"q", 2}}, {{"c", 1}}, {
-      gateOp(registry_, "x", {{0, 1}}),   // ancilla → |1⟩
-      gateOp(registry_, "h", {{0, 0}}),
-      gateOp(registry_, "h", {{0, 1}}),
-      // oracle: nothing
-      gateOp(registry_, "h", {{0, 0}}),
-      measureOp({{0, 0}}, {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 2}}, {{"c", 1}},
+                  {
+                      gateOp(registry_, "x", {{0, 1}}),  // ancilla → |1⟩
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "h", {{0, 1}}),
+                      // oracle: nothing
+                      gateOp(registry_, "h", {{0, 0}}),
+                      measureOp({{0, 0}}, {{0, 0}}),
+                  }));
   EXPECT_EQ(sim_.runFinal(sc).classical_bits[0], 0);
 }
 
 TEST_F(SimulatorTest, DeutschBalancedFunctionMeasuresOne) {
   // f(x) = x — oracle is CX(q[0], q[1]).
-  auto sc = SimulationCircuit(makeCircuit({{"q", 2}}, {{"c", 1}}, {
-      gateOp(registry_, "x",  {{0, 1}}),
-      gateOp(registry_, "h",  {{0, 0}}),
-      gateOp(registry_, "h",  {{0, 1}}),
-      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),   // oracle
-      gateOp(registry_, "h",  {{0, 0}}),
-      measureOp({{0, 0}}, {{0, 0}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 2}}, {{"c", 1}},
+                  {
+                      gateOp(registry_, "x", {{0, 1}}),
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "h", {{0, 1}}),
+                      gateOp(registry_, "cx", {{0, 0}, {0, 1}}),  // oracle
+                      gateOp(registry_, "h", {{0, 0}}),
+                      measureOp({{0, 0}}, {{0, 0}}),
+                  }));
   EXPECT_EQ(sim_.runFinal(sc).classical_bits[0], 1);
 }
 
@@ -430,26 +485,28 @@ TEST_F(SimulatorTest, DeutschBalancedFunctionMeasuresOne) {
 
 TEST_F(SimulatorTest, BernsteinVaziraniRecoversBitstring) {
   // s = 0b101: bits 0 and 2 are set → CX(q[0], ancilla) and CX(q[2], ancilla)
-  auto sc = SimulationCircuit(makeCircuit({{"q", 4}}, {{"c", 3}}, {
-      // Ancilla q[3] → |−⟩
-      gateOp(registry_, "x", {{0, 3}}),
-      gateOp(registry_, "h", {{0, 3}}),
-      // H on input qubits
-      gateOp(registry_, "h", {{0, 0}}),
-      gateOp(registry_, "h", {{0, 1}}),
-      gateOp(registry_, "h", {{0, 2}}),
-      // Oracle for s=101: CX on q[0] and q[2]
-      gateOp(registry_, "cx", {{0, 0}, {0, 3}}),
-      gateOp(registry_, "cx", {{0, 2}, {0, 3}}),
-      // H on input qubits
-      gateOp(registry_, "h", {{0, 0}}),
-      gateOp(registry_, "h", {{0, 1}}),
-      gateOp(registry_, "h", {{0, 2}}),
-      // Measure input qubits
-      measureOp({{0, 0}}, {{0, 0}}),
-      measureOp({{0, 1}}, {{0, 1}}),
-      measureOp({{0, 2}}, {{0, 2}}),
-  }));
+  auto sc = SimulationCircuit(
+      makeCircuit({{"q", 4}}, {{"c", 3}},
+                  {
+                      // Ancilla q[3] → |−⟩
+                      gateOp(registry_, "x", {{0, 3}}),
+                      gateOp(registry_, "h", {{0, 3}}),
+                      // H on input qubits
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "h", {{0, 1}}),
+                      gateOp(registry_, "h", {{0, 2}}),
+                      // Oracle for s=101: CX on q[0] and q[2]
+                      gateOp(registry_, "cx", {{0, 0}, {0, 3}}),
+                      gateOp(registry_, "cx", {{0, 2}, {0, 3}}),
+                      // H on input qubits
+                      gateOp(registry_, "h", {{0, 0}}),
+                      gateOp(registry_, "h", {{0, 1}}),
+                      gateOp(registry_, "h", {{0, 2}}),
+                      // Measure input qubits
+                      measureOp({{0, 0}}, {{0, 0}}),
+                      measureOp({{0, 1}}, {{0, 1}}),
+                      measureOp({{0, 2}}, {{0, 2}}),
+                  }));
   const auto s = sim_.runFinal(sc);
   EXPECT_EQ(s.classical_bits[0], 1);  // bit 0 of s=101
   EXPECT_EQ(s.classical_bits[1], 0);  // bit 1 of s=101

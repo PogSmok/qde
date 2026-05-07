@@ -17,8 +17,8 @@ std::unordered_map<std::string, std::size_t> QubitAllocator::allocate(
   const std::vector<QubitRegister>& qregs = circuit.qubitRegisters();
   std::size_t id = 0;
 
-  for(const QubitRegister& qreg: qregs) {
-    for(std::size_t i = 0; i < qreg.size; i++) {
+  for (const QubitRegister& qreg : qregs) {
+    for (std::size_t i = 0; i < qreg.size; i++) {
       mapping[qreg.name + "[" + std::to_string(i) + "]"] = id;
       id++;
     }
