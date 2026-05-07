@@ -63,6 +63,11 @@ add_library(qde_sim STATIC ${LIB_SIM_SOURCES})
 
 find_package(OpenMP REQUIRED)
 
+# /openmp:llvm upgrades MSVC from OpenMP 2.0 to 3.1, enabling collapse clause.
+if(MSVC)
+    target_compile_options(qde_sim PRIVATE /openmp:llvm)
+endif()
+
 target_include_directories(qde_lib
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include

@@ -78,36 +78,48 @@ void ApplyGate(DensityMatrix& rho, std::size_t total_qubits,
   // Pass 1: A = U * ρ  (left multiply in gate subspace)
   // row mixing — each column k of A is independent, safe to parallelise.
   DensityMatrix a(dim * dim, {0.0, 0.0});
+#ifdef _MSC_VER  // proc_bind is unsupported by MSVC
+#pragma omp parallel for collapse(2) schedule(static)
+#else
 #pragma omp parallel for collapse(2) schedule(static) proc_bind(close)
-  for (std::size_t k = 0; k < dim; k++) {
+#endif
+  for (std::ptrdiff_t k = 0; k < static_cast<std::ptrdiff_t>(dim); k++) {
     for (std::size_t i = 0; i < gate_dim; i++) {
       for (std::size_t j = 0; j < non_gate_dim; j++) {
         std::complex<double> sum{0.0, 0.0};
         // for each gate_dim compute dot product of U row i with ρ
         for (std::size_t l = 0; l < gate_dim; l++) {
           sum += u[(i * gate_dim) + l] *
-                 rho[(idx_table[(l * non_gate_dim) + j] * dim) + k];
+                 rho[(idx_table[(l * non_gate_dim) + j] * dim) +
+                     static_cast<std::size_t>(k)];
         }
 
-        a[(idx_table[(i * non_gate_dim) + j] * dim) + k] = sum;
+        a[(idx_table[(i * non_gate_dim) + j] * dim) +
+          static_cast<std::size_t>(k)] = sum;
       }
     }
   }
 
   // Pass 2: ρ' = A * U†  (right multiply in gate subspace)
   // column mixing — each row k of ρ' is independent, safe to parallelise.
+#ifdef _MSC_VER  // proc_bind is unsupported by MSVC
+#pragma omp parallel for collapse(2) schedule(static)
+#else
 #pragma omp parallel for collapse(2) schedule(static) proc_bind(close)
-  for (std::size_t k = 0; k < dim; k++) {
+#endif
+  for (std::ptrdiff_t k = 0; k < static_cast<std::ptrdiff_t>(dim); k++) {
     for (std::size_t i = 0; i < gate_dim; i++) {
       for (std::size_t j = 0; j < non_gate_dim; j++) {
         std::complex<double> sum{0.0, 0.0};
         // for each gate_dim compute dot product of U column i with ρ
         for (std::size_t l = 0; l < gate_dim; l++) {
-          sum += a[(k * dim) + idx_table[(l * non_gate_dim) + j]] *
+          sum += a[(static_cast<std::size_t>(k) * dim) +
+                   idx_table[(l * non_gate_dim) + j]] *
                  std::conj(u[(i * gate_dim) + l]);
         }
 
-        rho[(k * dim) + idx_table[(i * non_gate_dim) + j]] = sum;
+        rho[(static_cast<std::size_t>(k) * dim) +
+            idx_table[(i * non_gate_dim) + j]] = sum;
       }
     }
   }
