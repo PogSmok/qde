@@ -15,12 +15,12 @@ class Simulator {
  public:
   // Run the full simulation and return one SimulationState per layer.
   // Index 0 is the initial state (all qubits |0>, no gates applied yet).
-  static [[nodiscard]] std::vector<SimulationState> run(
+  [[nodiscard]] static std::vector<SimulationState> run(
       const SimulationCircuit& circuit);
 
   // Run and return only the final state.
   // More efficient when intermediate states are not needed.
-  static [[nodiscard]] SimulationState runFinal(
+  [[nodiscard]] static SimulationState runFinal(
       const SimulationCircuit& circuit);
 
   // Attach a noise model applied after every gate. Pass nullptr to disable.
