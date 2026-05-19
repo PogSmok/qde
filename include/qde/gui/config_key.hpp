@@ -12,9 +12,11 @@ namespace qde::gui::config {
 
 class ConfigKeyBase {
  public:
-  explicit ConfigKeyBase(const QString& id) { config_registry[id] = this; }
+  explicit ConfigKeyBase(QString id) : registered_id_(std::move(id)) {
+    config_registry[registered_id_] = this;
+  }
 
-  virtual ~ConfigKeyBase() = default;
+  virtual ~ConfigKeyBase() { config_registry.erase(registered_id_); }
   ConfigKeyBase(const ConfigKeyBase&) = delete;
   virtual ConfigKeyBase& operator=(const ConfigKeyBase&) = delete;
   ConfigKeyBase(ConfigKeyBase&&) = delete;
@@ -29,6 +31,8 @@ class ConfigKeyBase {
   [[nodiscard]] virtual QString description() const = 0;
 
   inline static auto config_registry = std::map<QString, ConfigKeyBase*>();
+private:
+  QString registered_id_;
 };
 
 template <typename T>
@@ -63,7 +67,7 @@ struct ConfigKeySerializer<QKeySequence> {
 };
 
 template <typename T>
-class ConfigKey : ConfigKeyBase {
+class ConfigKey : public ConfigKeyBase {
   using Validator = std::function<bool(const T&)>;
 
  public:
