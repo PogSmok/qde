@@ -5,42 +5,42 @@
 using namespace qde::gui::config;
 
 TEST(ConfigTest, TabWidthValidator) {
-  editor::tabWidth.setValue(4);
-  EXPECT_EQ(editor::tabWidth.value(), 4);
-  editor::tabWidth.setValue(1);
-  EXPECT_EQ(editor::tabWidth.value(), 1);
-  editor::tabWidth.setValue(16);
-  EXPECT_EQ(editor::tabWidth.value(), 16);
-  editor::tabWidth.setValue(0);
-  EXPECT_EQ(editor::tabWidth.value(), 16);
-  editor::tabWidth.setValue(20);
-  EXPECT_EQ(editor::tabWidth.value(), 16);
-  editor::tabWidth.setValue(-1);
-  EXPECT_EQ(editor::tabWidth.value(), 16);
+  editor::tabWidth.SetValue(4);
+  EXPECT_EQ(editor::tabWidth.Value(), 4);
+  editor::tabWidth.SetValue(1);
+  EXPECT_EQ(editor::tabWidth.Value(), 1);
+  editor::tabWidth.SetValue(16);
+  EXPECT_EQ(editor::tabWidth.Value(), 16);
+  editor::tabWidth.SetValue(0);
+  EXPECT_EQ(editor::tabWidth.Value(), 16);
+  editor::tabWidth.SetValue(20);
+  EXPECT_EQ(editor::tabWidth.Value(), 16);
+  editor::tabWidth.SetValue(-1);
+  EXPECT_EQ(editor::tabWidth.Value(), 16);
 }
 
 TEST(ConfigTest, FontSizeValidator) {
-  editor::fontSize.setValue(11);
-  EXPECT_EQ(editor::fontSize.value(), 11);
-  editor::fontSize.setValue(6);
-  EXPECT_EQ(editor::fontSize.value(), 6);
-  editor::fontSize.setValue(72);
-  EXPECT_EQ(editor::fontSize.value(), 72);
-  editor::fontSize.setValue(0);
-  EXPECT_EQ(editor::fontSize.value(), 72);
-  editor::fontSize.setValue(100);
-  EXPECT_EQ(editor::fontSize.value(), 72);
-  editor::fontSize.setValue(-1);
-  EXPECT_EQ(editor::fontSize.value(), 72);
+  editor::fontSize.SetValue(11);
+  EXPECT_EQ(editor::fontSize.Value(), 11);
+  editor::fontSize.SetValue(6);
+  EXPECT_EQ(editor::fontSize.Value(), 6);
+  editor::fontSize.SetValue(72);
+  EXPECT_EQ(editor::fontSize.Value(), 72);
+  editor::fontSize.SetValue(0);
+  EXPECT_EQ(editor::fontSize.Value(), 72);
+  editor::fontSize.SetValue(100);
+  EXPECT_EQ(editor::fontSize.Value(), 72);
+  editor::fontSize.SetValue(-1);
+  EXPECT_EQ(editor::fontSize.Value(), 72);
 }
 
 TEST(ConfigTest, ThemeNameValidator) {
-  theme::name.setValue("dark");
-  EXPECT_EQ(theme::name.value(), "dark");
-  theme::name.setValue("light");
-  EXPECT_EQ(theme::name.value(), "light");
-  theme::name.setValue("abc");
-  EXPECT_EQ(theme::name.value(), "light");
+  theme::name.SetValue("dark");
+  EXPECT_EQ(theme::name.Value(), "dark");
+  theme::name.SetValue("light");
+  EXPECT_EQ(theme::name.Value(), "light");
+  theme::name.SetValue("abc");
+  EXPECT_EQ(theme::name.Value(), "light");
 }
 
 TEST(ConfigTest, ShortcutValidator) {

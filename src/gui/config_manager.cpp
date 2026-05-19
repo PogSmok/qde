@@ -30,7 +30,7 @@ bool ConfigManager::save(const QString& dir_path) {
   // Partition the flat registry into per-category buckets.
   std::map<QString, std::vector<ConfigKeyBase*>> by_category;
   for (auto& [id, key] : ConfigKeyBase::config_registry) {
-    by_category[key->category()].push_back(key);
+    by_category[key->Category()].push_back(key);
   }
 
   bool all_ok = true;
@@ -54,7 +54,7 @@ bool ConfigManager::saveCategory(const QString& category,
   // Build JSON object: { fieldName: value, … }
   QJsonObject obj;
   for (const ConfigKeyBase* key : keys) {
-    obj.insert(key->fieldName(), key->toJsonValue());
+    obj.insert(key->FieldName(), key->ToJsonValue());
   }
 
   const QString file_path = dir.filePath(category + ".json");
@@ -135,7 +135,7 @@ bool ConfigManager::loadFile(const QString& file_path) const {
       continue;
     }
 
-    if (!registry_it->second->fromJsonValue(it.value())) {
+    if (!registry_it->second->FromJsonValue(it.value())) {
       qWarning(
           "ConfigManager::load - value for '%s' in %s failed validation - "
           "keeping default",

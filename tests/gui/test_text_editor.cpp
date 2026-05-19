@@ -150,15 +150,15 @@ TEST_F(TextEditorTest, IndentSingleLine) {
   editor_->setContent("line of code");
   setSelection(0, 0);
   editor_->indentBlock();
-  const bool useSpaces = config::editor::useSpaces.value();
-  const int tabWidth = config::editor::tabWidth.value();
+  const bool useSpaces = config::editor::useSpaces.Value();
+  const int tabWidth = config::editor::tabWidth.Value();
   const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
   EXPECT_EQ(editor_->plainText(), indent + "line of code");
 }
 
 TEST_F(TextEditorTest, OutdentSingleLine) {
-  const bool useSpaces = config::editor::useSpaces.value();
-  const int tabWidth = config::editor::tabWidth.value();
+  const bool useSpaces = config::editor::useSpaces.Value();
+  const int tabWidth = config::editor::tabWidth.Value();
   const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
   editor_->setContent(indent + "line of code");
   setSelection(0, 0);
@@ -170,15 +170,15 @@ TEST_F(TextEditorTest, IndentMultipleLines) {
   editor_->setContent("1. line\n2. line");
   setSelection(0, 10);
   editor_->indentBlock();
-  const bool useSpaces = config::editor::useSpaces.value();
-  const int tabWidth = config::editor::tabWidth.value();
+  const bool useSpaces = config::editor::useSpaces.Value();
+  const int tabWidth = config::editor::tabWidth.Value();
   const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
   EXPECT_EQ(editor_->plainText(), indent + "1. line\n" + indent + "2. line");
 }
 
 TEST_F(TextEditorTest, OutdentMultipleLines) {
-  const bool useSpaces = config::editor::useSpaces.value();
-  const int tabWidth = config::editor::tabWidth.value();
+  const bool useSpaces = config::editor::useSpaces.Value();
+  const int tabWidth = config::editor::tabWidth.Value();
   const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
   editor_->setContent(indent + "1. line\n" + indent + "2. line");
   setSelection(0, 10 + tabWidth);

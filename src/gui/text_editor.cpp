@@ -145,8 +145,8 @@ void TextEditor::indentBlock() {
     endBlock = endBlock.previous();
   }
 
-  const bool useSpaces = config::editor::useSpaces.value();
-  const int tabWidth = config::editor::tabWidth.value();
+  const bool useSpaces = config::editor::useSpaces.Value();
+  const int tabWidth = config::editor::tabWidth.Value();
   const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
 
   for (QTextBlock block = startBlock;
@@ -174,8 +174,8 @@ void TextEditor::outdentBlock() {
     endBlock = endBlock.previous();
   }
 
-  const bool useSpaces = config::editor::useSpaces.value();
-  const int tabWidth = config::editor::tabWidth.value();
+  const bool useSpaces = config::editor::useSpaces.Value();
+  const int tabWidth = config::editor::tabWidth.Value();
 
   for (QTextBlock block = startBlock;
        block.isValid() && block.blockNumber() <= endBlock.blockNumber();

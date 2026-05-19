@@ -33,12 +33,12 @@ CodeEditor::CodeEditor(QWidget* parent)
   p.setColor(QPalette::Text, theme::kEditorText);
   setPalette(p);
 
-  QFont font(qde::gui::config::editor::fontFamily.value(),
-             qde::gui::config::editor::fontSize.value());
+  QFont font(qde::gui::config::editor::fontFamily.Value(),
+             qde::gui::config::editor::fontSize.Value());
   font.setFixedPitch(true);
   setFont(font);
   setTabStopDistance(QFontMetrics(font).horizontalAdvance(' ') *
-                     qde::gui::config::editor::tabWidth.value());
+                     qde::gui::config::editor::tabWidth.Value());
 
   connect(this, &QPlainTextEdit::blockCountChanged, this,
           &CodeEditor::updateLineNumberAreaWidth);

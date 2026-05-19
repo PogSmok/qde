@@ -48,8 +48,8 @@ class ConfigManagerTest : public ::testing::Test {
   }
 
   void DefaultValues() {
-    testConfig.setValue(4);
-    testConfigKeySequence.setValue(QKeySequence("Alt+Left"));
+    testConfig.SetValue(4);
+    testConfigKeySequence.SetValue(QKeySequence("Alt+Left"));
   }
 
   void PrepareValidConfig() {
@@ -172,14 +172,14 @@ TEST_F(ConfigManagerTest, LoadValidConfigFile) {
   DefaultValues();
   auto& mgr = ConfigManager::instance();
 
-  EXPECT_EQ(testConfig.value(), 4);
-  EXPECT_EQ(testConfigKeySequence.value(), QKeySequence("Alt+Left"));
+  EXPECT_EQ(testConfig.Value(), 4);
+  EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Left"));
 
   bool all_ok = mgr.load(tempDir->path());
   EXPECT_TRUE(all_ok);
 
-  EXPECT_EQ(testConfig.value(), 2);
-  EXPECT_EQ(testConfigKeySequence.value(), QKeySequence("Alt+Right"));
+  EXPECT_EQ(testConfig.Value(), 2);
+  EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Right"));
 }
 
 TEST_F(ConfigManagerTest, LoadConfigFileInvalidValue) {
@@ -187,15 +187,15 @@ TEST_F(ConfigManagerTest, LoadConfigFileInvalidValue) {
   DefaultValues();
   auto& mgr = ConfigManager::instance();
 
-  EXPECT_EQ(testConfig.value(), 4);
-  EXPECT_EQ(testConfigKeySequence.value(), QKeySequence("Alt+Left"));
+  EXPECT_EQ(testConfig.Value(), 4);
+  EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Left"));
 
   bool all_ok = mgr.load(tempDir->path());
   EXPECT_FALSE(all_ok);
 
-  EXPECT_EQ(testConfig.value(), 4) << "Config file contains invalid value. "
+  EXPECT_EQ(testConfig.Value(), 4) << "Config file contains invalid value. "
                                       "Config key value should not be changed.";
-  EXPECT_EQ(testConfigKeySequence.value(), QKeySequence("Alt+Right"))
+  EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Right"))
       << "This config file contains valid value. Config key value should be "
          "changed.";
   ;
@@ -206,15 +206,15 @@ TEST_F(ConfigManagerTest, LoadConfigFileInvalidJson) {
   DefaultValues();
   auto& mgr = ConfigManager::instance();
 
-  EXPECT_EQ(testConfig.value(), 4);
-  EXPECT_EQ(testConfigKeySequence.value(), QKeySequence("Alt+Left"));
+  EXPECT_EQ(testConfig.Value(), 4);
+  EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Left"));
 
   bool all_ok = mgr.load(tempDir->path());
   EXPECT_FALSE(all_ok);
 
-  EXPECT_EQ(testConfig.value(), 4) << "Config file contains bad syntax. Config "
+  EXPECT_EQ(testConfig.Value(), 4) << "Config file contains bad syntax. Config "
                                       "key value should not be changed.";
-  EXPECT_EQ(testConfigKeySequence.value(), QKeySequence("Alt+Left"))
+  EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Left"))
       << "Config file contains json syntax error. Config key value should not "
          "be changed.";
   ;
@@ -225,8 +225,8 @@ TEST_F(ConfigManagerTest, SaveValidConfigKeys) {
   DefaultValues();
   auto& mgr = ConfigManager::instance();
 
-  testConfig.setValue(1);
-  testConfigKeySequence.setValue(QKeySequence("Alt+Right"));
+  testConfig.SetValue(1);
+  testConfigKeySequence.SetValue(QKeySequence("Alt+Right"));
 
   bool all_ok = mgr.save(tempDir->path());
   EXPECT_TRUE(all_ok);
