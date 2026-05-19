@@ -1,9 +1,8 @@
-
 #include <QApplication>
 #include <QStyleFactory>
 
-#include "qde/gui/main_window.hpp"
 #include "qde/gui/config_manager.hpp"
+#include "qde/gui/main_window.hpp"
 
 int main(int argc, char* argv[]) {
   QApplication app(argc, argv);
