@@ -26,7 +26,8 @@ class TextEditor : public QWidget {
   [[nodiscard]] QString filePath() const;
   [[nodiscard]] bool isModified() const;
 
-  [[nodiscard]] const TextDocument* document() const { return document_; }
+  [[nodiscard]] QTextDocument* document() const { return editor_->document(); }
+  [[nodiscard]] QPlainTextEdit* editor() const { return editor_; }
   void setContent(const QString& content);
 
   void setErrors(const std::vector<qde::SyntaxError>& errors);
