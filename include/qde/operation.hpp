@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <utility>
 #include <vector>
 
 #include "qde/gate_definition.hpp"
@@ -32,6 +34,8 @@ struct Operation {
   std::vector<double> gate_params;
   std::vector<QubitReference> qubits;
   std::vector<BitReference> measure_target;
+  // if set, the operation is skipped unless classical_bits[bit] == expected
+  std::optional<std::pair<BitReference, std::uint8_t>> condition;
 };
 
 }  // namespace qde

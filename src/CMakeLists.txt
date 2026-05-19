@@ -2,6 +2,7 @@
 set(LIB_SOURCES
     gate_registry.cpp
     parser.cpp
+    qubit_allocator.cpp
 )
 
 add_library(qde_lib STATIC ${LIB_SOURCES})
@@ -54,6 +55,32 @@ target_link_libraries(qde_gui
         Qt6::Widgets
 )
 
+# QDE Simulation Library
+set(LIB_SIM_SOURCES
+    simulator/simulation_circuit.cpp
+    simulator/simulator.cpp
+)
+
+add_library(qde_sim STATIC ${LIB_SIM_SOURCES})
+
+find_package(OpenMP REQUIRED)
+
+# /openmp:llvm upgrades MSVC from OpenMP 2.0 to 3.1, enabling collapse clause.
+if(MSVC)
+    target_compile_options(qde_sim PRIVATE /openmp:llvm)
+endif()
+
+target_include_directories(qde_lib
+    PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(qde_sim
+    PRIVATE
+        qde_lib
+        OpenMP::OpenMP_CXX
+)
+
 
 qt_add_executable(qde main.cpp)
 
@@ -61,6 +88,7 @@ target_link_libraries(qde
     PRIVATE
         qde_lib
         qde_gui
+        qde_sim
 )
 
 if (WIN32)
