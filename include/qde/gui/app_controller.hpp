@@ -18,7 +18,7 @@ class AppController : public QObject {
   explicit AppController(QuantumCircuitView* circuit_view,
                          TextEditor* text_editor, QObject* parent = nullptr);
   [[nodiscard]] const qde::Parser* Parser() const { return parser_.get(); }
-  [[nodiscard]] const qde::Circuit* Circuit() const {
+  [[nodiscard]] const qde::Circuit* GetCircuit() const {
     return circuit_.has_value() ? &circuit_.value() : nullptr;
   }
 

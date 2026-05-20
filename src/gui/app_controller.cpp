@@ -28,7 +28,7 @@ void AppController::ParseNow() {
   auto result = parser_->Parse(textEditor_->PlainText().toStdString(),
                                qde::BackendConfig{});
   if (result.IsOk()) {
-    circuit_ = result.Circuit();
+    circuit_ = result.GetCircuit();
     textEditor_->ClearErrors();
     emit ParseSuccess();
   } else {

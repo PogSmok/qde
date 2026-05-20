@@ -39,7 +39,7 @@ TEST_F(AppControllerTest, ParseNowSuccess) {
 
   EXPECT_EQ(success_spy.count(), 1);
   EXPECT_EQ(error_spy.count(), 0);
-  EXPECT_NE(controller->Circuit(), nullptr);
+  EXPECT_NE(controller->GetCircuit(), nullptr);
 }
 
 TEST_F(AppControllerTest, ParseNowError) {
@@ -54,7 +54,7 @@ TEST_F(AppControllerTest, ParseNowError) {
 
   EXPECT_EQ(success_spy.count(), 0);
   EXPECT_EQ(error_spy.count(), 1);
-  EXPECT_EQ(controller->Circuit(), nullptr);
+  EXPECT_EQ(controller->GetCircuit(), nullptr);
 }
 
 TEST_F(AppControllerTest, DebounceTimerWorks) {

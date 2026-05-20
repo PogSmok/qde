@@ -35,13 +35,13 @@ TEST(ParseResult, FailStoresErrors) {
 
 TEST(ParseResult, OkCircuitIsAccessible) {
   auto result = qde::ParseResult::Ok(MakeEmptyCircuit());
-  EXPECT_NO_FATAL_FAILURE(result.Circuit());
+  EXPECT_NO_FATAL_FAILURE(result.GetCircuit());
 }
 
 TEST(ParseResult, FailCircuitAssertsInDebug) {
   auto result = qde::ParseResult::Fail({{1, 0, "error"}});
-  EXPECT_DEBUG_DEATH(result.Circuit(),
-                     "ParseResult::Circuit\\(\\) called on a failed result");
+  EXPECT_DEBUG_DEATH(result.GetCircuit(),
+                     "ParseResult::GetCircuit\\(\\) called on a failed result");
 }
 
 TEST(ParseResult, FailWithNoErrorsAssertsInDebug) {

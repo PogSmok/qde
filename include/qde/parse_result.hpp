@@ -24,9 +24,9 @@ class ParseResult {
     return {std::nullopt, std::move(errors)};
   }
 
-  [[nodiscard]] const Circuit& Circuit() const {
+  [[nodiscard]] const Circuit& GetCircuit() const {
     assert(IsOk() &&
-           "ParseResult::Circuit() called on a failed result, "
+           "ParseResult::GetCircuit() called on a failed result, "
            "check IsOk() before accessing the circuit");
     return *circuit_;
   }
