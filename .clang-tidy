@@ -24,6 +24,7 @@ Checks: >
 WarningsAsErrors: >
   clang-diagnostic-*,
   clang-analyzer-*,
+  readability-identifier-naming,
 
 # Only report issues in our own headers, not Qt/ANTLR/system headers
 HeaderFilterRegex: '^.*include/qde/.*$'
