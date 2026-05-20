@@ -21,8 +21,7 @@ namespace editor {
 
 inline ConfigKey<int> tabWidth("editor", "tabWidth", 4, "Tab Width",
                                "Number of spaces per tab stop (1–16).",
-                               [](const int& v) { return v >= 1 && v <= 16;
-                                     });
+                               [](const int& v) { return v >= 1 && v <= 16; });
 
 inline ConfigKey<bool> useSpaces(
     "editor", "useSpaces", true, "Use Spaces",
