@@ -10,11 +10,11 @@ namespace qde {
 
 // TODO allocate against actual constrained hardware config
 // this will also change function signature to also take const T& config
-std::unordered_map<std::string, std::size_t> QubitAllocator::allocate(
+std::unordered_map<std::string, std::size_t> QubitAllocator::Allocate(
     const Circuit& circuit) {
   std::unordered_map<std::string, std::size_t> mapping;
 
-  const std::vector<QubitRegister>& qregs = circuit.qubitRegisters();
+  const std::vector<QubitRegister>& qregs = circuit.QubitRegisters();
   std::size_t id = 0;
 
   for (const QubitRegister& qreg : qregs) {

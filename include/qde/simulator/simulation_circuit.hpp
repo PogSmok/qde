@@ -13,11 +13,11 @@ class SimulationCircuit {
  public:
   SimulationCircuit(const Circuit& circuit);
 
-  [[nodiscard]] std::size_t qubitCount() const noexcept { return qubit_count_; }
+  [[nodiscard]] std::size_t QubitCount() const noexcept { return qubit_count_; }
 
-  [[nodiscard]] std::size_t bitCount() const noexcept { return bit_count_; }
+  [[nodiscard]] std::size_t BitCount() const noexcept { return bit_count_; }
 
-  [[nodiscard]] const std::vector<std::vector<CompiledOperation>>& layers()
+  [[nodiscard]] const std::vector<std::vector<CompiledOperation>>& Layers()
       const noexcept {
     return layers_;
   }

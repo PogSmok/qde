@@ -15,18 +15,18 @@ class CodeEditor : public QPlainTextEdit {
  public:
   explicit CodeEditor(QWidget* parent = nullptr);
 
-  void lineNumberAreaPaintEvent(const QPaintEvent* event) const;
-  [[nodiscard]] int lineNumberAreaWidth() const;
+  void LineNumberAreaPaintEvent(const QPaintEvent* event) const;
+  [[nodiscard]] int LineNumberAreaWidth() const;
 
-  void setErrors(const std::vector<qde::SyntaxError>& errors);
-  void clearErrors();
+  void SetErrors(const std::vector<qde::SyntaxError>& errors);
+  void ClearErrors();
 
  protected:
   void resizeEvent(QResizeEvent* event) override;
 
  public slots:
-  void updateLineNumberAreaWidth(int newBlockCount);
-  void updateLineNumberArea(const QRect& rect, int dy);
+  void UpdateLineNumberAreaWidth(int new_block_count);
+  void UpdateLineNumberArea(const QRect& rect, int dy);
 
  private:
   QPointer<QWidget> lineNumberArea_;

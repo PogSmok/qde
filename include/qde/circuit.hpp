@@ -31,22 +31,22 @@ class Circuit {
         bit_registers_(std::move(bit_registers)),
         operations_(std::move(operations)) {}
 
-  [[nodiscard]] const GateRegistry& gateRegistry() const noexcept {
+  [[nodiscard]] const GateRegistry& GateRegistry() const noexcept {
     return gate_registry_;
   }
-  [[nodiscard]] const std::vector<QubitRegister>& qubitRegisters()
+  [[nodiscard]] const std::vector<QubitRegister>& QubitRegisters()
       const noexcept {
     return qubit_registers_;
   }
-  [[nodiscard]] const std::vector<BitRegister>& bitRegisters() const noexcept {
+  [[nodiscard]] const std::vector<BitRegister>& BitRegisters() const noexcept {
     return bit_registers_;
   }
-  [[nodiscard]] const std::vector<Operation>& operations() const noexcept {
+  [[nodiscard]] const std::vector<Operation>& Operations() const noexcept {
     return operations_;
   }
 
  private:
-  GateRegistry gate_registry_;
+  class GateRegistry gate_registry_;
   std::vector<QubitRegister> qubit_registers_;
   std::vector<BitRegister> bit_registers_;
   std::vector<Operation> operations_;

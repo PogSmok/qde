@@ -16,16 +16,16 @@ class TextEditorTest : public ::testing::Test {
 };
 
 TEST_F(TextEditorTest, NewFileResetsState) {
-  editor_->setContent("some text");
+  editor_->SetContent("some text");
 
-  editor_->newFile();
+  editor_->NewFile();
 
-  EXPECT_TRUE(editor_->plainText().isEmpty());
-  EXPECT_FALSE(editor_->isModified());
+  EXPECT_TRUE(editor_->PlainText().isEmpty());
+  EXPECT_FALSE(editor_->IsModified());
 }
 
 TEST_F(TextEditorTest, TypingUpdatesDocumentAndEmitsSignal) {
-  QSignalSpy spy(editor_, &TextEditor::textChanged);
+  QSignalSpy spy(editor_, &TextEditor::TextChanged);
 
   // We simulate user typing by calling the slot that handles code editor
   // changes Alternatively, we can find the CodeEditor child and set its text
@@ -35,9 +35,9 @@ TEST_F(TextEditorTest, TypingUpdatesDocumentAndEmitsSignal) {
   inner_editor->setPlainText("user typed text");
 
   EXPECT_EQ(spy.count(), 1);
-  EXPECT_EQ(editor_->plainText(), "user typed text");
-  EXPECT_EQ(editor_->document()->content(), "user typed text");
-  EXPECT_TRUE(editor_->isModified());
+  EXPECT_EQ(editor_->PlainText(), "user typed text");
+  EXPECT_EQ(editor_->Document()->Content(), "user typed text");
+  EXPECT_TRUE(editor_->IsModified());
 }
 
 TEST_F(TextEditorTest, OpenAndSaveFile) {
@@ -49,20 +49,20 @@ TEST_F(TextEditorTest, OpenAndSaveFile) {
   out << "file content";
   temp_file.close();
 
-  editor_->openFile(temp_path);
-  EXPECT_EQ(editor_->plainText(), "file content");
-  EXPECT_FALSE(editor_->isModified());
-  EXPECT_EQ(editor_->filePath(), temp_path);
+  editor_->OpenFile(temp_path);
+  EXPECT_EQ(editor_->PlainText(), "file content");
+  EXPECT_FALSE(editor_->IsModified());
+  EXPECT_EQ(editor_->FilePath(), temp_path);
 
   // Now edit and save
   auto* inner_editor = editor_->findChild<CodeEditor*>();
   ASSERT_NE(inner_editor, nullptr);
   inner_editor->setPlainText("modified content");
 
-  EXPECT_TRUE(editor_->isModified());
+  EXPECT_TRUE(editor_->IsModified());
 
-  EXPECT_TRUE(editor_->saveFile());
-  EXPECT_FALSE(editor_->isModified());
+  EXPECT_TRUE(editor_->SaveFile());
+  EXPECT_FALSE(editor_->IsModified());
 
   // Verify contents
   QFile file(temp_path);
@@ -76,11 +76,11 @@ TEST_F(TextEditorTest, SaveFileAs) {
   QString temp_path = temp_file.fileName();
   temp_file.close();
 
-  editor_->setContent("new content");
+  editor_->SetContent("new content");
 
-  EXPECT_TRUE(editor_->saveFileAs(temp_path));
-  EXPECT_FALSE(editor_->isModified());
-  EXPECT_EQ(editor_->filePath(), temp_path);
+  EXPECT_TRUE(editor_->SaveFileAs(temp_path));
+  EXPECT_FALSE(editor_->IsModified());
+  EXPECT_EQ(editor_->FilePath(), temp_path);
 
   QFile file(temp_path);
   ASSERT_TRUE(file.open(QIODevice::ReadOnly | QIODevice::Text));
@@ -91,15 +91,15 @@ TEST_F(TextEditorTest, ErrorHandling) {
   std::vector<qde::SyntaxError> errors;
   errors.push_back({1, 1, "Error 1"});
 
-  editor_->setContent("code\nmore code");
+  editor_->SetContent("code\nmore code");
 
-  editor_->setErrors(errors);
+  editor_->SetErrors(errors);
 
   auto* inner_editor = editor_->findChild<CodeEditor*>();
   ASSERT_NE(inner_editor, nullptr);
   EXPECT_EQ(inner_editor->extraSelections().size(), 1);
 
-  editor_->clearErrors();
+  editor_->ClearErrors();
   EXPECT_EQ(inner_editor->extraSelections().size(), 0);
 }
 

@@ -822,8 +822,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         }
       }
 
-      if (qubits.size() != gate->numQubits()) {
-        AddError("ctrl@gphase expects " + std::to_string(gate->numQubits()) +
+      if (qubits.size() != gate->NumQubits()) {
+        AddError("ctrl@gphase expects " + std::to_string(gate->NumQubits()) +
                      " qubit(s), got " + std::to_string(qubits.size()),
                  ctx);
         return visitChildren(ctx);
@@ -838,7 +838,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     if (CheckUndefined(UndefinedKind::kGate, gate_name, ctx)) {
       return visitChildren(ctx);
     }
-    auto gate = registry_.find(gate_name);
+    auto gate = registry_.Find(gate_name);
 
     // Evaluate parameter expressions with the current scalar scope
     std::vector<double> params;
@@ -850,9 +850,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
     auto modifiers = ctx->gateModifier();
 
-    if (modifiers.empty() && params.size() != gate->numParams()) {
+    if (modifiers.empty() && params.size() != gate->NumParams()) {
       AddError("gate '" + gate_name + "' expects " +
-                   std::to_string(gate->numParams()) + " parameter(s), got " +
+                   std::to_string(gate->NumParams()) + " parameter(s), got " +
                    std::to_string(params.size()),
                ctx);
       return visitChildren(ctx);
@@ -874,7 +874,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     auto operands = operand_list->gateOperand();
 
     // Single-qubit gate with one unindexed operand: broadcast over register
-    if (gate->numQubits() == 1 && modifiers.empty() && operands.size() == 1) {
+    if (gate->NumQubits() == 1 && modifiers.empty() && operands.size() == 1) {
       auto* indexed = operands[0]->indexedIdentifier();
       if ((indexed != nullptr) && indexed->indexOperator().empty()) {
         auto it = qubit_map_.find(indexed->Identifier()->getText());
@@ -895,7 +895,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
     // Pairwise broadcast: all operands are whole registers of equal size
     if (modifiers.empty() &&
-        operands.size() == static_cast<std::size_t>(gate->numQubits())) {
+        operands.size() == static_cast<std::size_t>(gate->NumQubits())) {
       bool all_whole = true;
       std::vector<RegisterInfo*> regs;
       for (auto* op : operands) {
@@ -943,9 +943,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       qubits.push_back(ResolveQubit(operand, ctx));
     }
 
-    if (qubits.size() != gate->numQubits()) {
+    if (qubits.size() != gate->NumQubits()) {
       AddError(
-          ErrWrongQubitCount(gate->name(), static_cast<int>(gate->numQubits()),
+          ErrWrongQubitCount(gate->Name(), static_cast<int>(gate->NumQubits()),
                              static_cast<int>(qubits.size())),
           ctx);
       return visitChildren(ctx);
@@ -1020,7 +1020,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
 
       const std::string call_name = call->Identifier()->getText();
-      auto call_gate = registry_.find(call_name);
+      auto call_gate = registry_.Find(call_name);
       if (!call_gate) {
         AddError(ErrUndefined(UndefinedKind::kGate, call_name), call);
         continue;
@@ -1030,7 +1030,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       BodyCall bc;
       bc.gate = call_gate;
 
-      if (!body_mods.empty() && call_gate->numParams() == 0) {
+      if (!body_mods.empty() && call_gate->NumParams() == 0) {
         // Non-parametric base: fold modifiers into the matrix now
         call_gate = DeriveModifiedGate(call_gate, {}, body_mods, call);
         if (!call_gate) {
@@ -1089,15 +1089,15 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::size_t dim = std::size_t{1} << num_qubits;
       Mat result = IdentityMatrix(num_qubits);
       for (auto& bc : body) {
-        Mat gate_mat = bc.gate->matrix({});
-        Mat embedded = EmbedGate(gate_mat, bc.gate->numQubits(),
+        Mat gate_mat = bc.gate->Matrix({});
+        Mat embedded = EmbedGate(gate_mat, bc.gate->NumQubits(),
                                  bc.qubit_indices, num_qubits);
         result = MatMul(embedded, result, dim);
       }
-      registry_.add(GateDefinition(name, num_qubits, std::move(result)));
+      registry_.Add(GateDefinition(name, num_qubits, std::move(result)));
     } else {
       // Parametric: defer matrix computation to each call site
-      registry_.add(GateDefinition(
+      registry_.Add(GateDefinition(
           name, num_qubits, num_params,
           [body, num_qubits](const std::vector<double>& params) -> Mat {
             const std::size_t dim = std::size_t{1} << num_qubits;
@@ -1108,8 +1108,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
               for (const auto& ep : bc.param_exprs) {
                 call_params.push_back(ExprNode::Eval(ep, params));
               }
-              Mat gate_mat = bc.gate->matrix(call_params);
-              std::uint8_t gate_n = bc.gate->numQubits();
+              Mat gate_mat = bc.gate->Matrix(call_params);
+              std::uint8_t gate_n = bc.gate->NumQubits();
               for (int i = static_cast<int>(bc.modifiers.size()) - 1; i >= 0;
                    --i) {
                 const auto& mod = bc.modifiers[i];
@@ -1356,7 +1356,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
   // ---- circuit state ------------------------------------------------------
 
   BackendConfig config_;
-  GateRegistry registry_ = GateRegistry::withBuiltins();
+  GateRegistry registry_ = GateRegistry::WithBuiltins();
   std::vector<QubitRegister> qubit_registers_;
   std::vector<BitRegister> bit_registers_;
   std::vector<Operation> operations_;
@@ -1455,7 +1455,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     const_vals_[key] = val.real();
   }
 
-  [[nodiscard]] const C* LookupScalar(const std::string& name) const {
+  [[nodiscard]] const C* LookupScalar(const std::string& name) {
     for (auto it = scopes_.rbegin(); it != scopes_.rend(); ++it) {
       auto found = it->scalar_map.find(name);
       if (found != it->scalar_map.end()) {
@@ -1465,7 +1465,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     return nullptr;
   }
 
-  [[nodiscard]] bool IsConst(const std::string& name) const {
+  [[nodiscard]] bool IsConst(const std::string& name) {
     for (auto it = scopes_.rbegin(); it != scopes_.rend(); ++it) {
       if (it->const_names.count(name) != 0U) {
         return true;
@@ -1496,7 +1496,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     bool is_undefined = false;
     switch (kind) {
       case UndefinedKind::kGate:
-        is_undefined = !registry_.contains(name);
+        is_undefined = !registry_.Contains(name);
         break;
       case UndefinedKind::kSubroutine:
         is_undefined = (subroutine_map_.count(name) == 0U);
@@ -1525,7 +1525,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     bool is_redefined = false;
     switch (kind) {
       case RedefinedKind::kGate:
-        is_redefined = registry_.contains(name);
+        is_redefined = registry_.Contains(name);
         break;
       case RedefinedKind::kSubroutine:
         is_redefined = (subroutine_map_.count(name) != 0U);
@@ -1645,14 +1645,14 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::vector<qasm3Parser::GateModifierContext*>& modifiers,
       antlr4::ParserRuleContext* error_ctx) {
     const std::string name =
-        BuildModifiedName(base->name(), base_params, modifiers);
+        BuildModifiedName(base->Name(), base_params, modifiers);
     auto it = derived_gates_.find(name);
     if (it != derived_gates_.end()) {
       return it->second;
     }
 
-    Mat mat = base->matrix(base_params);
-    std::uint8_t n = base->numQubits();
+    Mat mat = base->Matrix(base_params);
+    std::uint8_t n = base->NumQubits();
 
     for (int i = static_cast<int>(modifiers.size()) - 1; i >= 0; --i) {
       auto* mod = modifiers[i];
@@ -1768,8 +1768,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::unordered_map<std::string, int>& param_idx,
       const std::unordered_map<std::string, double>& const_vals) {
     auto n = std::make_shared<ExprNode>();
-    const double device_cycle_time_ns =
-        static_cast<double>(config_.device_cycle_time_ns().count());
+    const auto device_cycle_time_ns =
+        static_cast<double>(config_.DeviceCycleTimeNs().count());
 
     // LPAREN expression RPAREN
     if (auto* e =
@@ -2212,7 +2212,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 // Returns a failed ParseResult on syntax or semantic errors.
 // ---------------------------------------------------------------------------
 
-ParseResult Parser::parse(const std::string& source,
+ParseResult Parser::Parse(const std::string& source,
                           const BackendConfig& config) {
   SyntaxErrorListener listener;
 
@@ -2228,8 +2228,8 @@ ParseResult Parser::parse(const std::string& source,
 
   auto* tree = parser.program();
 
-  if (listener.hasErrors()) {
-    return ParseResult::fail(listener.errors());
+  if (listener.HasErrors()) {
+    return ParseResult::Fail(listener.Errors());
   }
 
   CircuitBuilder builder(config);
@@ -2237,10 +2237,10 @@ ParseResult Parser::parse(const std::string& source,
 
   if (!builder.SemanticErrors().empty()) {
     auto errors = builder.SemanticErrors();
-    return ParseResult::fail(std::move(errors));
+    return ParseResult::Fail(std::move(errors));
   }
 
-  return ParseResult::ok(builder.BuildCircuit());
+  return ParseResult::Ok(builder.BuildCircuit());
 }
 
 }  // namespace qde

@@ -17,70 +17,70 @@ TextEditor::TextEditor(QWidget* parent)
   layout->addWidget(editor_);
 
   connect(editor_, &QPlainTextEdit::textChanged, this,
-          &TextEditor::onEditorTextChanged);
+          &TextEditor::OnEditorTextChanged);
 
-  connect(document_, &TextDocument::modifiedChanged, this,
-          &TextEditor::modifiedChanged);
+  connect(document_, &TextDocument::ModifiedChanged, this,
+          &TextEditor::ModifiedChanged);
 
-  connect(document_, &TextDocument::filePathChanged, this,
-          &TextEditor::fileChanged);
+  connect(document_, &TextDocument::FilePathChanged, this,
+          &TextEditor::FileChanged);
 
   // Undo/redo plumbing
   editor_->document()->setUndoRedoEnabled(true);
 }
 
-void TextEditor::newFile() {
-  document_->setContent({});
-  document_->setModified(false);
-  syncEditorToDoc();
+void TextEditor::NewFile() {
+  document_->SetContent({});
+  document_->SetModified(false);
+  SyncEditorToDoc();
 }
 
-void TextEditor::openFile(const QString& path) {
-  if (document_->load(std::filesystem::path(path.toStdString()))) {
-    syncEditorToDoc();
+void TextEditor::OpenFile(const QString& path) {
+  if (document_->Load(std::filesystem::path(path.toStdString()))) {
+    SyncEditorToDoc();
   }
 }
 
-bool TextEditor::saveFile() {
-  if (filePath().isEmpty()) {
-    return saveFileAs(QFileDialog::getSaveFileName(
+bool TextEditor::SaveFile() {
+  if (FilePath().isEmpty()) {
+    return SaveFileAs(QFileDialog::getSaveFileName(
         this, "Save File", {}, "QASM Files (*.qasm);;All Files (*)"));
   }
-  return document_->save();
+  return document_->Save();
 }
 
-bool TextEditor::saveFileAs(const QString& path) {
+bool TextEditor::SaveFileAs(const QString& path) {
   if (path.isEmpty()) {
     return false;
   }
-  document_->setContent(editor_->toPlainText());
-  return document_->saveAs(std::filesystem::path(path.toStdString()));
+  document_->SetContent(editor_->toPlainText());
+  return document_->SaveAs(std::filesystem::path(path.toStdString()));
 }
 
-QString TextEditor::plainText() const { return editor_->toPlainText(); }
-QString TextEditor::filePath() const { return document_->filePath(); }
-bool TextEditor::isModified() const { return document_->modified(); }
+QString TextEditor::PlainText() const { return editor_->toPlainText(); }
+QString TextEditor::FilePath() const { return document_->FilePath(); }
+bool TextEditor::IsModified() const { return document_->Modified(); }
 
-void TextEditor::setContent(const QString& content) {
-  document_->setContent(content);
-  syncEditorToDoc();
+void TextEditor::SetContent(const QString& content) {
+  document_->SetContent(content);
+  SyncEditorToDoc();
 }
 
-void TextEditor::onEditorTextChanged() {
-  document_->setContent(editor_->toPlainText());
-  emit textChanged();
+void TextEditor::OnEditorTextChanged() {
+  document_->SetContent(editor_->toPlainText());
+  emit TextChanged();
 }
 
-void TextEditor::syncEditorToDoc() {
+void TextEditor::SyncEditorToDoc() {
   QSignalBlocker block(editor_);
-  editor_->setPlainText(document_->content());
+  editor_->setPlainText(document_->Content());
   block.unblock();
 }
 
-void TextEditor::setErrors(const std::vector<qde::SyntaxError>& errors) {
-  editor_->setErrors(errors);
+void TextEditor::SetErrors(const std::vector<qde::SyntaxError>& errors) {
+  editor_->SetErrors(errors);
 }
 
-void TextEditor::clearErrors() { editor_->clearErrors(); }
+void TextEditor::ClearErrors() { editor_->ClearErrors(); }
 
 }  // namespace qde::gui

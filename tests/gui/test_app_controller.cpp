@@ -28,37 +28,37 @@ class AppControllerTest : public ::testing::Test {
 };
 
 TEST_F(AppControllerTest, ParseNowSuccess) {
-  QSignalSpy success_spy(controller, &AppController::parseSuccess);
-  QSignalSpy error_spy(controller, &AppController::parseError);
+  QSignalSpy success_spy(controller, &AppController::ParseSuccess);
+  QSignalSpy error_spy(controller, &AppController::ParseError);
 
   auto* inner_editor = text_editor->findChild<CodeEditor*>();
   ASSERT_NE(inner_editor, nullptr);
   inner_editor->setPlainText("OPENQASM 3.0;\nqreg q[1];");
 
-  controller->parseNow();
+  controller->ParseNow();
 
   EXPECT_EQ(success_spy.count(), 1);
   EXPECT_EQ(error_spy.count(), 0);
-  EXPECT_NE(controller->circuit(), nullptr);
+  EXPECT_NE(controller->Circuit(), nullptr);
 }
 
 TEST_F(AppControllerTest, ParseNowError) {
-  QSignalSpy success_spy(controller, &AppController::parseSuccess);
-  QSignalSpy error_spy(controller, &AppController::parseError);
+  QSignalSpy success_spy(controller, &AppController::ParseSuccess);
+  QSignalSpy error_spy(controller, &AppController::ParseError);
 
   auto* inner_editor = text_editor->findChild<CodeEditor*>();
   ASSERT_NE(inner_editor, nullptr);
   inner_editor->setPlainText("INVALID SYNTAX");
 
-  controller->parseNow();
+  controller->ParseNow();
 
   EXPECT_EQ(success_spy.count(), 0);
   EXPECT_EQ(error_spy.count(), 1);
-  EXPECT_EQ(controller->circuit(), nullptr);
+  EXPECT_EQ(controller->Circuit(), nullptr);
 }
 
 TEST_F(AppControllerTest, DebounceTimerWorks) {
-  QSignalSpy success_spy(controller, &AppController::parseSuccess);
+  QSignalSpy success_spy(controller, &AppController::ParseSuccess);
 
   auto* inner_editor = text_editor->findChild<CodeEditor*>();
   ASSERT_NE(inner_editor, nullptr);
@@ -66,7 +66,7 @@ TEST_F(AppControllerTest, DebounceTimerWorks) {
   // Type something
   inner_editor->setPlainText("OPENQASM 3.0;\nqreg q[1];");
 
-  // The signal textChanged triggers debounce timer (400ms).
+  // The signal TextChanged triggers debounce timer (400ms).
   EXPECT_EQ(success_spy.count(), 0);  // It should not parse instantly.
   EXPECT_TRUE(success_spy.wait(2000));
   EXPECT_EQ(success_spy.count(), 1);  // It should be parsed.

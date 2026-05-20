@@ -13,12 +13,11 @@ constexpr int kUnusedLayer = -1;  // Indicates no use in any of the layers
 
 SimulationCircuit::SimulationCircuit(const Circuit& circuit) {
   const std::unordered_map<std::string, std::size_t> hardware_mapping =
-      QubitAllocator::allocate(circuit);
-
-  const std::vector<QubitRegister>& qregs = circuit.qubitRegisters();
-  const std::vector<BitRegister>& bregs = circuit.bitRegisters();
-
+      QubitAllocator::Allocate(circuit);
   qubit_count_ = hardware_mapping.size();
+
+  const std::vector<QubitRegister>& qregs = circuit.QubitRegisters();
+  const std::vector<BitRegister>& bregs = circuit.BitRegisters();
 
   // Pre-compute flat bit offset for each classical register.
   std::vector<std::size_t> bit_offsets(bregs.size());
@@ -45,7 +44,7 @@ SimulationCircuit::SimulationCircuit(const Circuit& circuit) {
   // Tracks the last layer each physical qubit was used in.
   std::vector<int> qubit_last_layer(qubit_count_, kUnusedLayer);
 
-  for (const Operation& op : circuit.operations()) {
+  for (const Operation& op : circuit.Operations()) {
     std::vector<std::size_t> hardware_qubits;
     hardware_qubits.reserve(op.qubits.size());
     for (const QubitReference& qubit : op.qubits) {

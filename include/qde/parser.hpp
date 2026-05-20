@@ -10,7 +10,7 @@ namespace qde {
 
 class Parser {
  public:
-  [[nodiscard]] static ParseResult parse(const std::string& source,
+  [[nodiscard]] static ParseResult Parse(const std::string& source,
                                          const BackendConfig& config);
 };
 

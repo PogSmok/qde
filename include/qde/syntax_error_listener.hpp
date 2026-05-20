@@ -20,10 +20,10 @@ class SyntaxErrorListener : public antlr4::BaseErrorListener {
     errors_.push_back({line, column, msg});
   }
 
-  [[nodiscard]] const std::vector<SyntaxError>& errors() const {
+  [[nodiscard]] const std::vector<SyntaxError>& Errors() const {
     return errors_;
   }
-  [[nodiscard]] bool hasErrors() const { return !errors_.empty(); }
+  [[nodiscard]] bool HasErrors() const { return !errors_.empty(); }
 
  private:
   std::vector<SyntaxError> errors_;

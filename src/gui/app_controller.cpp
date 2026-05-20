@@ -17,29 +17,29 @@ AppController::AppController(QuantumCircuitView* circuit_view,
   debounceTimer_.setSingleShot(true);
   debounceTimer_.setInterval(debounce_time_ms);  // 400ms debounce
 
-  connect(textEditor_, &TextEditor::textChanged, this,
-          &AppController::onTextChanged);
-  connect(&debounceTimer_, &QTimer::timeout, this, &AppController::parseNow);
+  connect(textEditor_, &TextEditor::TextChanged, this,
+          &AppController::OnTextChanged);
+  connect(&debounceTimer_, &QTimer::timeout, this, &AppController::ParseNow);
 }
 
-void AppController::onTextChanged() { debounceTimer_.start(); }
+void AppController::OnTextChanged() { debounceTimer_.start(); }
 
-void AppController::parseNow() {
-  auto result = parser_->parse(textEditor_->plainText().toStdString(),
+void AppController::ParseNow() {
+  auto result = parser_->Parse(textEditor_->PlainText().toStdString(),
                                qde::BackendConfig{});
-  if (result.isOk()) {
-    circuit_ = result.circuit();
-    textEditor_->clearErrors();
-    emit parseSuccess();
+  if (result.IsOk()) {
+    circuit_ = result.Circuit();
+    textEditor_->ClearErrors();
+    emit ParseSuccess();
   } else {
     circuit_.reset();
-    textEditor_->setErrors(result.errors());
+    textEditor_->SetErrors(result.Errors());
 
     QStringList error_list;
-    for (const auto& err : result.errors()) {
+    for (const auto& err : result.Errors()) {
       error_list << QString::fromStdString(err.message);
     }
-    emit parseError(error_list);
+    emit ParseError(error_list);
   }
 }
 

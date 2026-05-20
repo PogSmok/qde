@@ -20,18 +20,18 @@ class MainWindow : public QMainWindow {
   void closeEvent(QCloseEvent* event) override;
 
  public slots:
-  void newFile();
-  void openFile();
-  void saveFile();
-  void saveFileAs();
-  void onParseSuccess() const;
-  void onParseFail(const QStringList& errors) const;
-  void onModifiedChanged(bool modified);
+  void NewFile();
+  void OpenFile();
+  void SaveFile();
+  void SaveFileAs();
+  void OnParseSuccess() const;
+  void OnParseFail(const QStringList& errors) const;
+  void OnModifiedChanged(bool modified);
 
  private:
-  void setupMenuBar();
-  void setupStatusBar();
-  void updateTitle();
+  void SetupMenuBar();
+  void SetupStatusBar();
+  void UpdateTitle();
 
   QPointer<TextEditor> editor_;
   QPointer<QuantumCircuitView> circuitView_;
