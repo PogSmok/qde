@@ -13,11 +13,11 @@ class BackendConfig {
  public:
   BackendConfig() = default;
 
-  [[nodiscard]] std::chrono::nanoseconds device_cycle_time_ns() const noexcept {
+  [[nodiscard]] std::chrono::nanoseconds DeviceCycleTimeNs() const noexcept {
     return device_cycle_time_ns_;
   }
 
-  void set_device_cycle_time_ns(std::chrono::nanoseconds val) {
+  void SetDeviceCycleTimeNs(std::chrono::nanoseconds val) {
     if (val < std::chrono::nanoseconds{0}) {
       throw std::invalid_argument(
           "BackendConfig: device_cycle_time_ns must be >= 0");
@@ -25,7 +25,7 @@ class BackendConfig {
     device_cycle_time_ns_ = val;
   }
 
-  void reset_device_cycle_time_ns() {
+  void ResetDeviceCycleTimeNs() {
     device_cycle_time_ns_ = kDefaultDeviceCycleTimeNs;
   }
 

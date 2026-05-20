@@ -42,271 +42,273 @@
 // ---- helpers ----------------------------------------------------------------
 
 static qde::ParseResult Parse(const std::string& source) {
-  return qde::Parser::parse("OPENQASM 3.0;\n" + source, qde::BackendConfig{});
+  return qde::Parser::Parse("OPENQASM 3.0;\n" + source, qde::BackendConfig{});
 }
 
 // ---- syntax -----------------------------------------------------------------
 
 TEST(Parser, ValidProgramIsOk) {
   auto result = Parse("qubit q;\nh q;\n");
-  EXPECT_TRUE(result.isOk());
-  EXPECT_TRUE(result.errors().empty());
+  EXPECT_TRUE(result.IsOk());
+  EXPECT_TRUE(result.Errors().empty());
 }
 
 TEST(Parser, InvalidTokenFails) {
   auto result = Parse("???\n");
-  EXPECT_FALSE(result.isOk());
-  EXPECT_FALSE(result.errors().empty());
+  EXPECT_FALSE(result.IsOk());
+  EXPECT_FALSE(result.Errors().empty());
 }
 
 TEST(Parser, ErrorReportsCorrectLocation) {
   qde::Parser parser;
-  auto result = qde::Parser::parse("OPENQASM 3.0;\nqubit q;\n???\n",
+  auto result = qde::Parser::Parse("OPENQASM 3.0;\nqubit q;\n???\n",
                                    qde::BackendConfig{});
-  ASSERT_FALSE(result.errors().empty());
-  EXPECT_EQ(result.errors().front().line, 3U);
-  EXPECT_EQ(result.errors().front().column, 0U);
+  ASSERT_FALSE(result.Errors().empty());
+  EXPECT_EQ(result.Errors().front().line, 3U);
+  EXPECT_EQ(result.Errors().front().column, 0U);
 }
 
 TEST(Parser, EmptyInputIsOk) {
   auto result = Parse("");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, MultipleErrorsAreDetected) {
   auto result = Parse("???\n!!!\n");
-  EXPECT_GT(result.errors().size(), 1U);
+  EXPECT_GT(result.Errors().size(), 1U);
 }
 
 // ---- qubit / bit register declarations --------------------------------------
 
 TEST(Parser, QubitRegisterDeclared) {
   auto result = Parse("qubit[3] q;");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().qubitRegisters().size(), 1U);
-  EXPECT_EQ(result.circuit().qubitRegisters()[0].name, "q");
-  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 3U);
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().QubitRegisters().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().QubitRegisters()[0].name, "q");
+  EXPECT_EQ(result.GetCircuit().QubitRegisters()[0].size, 3U);
 }
 
 TEST(Parser, QubitNoDesignatorIsSize1) {
   auto result = Parse("qubit q;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 1U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().QubitRegisters()[0].size, 1U);
 }
 
 TEST(Parser, BitRegisterDeclared) {
   auto result = Parse("bit[2] c;");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().bitRegisters().size(), 1U);
-  EXPECT_EQ(result.circuit().bitRegisters()[0].name, "c");
-  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 2U);
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().BitRegisters().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().BitRegisters()[0].name, "c");
+  EXPECT_EQ(result.GetCircuit().BitRegisters()[0].size, 2U);
 }
 
 TEST(Parser, BitNoDesignatorIsSize1) {
   auto result = Parse("bit c;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 1U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().BitRegisters()[0].size, 1U);
 }
 
 TEST(Parser, MultipleRegisters) {
   auto result = Parse("qubit[2] a;\nqubit[3] b;\nbit[2] c;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().qubitRegisters().size(), 2U);
-  EXPECT_EQ(result.circuit().bitRegisters().size(), 1U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().QubitRegisters().size(), 2U);
+  EXPECT_EQ(result.GetCircuit().BitRegisters().size(), 1U);
 }
 
 TEST(Parser, DuplicateQubitRegisterIsError) {
   auto result = Parse("qubit[2] q;\nqubit[1] q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, DuplicateBitRegisterIsError) {
   auto result = Parse("bit[2] c;\nbit[1] c;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, QubitAndBitSameNameIsError) {
   auto result = Parse("qubit q;\nbit q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- old-style declarations (OpenQASM 2.0 qreg / creg) ---------------------
 
 TEST(Parser, QregDeclared) {
   auto result = Parse("qreg q[3];");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().qubitRegisters().size(), 1U);
-  EXPECT_EQ(result.circuit().qubitRegisters()[0].name, "q");
-  EXPECT_EQ(result.circuit().qubitRegisters()[0].size, 3U);
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().QubitRegisters().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().QubitRegisters()[0].name, "q");
+  EXPECT_EQ(result.GetCircuit().QubitRegisters()[0].size, 3U);
 }
 
 TEST(Parser, CregDeclared) {
   auto result = Parse("creg c[2];");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().bitRegisters().size(), 1U);
-  EXPECT_EQ(result.circuit().bitRegisters()[0].name, "c");
-  EXPECT_EQ(result.circuit().bitRegisters()[0].size, 2U);
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().BitRegisters().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().BitRegisters()[0].name, "c");
+  EXPECT_EQ(result.GetCircuit().BitRegisters()[0].size, 2U);
 }
 
 TEST(Parser, DuplicateQregIsError) {
   auto result = Parse("qreg q[2];\nqreg q[1];");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- gate calls: single-qubit -----------------------------------------------
 
 TEST(Parser, HGateOnIndexedQubit) {
   auto result = Parse("qubit[2] q;\nh q[0];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, HGateOnSingleQubit) {
   auto result = Parse("qubit q;\nh q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, XGate) {
   auto result = Parse("qubit q;\nx q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, GateCallProducesGateOperation) {
   auto result = Parse("qubit q;\nh q;");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1U);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().Operations().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().Operations()[0].type,
+            qde::OperationType::kGate);
 }
 
 TEST(Parser, MultipleGateCalls) {
   auto result = Parse("qubit q;\nh q;\nx q;\nh q;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 3U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 3U);
 }
 
 // ---- gate calls: parameterized single-qubit ---------------------------------
 
 TEST(Parser, RxWithLiteral) {
   auto result = Parse("qubit q;\nrx(pi) q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, RxWithArithmeticExpr) {
   auto result = Parse("qubit q;\nrx(2.0 * pi) q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, RxWithConstParam) {
   auto result = Parse("qubit q;\nconst float a = pi / 2;\nrx(a) q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, RyGate) {
   auto result = Parse("qubit q;\nry(pi / 2) q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, RzGate) {
   auto result = Parse("qubit q;\nrz(pi / 4) q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, RxMissingParamIsError) {
   auto result = Parse("qubit q;\nrx q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, HWithExtraParamIsError) {
   auto result = Parse("qubit q;\nh(pi) q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- gate calls: multi-qubit ------------------------------------------------
 
 TEST(Parser, CxTwoIndexedQubits) {
   auto result = Parse("qubit[2] q;\ncx q[0], q[1];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CxTwoSeparateRegisters) {
   auto result = Parse("qubit a;\nqubit b;\ncx a, b;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CxWrongQubitCountIsError) {
   auto result = Parse("qubit q;\ncx q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, CcxThreeQubits) {
   auto result = Parse("qubit[3] q;\nccx q[0], q[1], q[2];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 // ---- gate calls: register broadcast -----------------------------------------
 
 TEST(Parser, SingleQubitBroadcastExpandsToN) {
   auto result = Parse("qubit[3] q;\nh q;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 3U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 3U);
 }
 
 TEST(Parser, PairwiseBroadcastEqualRegisters) {
   auto result = Parse("qubit[2] a;\nqubit[2] b;\ncx a, b;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 2U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 2U);
 }
 
 TEST(Parser, PairwiseBroadcastMismatchedSizesFallsThrough) {
   // Unequal registers skip broadcast; each whole-register operand
   // resolves to qubit 0 of its register, giving one cx operation.
   auto result = Parse("qubit[2] a;\nqubit[3] b;\ncx a, b;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 1U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 1U);
 }
 
 // ---- gate call modifiers ----------------------------------------------------
 
 TEST(Parser, InvModifier) {
   auto result = Parse("qubit q;\ninv @ h q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, InvModifierProducesOperation) {
   auto result = Parse("qubit q;\ninv @ h q;");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1U);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().Operations().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().Operations()[0].type,
+            qde::OperationType::kGate);
 }
 
 TEST(Parser, PowModifier) {
   auto result = Parse("qubit q;\npow(2) @ x q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CtrlModifierOneControl) {
   auto result = Parse("qubit[2] q;\nctrl @ x q[0], q[1];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CtrlModifierCount) {
   auto result = Parse("qubit[3] q;\nctrl(2) @ x q[0], q[1], q[2];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, NegCtrlModifier) {
   auto result = Parse("qubit[2] q;\nnegctrl @ x q[0], q[1];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ModifierChain) {
   auto result = Parse("qubit[2] q;\nctrl @ inv @ h q[0], q[1];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ModifierProducesOneOperation) {
   auto result = Parse("qubit[2] q;\nctrl @ x q[0], q[1];");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 1U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 1U);
 }
 
 TEST(Parser, ParametricBodyGateWithDeferredModifier) {
@@ -316,23 +318,24 @@ TEST(Parser, ParametricBodyGateWithDeferredModifier) {
       "gate my_crx(theta) c, t { ctrl @ rx(theta) c, t; }\n"
       "qubit[2] q;\n"
       "my_crx(pi / 2) q[0], q[1];\n");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 1U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 1U);
 }
 
 // ---- gphase -----------------------------------------------------------------
 
 TEST(Parser, BareGphaseAddsNoOperation) {
   auto result = Parse("qubit q;\ngphase(pi);");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 0U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 0U);
 }
 
 TEST(Parser, CtrlGphaseAddsOperation) {
   auto result = Parse("qubit q;\nctrl @ gphase(pi) q;");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1U);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kGate);
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().Operations().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().Operations()[0].type,
+            qde::OperationType::kGate);
 }
 
 // ---- gate definitions -------------------------------------------------------
@@ -342,7 +345,7 @@ TEST(Parser, UserGateDefinedAndCalled) {
       "gate my_h q { h q; }\n"
       "qubit q;\n"
       "my_h q;\n");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, UserGateProducesOneOperation) {
@@ -350,8 +353,8 @@ TEST(Parser, UserGateProducesOneOperation) {
       "gate my_h q { h q; }\n"
       "qubit q;\n"
       "my_h q;\n");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 1U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 1U);
 }
 
 TEST(Parser, ParametricUserGate) {
@@ -359,7 +362,7 @@ TEST(Parser, ParametricUserGate) {
       "gate my_rx(a) q { rx(a) q; }\n"
       "qubit q;\n"
       "my_rx(pi) q;\n");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, UserGateWithInvBodyModifier) {
@@ -367,19 +370,19 @@ TEST(Parser, UserGateWithInvBodyModifier) {
       "gate my_hinv q { inv @ h q; }\n"
       "qubit q;\n"
       "my_hinv q;\n");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, GateRedefinitionIsError) {
   auto result = Parse(
       "gate my_g q { h q; }\n"
       "gate my_g q { x q; }\n");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, UndefinedGateInBodyIsError) {
   auto result = Parse("gate bad q { nosuchgate q; }\n");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, GateNotVisibleBeforeDefinition) {
@@ -387,256 +390,257 @@ TEST(Parser, GateNotVisibleBeforeDefinition) {
       "qubit q;\n"
       "my_g q;\n"
       "gate my_g q { h q; }\n");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- measurements -----------------------------------------------------------
 
 TEST(Parser, MeasureArrowIndexed) {
   auto result = Parse("qubit q;\nbit c;\nmeasure q -> c;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, MeasureArrowWholeRegister) {
   auto result = Parse("qubit[2] q;\nbit[2] c;\nmeasure q -> c;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 2U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 2U);
 }
 
 TEST(Parser, MeasureArrowNoTarget) {
   auto result = Parse("qubit q;\nmeasure q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, MeasureArrowProducesMeasureOperation) {
   auto result = Parse("qubit q;\nbit c;\nmeasure q -> c;");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1U);
-  EXPECT_EQ(result.circuit().operations()[0].type,
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().Operations().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().Operations()[0].type,
             qde::OperationType::kMeasure);
 }
 
 TEST(Parser, MeasureArrowRegisterSizeMismatchIsError) {
   auto result = Parse("qubit[2] q;\nbit[3] c;\nmeasure q -> c;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, MeasureArrowUndefinedQubitIsError) {
   auto result = Parse("bit c;\nmeasure q -> c;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, MeasureArrowUndefinedBitIsError) {
   auto result = Parse("qubit q;\nmeasure q -> c;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, QuantumCallExpressionInMeasureArrowIsOk) {
   // quantumCallExpression form: "gateName qubits -> c;" is parsed as
   // measureArrowAssignment. Currently not handled; no operation added.
   auto result = Parse("qubit q;\nbit c;\nh q -> c;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 0U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 0U);
 }
 
 TEST(Parser, MeasureAssignmentForm) {
   auto result = Parse("qubit q;\nbit c;\nc = measure q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, MeasureAssignmentIndexed) {
   auto result = Parse("qubit[2] q;\nbit[2] c;\nc[0] = measure q[0];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, MeasureAssignmentUndefinedBitIsError) {
   auto result = Parse("qubit q;\nc = measure q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- reset ------------------------------------------------------------------
 
 TEST(Parser, ResetIndexedQubit) {
   auto result = Parse("qubit[2] q;\nreset q[0];");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ResetWholeRegisterExpandsToN) {
   auto result = Parse("qubit[3] q;\nreset q;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations().size(), 3U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations().size(), 3U);
 }
 
 TEST(Parser, ResetProducesResetOperation) {
   auto result = Parse("qubit q;\nreset q;");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1U);
-  EXPECT_EQ(result.circuit().operations()[0].type, qde::OperationType::kReset);
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().Operations().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().Operations()[0].type,
+            qde::OperationType::kReset);
 }
 
 TEST(Parser, ResetUndefinedQubitIsError) {
   auto result = Parse("reset q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- barrier ----------------------------------------------------------------
 
 TEST(Parser, BarrierGlobalExpandsOverAllQubits) {
   auto result = Parse("qubit[2] q;\nbarrier;");
-  ASSERT_TRUE(result.isOk());
-  ASSERT_EQ(result.circuit().operations().size(), 1U);
-  EXPECT_EQ(result.circuit().operations()[0].type,
+  ASSERT_TRUE(result.IsOk());
+  ASSERT_EQ(result.GetCircuit().Operations().size(), 1U);
+  EXPECT_EQ(result.GetCircuit().Operations()[0].type,
             qde::OperationType::kBarrier);
-  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2U);
+  EXPECT_EQ(result.GetCircuit().Operations()[0].qubits.size(), 2U);
 }
 
 TEST(Parser, BarrierNoRegistersHasNoQubits) {
   auto result = Parse("barrier;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_TRUE(result.circuit().operations()[0].qubits.empty());
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_TRUE(result.GetCircuit().Operations()[0].qubits.empty());
 }
 
 TEST(Parser, BarrierWholeRegister) {
   auto result = Parse("qubit[2] q;\nbarrier q;");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations()[0].qubits.size(), 2U);
 }
 
 TEST(Parser, BarrierIndexedQubits) {
   auto result = Parse("qubit[3] q;\nbarrier q[0], q[2];");
-  ASSERT_TRUE(result.isOk());
-  EXPECT_EQ(result.circuit().operations()[0].qubits.size(), 2U);
+  ASSERT_TRUE(result.IsOk());
+  EXPECT_EQ(result.GetCircuit().Operations()[0].qubits.size(), 2U);
 }
 
 TEST(Parser, BarrierUndefinedQubitIsError) {
   auto result = Parse("barrier q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- classical declarations -------------------------------------------------
 
 TEST(Parser, FloatDeclarationWithInit) {
   auto result = Parse("float x = 3.14;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, IntDeclarationWithInit) {
   auto result = Parse("int n = 42;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, UintDeclarationWithInit) {
   auto result = Parse("uint n = 7;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, AngleDeclaration) {
   auto result = Parse("angle a = pi / 4;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, DurationDeclaration) {
   auto result = Parse("duration d = 100ns;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, StretchDeclaration) {
   auto result = Parse("stretch s;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ComplexDeclaration) {
   auto result = Parse("complex[float] z;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ComplexDeclarationPureImaginary) {
   auto result = Parse("complex[float] z = 2.5im;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ComplexDeclarationRealPlusImaginary) {
   auto result = Parse("complex[float] z = 1.0 + 2.5im;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ComplexVariableAssignment) {
   auto result = Parse(
       "complex[float] z = 0.0;\n"
       "z = 1.0 + 2.5im;\n");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, DurationCompoundAssignment) {
   auto result = Parse("duration d = 100ns;\nd += 50ns;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, StretchCompoundAssignment) {
   auto result = Parse("stretch s;\ns += 1.0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, DuplicateVariableIsError) {
   auto result = Parse("float x = 1.0;\nfloat x = 2.0;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- classical assignments --------------------------------------------------
 
 TEST(Parser, ScalarAssignment) {
   auto result = Parse("float x = 0.0;\nx = pi;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundAddAssignment) {
   auto result = Parse("float x = 1.0;\nx += 2.0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundSubAssignment) {
   auto result = Parse("float x = 5.0;\nx -= 3.0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundMulAssignment) {
   auto result = Parse("float x = 2.0;\nx *= pi;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundDivAssignment) {
   auto result = Parse("float x = pi;\nx /= 2.0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundModAssignment) {
   auto result = Parse("int x = 7;\nx %= 3;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundPowAssignment) {
   auto result = Parse("float x = 2.0;\nx **= 8;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundBitwiseAndAssignment) {
   auto result = Parse("int x = 0b1100;\nx &= 0b1010;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundBitwiseOrAssignment) {
   auto result = Parse("int x = 0b1100;\nx |= 0b0011;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundLeftShiftAssignment) {
   auto result = Parse("int x = 1;\nx <<= 3;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CompoundRightShiftAssignment) {
   auto result = Parse("int x = 8;\nx >>= 2;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, AssignmentUpdatedValueUsedAsGateParam) {
@@ -645,263 +649,263 @@ TEST(Parser, AssignmentUpdatedValueUsedAsGateParam) {
       "float a = pi / 4;\n"
       "a = pi / 2;\n"
       "rx(a) q;\n");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, AssignmentToUndefinedVariableIsError) {
   auto result = Parse("x = 1.0;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, ConstReassignmentIsError) {
   auto result = Parse("const float x = 1.0;\nx = 2.0;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- expression tree: literals ----------------------------------------------
 
 TEST(Parser, DecimalIntegerLiteral) {
   auto result = Parse("const int n = 42;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, FloatLiteral) {
   auto result = Parse("const float x = 3.14;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, BooleanLiteralTrue) {
   auto result = Parse("const float b = true;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, BooleanLiteralFalse) {
   auto result = Parse("const float b = false;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, HexLiteral) {
   auto result = Parse("const int n = 0xFF;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, BinaryLiteral) {
   auto result = Parse("const int n = 0b1010;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, OctalLiteral) {
   auto result = Parse("const int n = 0o17;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, PiConstant) {
   auto result = Parse("const float x = pi;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, TauConstant) {
   auto result = Parse("const float x = tau;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, EulerConstant) {
   auto result = Parse("const float x = euler;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 // ---- expression tree: arithmetic --------------------------------------------
 
 TEST(Parser, Addition) {
   auto result = Parse("const float x = 1.0 + 2.0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, Subtraction) {
   auto result = Parse("const float x = 5.0 - 3.0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, Multiplication) {
   auto result = Parse("const float x = 2.0 * pi;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, Division) {
   auto result = Parse("const float x = pi / 2;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, Modulo) {
   auto result = Parse("const int x = 7 % 3;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, Power) {
   auto result = Parse("const float x = 2.0 ** 8;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, UnaryNegation) {
   auto result = Parse("const float x = -pi;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, Parentheses) {
   auto result = Parse("const float x = (1.0 + 2.0) * 3.0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 // ---- expression tree: bitwise / logical ------------------------------------
 
 TEST(Parser, BitwiseAnd) {
   auto result = Parse("const int x = 0b1100 & 0b1010;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, BitwiseOr) {
   auto result = Parse("const int x = 0b1100 | 0b0011;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, BitwiseXor) {
   auto result = Parse("const int x = 0b1010 ^ 0b0110;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, BitwiseNot) {
   auto result = Parse("const int x = ~0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, LeftShift) {
   auto result = Parse("const int x = 1 << 3;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, RightShift) {
   auto result = Parse("const int x = 8 >> 2;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, LogicalNot) {
   auto result = Parse("const int x = !0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, LogicalAnd) {
   auto result = Parse("const int x = 1 && 0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, LogicalOr) {
   auto result = Parse("const int x = 0 || 1;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 // ---- expression tree: comparison --------------------------------------------
 
 TEST(Parser, LessThan) {
   auto result = Parse("const int x = 1 < 2;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, GreaterThan) {
   auto result = Parse("const int x = 2 > 1;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, LessOrEqual) {
   auto result = Parse("const int x = 1 <= 2;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, GreaterOrEqual) {
   auto result = Parse("const int x = 2 >= 1;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, EqualityCheck) {
   auto result = Parse("const int x = 1 == 1;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, InequalityCheck) {
   auto result = Parse("const int x = 1 != 2;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 // ---- expression tree: math functions ----------------------------------------
 
 TEST(Parser, SinFunction) {
   auto result = Parse("const float x = sin(pi / 6);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, CosFunction) {
   auto result = Parse("const float x = cos(pi / 3);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, TanFunction) {
   auto result = Parse("const float x = tan(pi / 4);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ArcsinFunction) {
   auto result = Parse("const float x = arcsin(1.0);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ArccosFunction) {
   auto result = Parse("const float x = arccos(0.0);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ArctanFunction) {
   auto result = Parse("const float x = arctan(1.0);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, SqrtFunction) {
   auto result = Parse("const float x = sqrt(2.0);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ExpFunction) {
   auto result = Parse("const float x = exp(1.0);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, LnFunction) {
   auto result = Parse("const float x = ln(euler);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 // ---- expression tree: cast --------------------------------------------------
 
 TEST(Parser, IntCastTruncates) {
   auto result = Parse("const int n = int(3.9);");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 // ---- expression tree: const chaining ----------------------------------------
 
 TEST(Parser, ConstReferencesOtherConst) {
   auto result = Parse("const float a = pi / 2;\nconst float b = a + 1.0;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ConstUsedAsGateParam) {
   auto result = Parse("qubit q;\nconst float a = pi / 2;\nrx(a) q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 // ---- expression tree: arrays ------------------------------------------------
 
 TEST(Parser, ArrayDeclaration) {
   auto result = Parse("array[float, 3] a = {1.0, 2.0, 3.0};");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ArrayElementAccess) {
@@ -909,7 +913,7 @@ TEST(Parser, ArrayElementAccess) {
       "qubit q;\n"
       "array[float, 3] a = {pi/4, pi/2, pi};\n"
       "rx(a[0]) q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, Array2D) {
@@ -919,7 +923,7 @@ TEST(Parser, Array2D) {
       "array[float, 2, 2] m = {{pi/4, pi/2}, {pi, 0.0}};\n"
       "rx(m[0, 1]) q;\n"
       "rx(m[0][1]) t;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, Array3D) {
@@ -930,12 +934,12 @@ TEST(Parser, Array3D) {
       "{{{pi/4, pi/2}, {pi, 0.0}}, {{pi/4, pi/2}, {pi, 0.0}}};\n"
       "rx(m[0, 1, 0]) q;"
       "rx(m[0][1][0]) t;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, UndefinedArrayIsError) {
   auto result = Parse("qubit q;\nrx(undefined_arr[0]) q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, ArrayIndexOutOfBoundsIsError) {
@@ -943,7 +947,7 @@ TEST(Parser, ArrayIndexOutOfBoundsIsError) {
       "qubit q;\n"
       "array[float, 3] a = {1.0, 2.0, 3.0};\n"
       "rx(a[5]) q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, ArrayCastFromOtherArray) {
@@ -953,7 +957,7 @@ TEST(Parser, ArrayCastFromOtherArray) {
       "array[float, 3] a = {pi/4, pi/2, pi};\n"
       "array[float, 3] b = array[float, 3](a);\n"
       "rx(b[0]) q;\n");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 
   auto result3d = Parse(
       "qubit q;\n"
@@ -961,89 +965,89 @@ TEST(Parser, ArrayCastFromOtherArray) {
       "{{{pi/4, pi/2}, {pi, 0.0}}, {{pi/4, pi/2}, {pi, 0.0}}};\n"
       "array[float, 2, 2, 2] b = array[float, 2, 2, 2](a);\n"
       "rx(b[0, 1, 0]) q;\n");
-  EXPECT_TRUE(result3d.isOk());
+  EXPECT_TRUE(result3d.IsOk());
 }
 
 // ---- semantic errors --------------------------------------------------------
 
 TEST(Parser, UndefinedGateIsError) {
   auto result = Parse("qubit q;\nfoo q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, UndefinedQubitRegisterIsError) {
   auto result = Parse("h q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, WrongQubitCountIsError) {
   auto result = Parse("qubit[2] q;\nh q[0], q[1];");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, UndefinedVariableIsError) {
   auto result = Parse("float x = undef;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, UndefinedVariableInGateParamIsError) {
   auto result = Parse("qubit q;\nrx(undef) q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, UndefinedQubitInMeasureIsError) {
   auto result = Parse("bit c;\nmeasure q -> c;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, UndefinedBitInMeasureIsError) {
   auto result = Parse("qubit q;\nmeasure q -> c;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, UndefinedQubitInResetIsError) {
   auto result = Parse("reset q;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 TEST(Parser, HardwareQubitOperandIsError) {
   auto result = Parse("h $0;");
-  EXPECT_FALSE(result.isOk());
+  EXPECT_FALSE(result.IsOk());
 }
 
 // ---- unimplemented stubs (accepted without semantic error) ------------------
 
 TEST(Parser, IfStatementIsOk) {
   auto result = Parse("qubit q;\nif (1 == 1) { h q; }");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, WhileStatementIsOk) {
   auto result = Parse("qubit q;\nwhile (false) { h q; }");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, ForStatementIsOk) {
   auto result = Parse("qubit q;\nfor int i in {0, 1} { h q; }");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, BoxStatementIsOk) {
   auto result = Parse("qubit q;\nbox { h q; }");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, DelayStatementIsOk) {
   auto result = Parse("qubit q;\ndelay[100ns] q;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, EndStatementIsOk) {
   auto result = Parse("end;");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }
 
 TEST(Parser, DefStatementIsOk) {
   auto result = Parse("def foo(float x) { }");
-  EXPECT_TRUE(result.isOk());
+  EXPECT_TRUE(result.IsOk());
 }

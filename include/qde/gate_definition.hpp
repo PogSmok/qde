@@ -15,7 +15,7 @@ namespace qde {
 //
 // Uniformly describes any gate type built-in or user-defined.
 //
-// Built-in instances are constructed once in GateRegistry::withBuiltins().
+// Built-in instances are constructed once in GateRegistry::WithBuiltins().
 // User-defined gates are constructed dynamically.
 // ---------------------------------------------------------------------------
 
@@ -67,16 +67,16 @@ class GateDefinition {
     }
   }
 
-  [[nodiscard]] const std::string& name() const noexcept { return name_; }
-  [[nodiscard]] std::uint8_t numQubits() const noexcept { return num_qubits_; }
-  [[nodiscard]] std::uint8_t numParams() const noexcept { return num_params_; }
+  [[nodiscard]] const std::string& Name() const noexcept { return name_; }
+  [[nodiscard]] std::uint8_t NumQubits() const noexcept { return num_qubits_; }
+  [[nodiscard]] std::uint8_t NumParams() const noexcept { return num_params_; }
 
   // Evaluate the unitary for the given parameters.
-  [[nodiscard]] std::vector<std::complex<double>> matrix(
+  [[nodiscard]] std::vector<std::complex<double>> Matrix(
       const std::vector<double>& params = {}) const {
     if (params.size() != num_params_) {
       throw std::invalid_argument(
-          "GateDefinition::matrix: expected " + std::to_string(num_params_) +
+          "GateDefinition::Matrix: expected " + std::to_string(num_params_) +
           " params, got " + std::to_string(params.size()));
     }
     return matrix_fn_(params);

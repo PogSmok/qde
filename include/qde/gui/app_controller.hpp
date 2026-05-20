@@ -15,19 +15,19 @@ namespace qde::gui {
 class AppController : public QObject {
   Q_OBJECT
  public:
-  explicit AppController(QuantumCircuitView* circuitView,
-                         TextEditor* textEditor, QObject* parent = nullptr);
-  [[nodiscard]] const qde::Parser* parser() const { return parser_.get(); }
-  [[nodiscard]] const qde::Circuit* circuit() const {
+  explicit AppController(QuantumCircuitView* circuit_view,
+                         TextEditor* text_editor, QObject* parent = nullptr);
+  [[nodiscard]] const qde::Parser* Parser() const { return parser_.get(); }
+  [[nodiscard]] const qde::Circuit* GetCircuit() const {
     return circuit_.has_value() ? &circuit_.value() : nullptr;
   }
 
-  void onTextChanged();
-  void parseNow();
+  void OnTextChanged();
+  void ParseNow();
 
  signals:
-  void parseSuccess();
-  void parseError(const QStringList& errors);
+  void ParseSuccess();
+  void ParseError(const QStringList& errors);
 
  private:
   QPointer<QuantumCircuitView> circuitView_;

@@ -12,20 +12,20 @@ class TextDocument : public QObject {
  public:
   explicit TextDocument(QObject* parent = nullptr);
 
-  [[nodiscard]] QString filePath() const;
-  [[nodiscard]] const QString& content() const noexcept { return content_; }
-  [[nodiscard]] bool modified() const noexcept { return modified_; }
+  [[nodiscard]] QString FilePath() const;
+  [[nodiscard]] const QString& Content() const noexcept { return content_; }
+  [[nodiscard]] bool Modified() const noexcept { return modified_; }
 
-  bool load(const std::filesystem::path& path);
-  bool save();
-  bool saveAs(const std::filesystem::path& path);
-  void setModified(bool v);
-  void setContent(const QString& text);
+  bool Load(const std::filesystem::path& path);
+  bool Save();
+  bool SaveAs(const std::filesystem::path& path);
+  void SetModified(bool v);
+  void SetContent(const QString& text);
 
  signals:
-  void modifiedChanged(bool modified);
-  void contentChanged();
-  void filePathChanged(const QString& path);
+  void ModifiedChanged(bool modified);
+  void ContentChanged();
+  void FilePathChanged(const QString& path);
 
  private:
   QString content_;

@@ -21,7 +21,7 @@ TEST_F(CodeEditorTest, SetClearErrors) {
   // Need to have some text to select
   editor->setPlainText("line 1\nline 2");
 
-  editor->setErrors(errors);
+  editor->SetErrors(errors);
 
   QList<QTextEdit::ExtraSelection> selections = editor->extraSelections();
   EXPECT_EQ(selections.size(), 2);
@@ -33,7 +33,7 @@ TEST_F(CodeEditorTest, SetClearErrors) {
     EXPECT_EQ(selections[0].format.toolTip(), "Unexpected token");
   }
 
-  editor->clearErrors();
+  editor->ClearErrors();
   selections = editor->extraSelections();
   EXPECT_TRUE(selections.isEmpty());
 }
@@ -54,7 +54,7 @@ TEST_F(CodeEditorTest, GeometryAndLineNumbers) {
   editor->resize(400, 400);
 
   // Width should increase with digits
-  EXPECT_GT(editor->lineNumberAreaWidth(), 0);
+  EXPECT_GT(editor->LineNumberAreaWidth(), 0);
 }
 
 }  // namespace qde::gui

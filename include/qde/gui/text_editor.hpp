@@ -16,29 +16,29 @@ class TextEditor : public QWidget {
  public:
   explicit TextEditor(QWidget* parent = nullptr);
 
-  void newFile();
-  void openFile(const QString& path);
-  bool saveFile();
-  [[nodiscard]] bool saveFileAs(const QString& path);
-  void syncEditorToDoc();
+  void NewFile();
+  void OpenFile(const QString& path);
+  bool SaveFile();
+  [[nodiscard]] bool SaveFileAs(const QString& path);
+  void SyncEditorToDoc();
 
-  [[nodiscard]] QString plainText() const;
-  [[nodiscard]] QString filePath() const;
-  [[nodiscard]] bool isModified() const;
+  [[nodiscard]] QString PlainText() const;
+  [[nodiscard]] QString FilePath() const;
+  [[nodiscard]] bool IsModified() const;
 
-  [[nodiscard]] const TextDocument* document() const { return document_; }
-  void setContent(const QString& content);
+  [[nodiscard]] const TextDocument* Document() const { return document_; }
+  void SetContent(const QString& content);
 
-  void setErrors(const std::vector<qde::SyntaxError>& errors);
-  void clearErrors();
+  void SetErrors(const std::vector<qde::SyntaxError>& errors);
+  void ClearErrors();
 
  signals:
-  void textChanged();
-  void fileChanged(const QString& path);
-  void modifiedChanged(bool modified);
+  void TextChanged();
+  void FileChanged(const QString& path);
+  void ModifiedChanged(bool modified);
 
  public slots:
-  void onEditorTextChanged();
+  void OnEditorTextChanged();
 
  private:
   QPointer<CodeEditor> editor_;

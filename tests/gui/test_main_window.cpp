@@ -46,14 +46,14 @@ TEST_F(MainWindowTest, UpdateTitleOnModifiedChanged) {
   EXPECT_FALSE(unmodified_title.endsWith("*"));
 
   // Trigger modified
-  editor->setContent("Modified");
+  editor->SetContent("Modified");
 
   QString modified_title = mainWindow_->windowTitle();
   EXPECT_TRUE(modified_title.endsWith("*"));
 }
 
 TEST_F(MainWindowTest, OnParseSuccessUpdatesStatus) {
-  mainWindow_->onParseSuccess();
+  mainWindow_->OnParseSuccess();
   auto* status_label = mainWindow_->findChild<QLabel*>();
   ASSERT_NE(status_label, nullptr);
 
@@ -62,7 +62,7 @@ TEST_F(MainWindowTest, OnParseSuccessUpdatesStatus) {
 }
 
 TEST_F(MainWindowTest, OnParseFailUpdatesStatus) {
-  mainWindow_->onParseFail({"Error 1", "Error 2"});
+  mainWindow_->OnParseFail({"Error 1", "Error 2"});
   auto* status_label = mainWindow_->findChild<QLabel*>();
   ASSERT_NE(status_label, nullptr);
 
@@ -75,8 +75,8 @@ TEST_F(MainWindowTest, NewFileWhenUnmodified) {
   ASSERT_NE(editor, nullptr);
 
   // newFile should clear the editor if unmodified without blocking prompt
-  mainWindow_->newFile();
-  EXPECT_TRUE(editor->plainText().isEmpty());
+  mainWindow_->NewFile();
+  EXPECT_TRUE(editor->PlainText().isEmpty());
 }
 
 TEST_F(MainWindowTest, CloseEventWhenUnmodified) {

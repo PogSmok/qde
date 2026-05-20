@@ -23,7 +23,7 @@ inline constexpr auto kIdentifier = R"(\b[A-Za-z_]\w*\b)";
 // First identifier on a line that is not an assignment target or array access.
 // Keywords/types/known gates override this, so only user-defined names remain.
 inline constexpr auto kUserGateCall =
-    "(?:^[ \\t]*|(?<=\\{)[ \\t]*)\\K[A-Za-z_]\\w*(?=[ \\t]+[A-Za-z_$])";
+    R"((?:^[ \t]*|(?<=\{)[ \t]*)\K[A-Za-z_]\w*(?=[ \t]+[A-Za-z_$]))";
 // Any identifier immediately followed by '('
 inline constexpr auto kFunctionCall = R"(\b[A-Za-z_]\w*(?=\s*\())";
 inline constexpr auto kHardwareQubit = R"(\$\d+)";
@@ -41,7 +41,7 @@ inline constexpr auto kType = R"(\b(?:input|output|const|readonly|mutable|)"
                               R"(qreg|qubit|creg|bool|bit|int|uint|float|)"
                               R"(angle|complex|array|void|duration|stretch)\b)";
 // Builtin gate modifiers/operations (qasm3Lexer.g4) and all gates
-// registered by GateRegistry::withBuiltins()
+// registered by GateRegistry::WithBuiltins()
 inline constexpr auto kGate = R"(\b(?:gphase|inv|pow|ctrl|negctrl|)"
                               R"(id|h|x|y|z|s|sdg|t|tdg|sx|sxdg|)"
                               R"(p|u1|u2|u3|U|rx|ry|rz|)"

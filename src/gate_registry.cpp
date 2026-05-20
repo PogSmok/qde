@@ -5,8 +5,8 @@
 
 namespace qde {
 
-void GateRegistry::add(GateDefinition gate) {
-  std::string name = gate.name();  // non-const copy to allow std::move()
+void GateRegistry::Add(GateDefinition gate) {
+  std::string name = gate.Name();  // non-const copy to allow std::move()
   if (gates_.count(name) != 0U) {
     throw std::invalid_argument(
         "GateRegistry: gate '" + name +
@@ -16,13 +16,13 @@ void GateRegistry::add(GateDefinition gate) {
                  std::make_shared<GateDefinition>(std::move(gate)));
 }
 
-std::shared_ptr<const GateDefinition> GateRegistry::find(
+std::shared_ptr<const GateDefinition> GateRegistry::Find(
     const std::string& name) const {
   auto it = gates_.find(name);
   return it != gates_.end() ? it->second : nullptr;
 }
 
-bool GateRegistry::contains(const std::string& name) const {
+bool GateRegistry::Contains(const std::string& name) const {
   return gates_.count(name) != 0U;
 }
 
@@ -192,32 +192,32 @@ inline const M& MatCswap() {
 
 }  // namespace
 
-GateRegistry GateRegistry::withBuiltins() {
+GateRegistry GateRegistry::WithBuiltins() {
   GateRegistry reg;
 
   // ---- fixed single-qubit -------------------------------------------------
-  reg.add({"id", 1, MatI()});
-  reg.add({"h", 1, MatH()});
-  reg.add({"x", 1, MatX()});
-  reg.add({"y", 1, MatY()});
-  reg.add({"z", 1, MatZ()});
-  reg.add({"s", 1, MatS()});
-  reg.add({"sdg", 1, MatSdg()});
-  reg.add({"t", 1, MatT()});
-  reg.add({"tdg", 1, MatTdg()});
-  reg.add({"sx", 1, MatSx()});
-  reg.add({"sxdg", 1, MatSXdg()});
+  reg.Add({"id", 1, MatI()});
+  reg.Add({"h", 1, MatH()});
+  reg.Add({"x", 1, MatX()});
+  reg.Add({"y", 1, MatY()});
+  reg.Add({"z", 1, MatZ()});
+  reg.Add({"s", 1, MatS()});
+  reg.Add({"sdg", 1, MatSdg()});
+  reg.Add({"t", 1, MatT()});
+  reg.Add({"tdg", 1, MatTdg()});
+  reg.Add({"sx", 1, MatSx()});
+  reg.Add({"sxdg", 1, MatSXdg()});
 
   // ---- parametric single-qubit --------------------------------------------
 
-  reg.add({"p", 1, 1,
+  reg.Add({"p", 1, 1,
            [](const P& p) { return Mat2(1, 0, 0, std::exp(kI * p[0])); }});
 
   // legacy OpenQASM 2.0 alias for phase gate (p)
-  reg.add({"u1", 1, 1,
+  reg.Add({"u1", 1, 1,
            [](const P& p) { return Mat2(1, 0, 0, std::exp(kI * p[0])); }});
 
-  reg.add({"u2", 1, 2, [](const P& p) {
+  reg.Add({"u2", 1, 2, [](const P& p) {
              const double phi = p[0];
              const double lam = p[1];
              return Mat2(kIS2, -std::exp(kI * lam) * kIS2,
@@ -225,7 +225,7 @@ GateRegistry GateRegistry::withBuiltins() {
                          std::exp(kI * (phi + lam)) * kIS2);
            }});
 
-  reg.add({"U", 1, 3, [](const P& p) {
+  reg.Add({"U", 1, 3, [](const P& p) {
              const double theta = p[0];
              const double phi = p[1];
              const double lam = p[2];
@@ -236,7 +236,7 @@ GateRegistry GateRegistry::withBuiltins() {
            }});
 
   // legacy OpenQASM 2.0 alias for unitary gate (U)
-  reg.add({"u3", 1, 3, [](const P& p) {
+  reg.Add({"u3", 1, 3, [](const P& p) {
              const double theta = p[0];
              const double phi = p[1];
              const double lam = p[2];
@@ -246,60 +246,60 @@ GateRegistry GateRegistry::withBuiltins() {
                          std::exp(kI * (phi + lam)) * c);
            }});
 
-  reg.add({"rx", 1, 1, [](const P& p) {
+  reg.Add({"rx", 1, 1, [](const P& p) {
              const double c = std::cos(p[0] / 2.0);
              const double s = std::sin(p[0] / 2.0);
              return Mat2(c, kMI * s, kMI * s, c);
            }});
 
-  reg.add({"ry", 1, 1, [](const P& p) {
+  reg.Add({"ry", 1, 1, [](const P& p) {
              const double c = std::cos(p[0] / 2.0);
              const double s = std::sin(p[0] / 2.0);
              return Mat2(c, -s, s, c);
            }});
 
-  reg.add({"rz", 1, 1, [](const P& p) {
+  reg.Add({"rz", 1, 1, [](const P& p) {
              const double h = p[0] / 2.0;
              return Mat2(std::exp(kMI * h), 0, 0, std::exp(kI * h));
            }});
 
   // ---- fixed two-qubit ----------------------------------------------------
-  reg.add({"cx", 2, MatCx()});
-  reg.add({"cz", 2, MatCz()});
-  reg.add({"cy", 2, MatCy()});
-  reg.add({"swap", 2, MatSwap()});
-  reg.add({"iswap", 2, MatIswap()});
+  reg.Add({"cx", 2, MatCx()});
+  reg.Add({"cz", 2, MatCz()});
+  reg.Add({"cy", 2, MatCy()});
+  reg.Add({"swap", 2, MatSwap()});
+  reg.Add({"iswap", 2, MatIswap()});
 
   // ---- parametric two-qubit -----------------------------------------------
 
-  reg.add({"cp", 2, 1, [](const P& p) {
+  reg.Add({"cp", 2, 1, [](const P& p) {
              return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0,
                          std::exp(kI * p[0]));
            }});
 
-  reg.add({"crx", 2, 1, [](const P& p) {
+  reg.Add({"crx", 2, 1, [](const P& p) {
              const double c = std::cos(p[0] / 2.0);
              const double s = std::sin(p[0] / 2.0);
              return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, kMI * s, 0, 0,
                          kMI * s, c);
            }});
 
-  reg.add({"cry", 2, 1, [](const P& p) {
+  reg.Add({"cry", 2, 1, [](const P& p) {
              const double c = std::cos(p[0] / 2.0);
              const double s = std::sin(p[0] / 2.0);
              return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, c, -s, 0, 0, s, c);
            }});
 
-  reg.add({"crz", 2, 1, [](const P& p) {
+  reg.Add({"crz", 2, 1, [](const P& p) {
              const double h = p[0] / 2.0;
              return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, std::exp(kMI * h), 0, 0,
                          0, 0, std::exp(kI * h));
            }});
 
   // ---- three-qubit --------------------------------------------------------
-  reg.add({"ccx", 3, MatCcx()});
-  reg.add({"ccz", 3, MatCcz()});
-  reg.add({"cswap", 3, MatCswap()});
+  reg.Add({"ccx", 3, MatCcx()});
+  reg.Add({"ccz", 3, MatCcz()});
+  reg.Add({"cswap", 3, MatCswap()});
 
   return reg;
 }

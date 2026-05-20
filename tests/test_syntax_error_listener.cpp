@@ -28,25 +28,25 @@ void Parse(const std::string& source, qde::SyntaxErrorListener& listener) {
 TEST(SyntaxErrorListener, NoErrorsOnValidProgram) {
   qde::SyntaxErrorListener listener;
   Parse("OPENQASM 3.0;\nqubit q;\nh q;\n", listener);
-  EXPECT_FALSE(listener.hasErrors());
-  EXPECT_TRUE(listener.errors().empty());
+  EXPECT_FALSE(listener.HasErrors());
+  EXPECT_TRUE(listener.Errors().empty());
 }
 
 TEST(SyntaxErrorListener, DetectsErrorOnInvalidToken) {
   qde::SyntaxErrorListener listener;
   Parse("OPENQASM 3.0;\n???\n", listener);
-  EXPECT_TRUE(listener.hasErrors());
+  EXPECT_TRUE(listener.HasErrors());
 }
 
 TEST(SyntaxErrorListener, ErrorContainsLineNumber) {
   qde::SyntaxErrorListener listener;
   Parse("OPENQASM 3.0;\nqubit q;\n???\n", listener);
-  ASSERT_FALSE(listener.errors().empty());
-  EXPECT_EQ(listener.errors().front().line, 3U);
+  ASSERT_FALSE(listener.Errors().empty());
+  EXPECT_EQ(listener.Errors().front().line, 3U);
 }
 
 TEST(SyntaxErrorListener, AccumulatesMultipleErrors) {
   qde::SyntaxErrorListener listener;
   Parse("OPENQASM 3.0;\n???\n!!!\n", listener);
-  EXPECT_GT(listener.errors().size(), 1U);
+  EXPECT_GT(listener.Errors().size(), 1U);
 }

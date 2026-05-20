@@ -38,20 +38,20 @@ MainWindow::MainWindow(QWidget* parent)
 
   setCentralWidget(splitter_);
 
-  setupMenuBar();
-  setupStatusBar();
+  SetupMenuBar();
+  SetupStatusBar();
 
-  connect(editor_, &TextEditor::modifiedChanged, this,
-          &MainWindow::onModifiedChanged);
-  connect(editor_, &TextEditor::fileChanged, this,
-          [this](const QString&) { updateTitle(); });
-  connect(controller_, &AppController::parseSuccess, this,
-          &MainWindow::onParseSuccess);
-  connect(controller_, &AppController::parseError, this,
-          &MainWindow::onParseFail);
+  connect(editor_, &TextEditor::ModifiedChanged, this,
+          &MainWindow::OnModifiedChanged);
+  connect(editor_, &TextEditor::FileChanged, this,
+          [this](const QString&) { UpdateTitle(); });
+  connect(controller_, &AppController::ParseSuccess, this,
+          &MainWindow::OnParseSuccess);
+  connect(controller_, &AppController::ParseError, this,
+          &MainWindow::OnParseFail);
 }
 
-void MainWindow::setupMenuBar() {
+void MainWindow::SetupMenuBar() {
   auto* file_menu = menuBar()->addMenu("&File");
   file_menu->setStyleSheet(QString("QMenu { background: %1; color: %2; }"
                                    "QMenu::item:selected { background: %3; }")
@@ -59,14 +59,14 @@ void MainWindow::setupMenuBar() {
                                     theme::kMenuSelectedBackground));
 
   const QPointer<QAction> new_act = file_menu->addAction(
-      "&New", QKeySequence::New, this, &MainWindow::newFile);
+      "&New", QKeySequence::New, this, &MainWindow::NewFile);
   const QPointer<QAction> open_act = file_menu->addAction(
-      "&Open...", QKeySequence::Open, this, &MainWindow::openFile);
+      "&Open...", QKeySequence::Open, this, &MainWindow::OpenFile);
   file_menu->addSeparator();
   const QPointer<QAction> save_act = file_menu->addAction(
-      "&Save", QKeySequence::Save, this, &MainWindow::saveFile);
+      "&Save", QKeySequence::Save, this, &MainWindow::SaveFile);
   const QPointer<QAction> save_as_act =
-      file_menu->addAction("Save &As…", this, &MainWindow::saveFileAs);
+      file_menu->addAction("Save &As…", this, &MainWindow::SaveFileAs);
   file_menu->addSeparator();
   file_menu->addAction("&Quit", QKeySequence::Quit, this, &QWidget::close);
 
@@ -91,7 +91,7 @@ void MainWindow::setupMenuBar() {
                theme::kMenuSelectedBackground));
 }
 
-void MainWindow::setupStatusBar() {
+void MainWindow::SetupStatusBar() {
   statusLabel_ = new QLabel("Ready", this);
   statusLabel_->setStyleSheet(
       QString("color: %1; padding: 0 6px;").arg(theme::kStatusBarText));
@@ -100,8 +100,8 @@ void MainWindow::setupStatusBar() {
                                  .arg(theme::kStatusBarBackground));
 }
 
-void MainWindow::newFile() {
-  if (editor_->isModified()) {
+void MainWindow::NewFile() {
+  if (editor_->IsModified()) {
     auto btn = QMessageBox::question(this, "Unsaved changes",
                                      "Discard unsaved changes?",
                                      QMessageBox::Yes | QMessageBox::No);
@@ -109,64 +109,64 @@ void MainWindow::newFile() {
       return;
     }
   }
-  editor_->newFile();
-  updateTitle();
+  editor_->NewFile();
+  UpdateTitle();
 }
 
-void MainWindow::openFile() {
+void MainWindow::OpenFile() {
   QString path = QFileDialog::getOpenFileName(
       this, "Open QASM File", {}, "QASM Files (*.qasm *.qasm2);;All Files (*)");
   if (path.isEmpty()) {
     return;
   }
-  editor_->openFile(path);
-  updateTitle();
+  editor_->OpenFile(path);
+  UpdateTitle();
 }
 
-void MainWindow::saveFile() {
-  editor_->saveFile();
-  updateTitle();
+void MainWindow::SaveFile() {
+  editor_->SaveFile();
+  UpdateTitle();
 }
 
-void MainWindow::saveFileAs() {
+void MainWindow::SaveFileAs() {
   QString path = QFileDialog::getSaveFileName(
       this, "Save As", {}, "QASM Files (*.qasm);;All Files (*)");
   if (!path.isEmpty()) {
-    bool is_ok = editor_->saveFileAs(path);
+    bool is_ok = editor_->SaveFileAs(path);
     if (is_ok) {
-      updateTitle();
+      UpdateTitle();
     }
     // TODO: Handle error
   }
 }
 
-void MainWindow::onParseSuccess() const {
+void MainWindow::OnParseSuccess() const {
   statusLabel_->setText("Parsed successfully");
   statusLabel_->setStyleSheet(
       QString("color: %1; padding: 0 6px;").arg(theme::kSuccessText));
 }
 
-void MainWindow::onParseFail(const QStringList& errors) const {
+void MainWindow::OnParseFail(const QStringList& errors) const {
   statusLabel_->setText(QString("Syntax Error: %1 errors").arg(errors.size()));
   statusLabel_->setStyleSheet(
       QString("color: %1; padding: 0 6px;").arg(theme::kErrorText));
 }
 
-void MainWindow::onModifiedChanged(bool modified) { updateTitle(); }
+void MainWindow::OnModifiedChanged(bool modified) { UpdateTitle(); }
 
-void MainWindow::updateTitle() {
+void MainWindow::UpdateTitle() {
   QString title = "QDE";
-  if (!editor_->filePath().isEmpty()) {
-    title += " — " + editor_->filePath();
+  if (!editor_->FilePath().isEmpty()) {
+    title += " — " + editor_->FilePath();
   }
-  if (editor_->isModified()) {
+  if (editor_->IsModified()) {
     title += " *";
   }
   setWindowTitle(title);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
-  if (editor_->isModified()) {
+  if (editor_->IsModified()) {
     auto btn = QMessageBox::question(this, "Unsaved changes",
                                      "Discard unsaved changes and quit?",
                                      QMessageBox::Yes | QMessageBox::No);

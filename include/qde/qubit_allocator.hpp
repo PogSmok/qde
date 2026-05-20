@@ -10,7 +10,7 @@ namespace qde {
 
 class QubitAllocator {
  public:
-  static std::unordered_map<std::string, std::size_t> allocate(
+  static std::unordered_map<std::string, std::size_t> Allocate(
       const Circuit& circuit);
 };
 
