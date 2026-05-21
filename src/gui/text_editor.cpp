@@ -81,43 +81,43 @@ void TextEditor::ToggleComment() {
   int start = cursor.selectionStart();
   int end = cursor.selectionEnd();
 
-  QTextBlock startBlock = editor_->document()->findBlock(start);
-  QTextBlock endBlock = editor_->document()->findBlock(end);
+  QTextBlock start_block = editor_->document()->findBlock(start);
+  QTextBlock end_block = editor_->document()->findBlock(end);
 
   // Common convention: If the cursor is at the very beginning of a block
   // at the end of a selection, don't include that block.
-  if (end > start && endBlock.position() == end) {
-    endBlock = endBlock.previous();
+  if (end > start && end_block.position() == end) {
+    end_block = end_block.previous();
   }
 
   // Logic: If any line in selection is NOT commented, we add comments to all
-  bool allCommented = true;
-  for (QTextBlock block = startBlock;
-       block.isValid() && block.blockNumber() <= endBlock.blockNumber();
+  bool all_commented = true;
+  for (QTextBlock block = start_block;
+       block.isValid() && block.blockNumber() <= end_block.blockNumber();
        block = block.next()) {
     QString text = block.text().trimmed();
     if (!text.isEmpty() && !text.startsWith("//")) {
-      allCommented = false;
+      all_commented = false;
       break;
     }
   }
 
-  for (QTextBlock block = startBlock;
-       block.isValid() && block.blockNumber() <= endBlock.blockNumber();
+  for (QTextBlock block = start_block;
+       block.isValid() && block.blockNumber() <= end_block.blockNumber();
        block = block.next()) {
     cursor.setPosition(block.position());
     cursor.movePosition(QTextCursor::StartOfBlock);
 
     QString text = block.text();
-    if (allCommented) {
+    if (all_commented) {
       // Remove "//" (and potentially one trailing space)
-      int commentPos = text.indexOf("//");
-      if (commentPos != -1) {
+      int comment_pos = text.indexOf("//");
+      if (comment_pos != -1) {
         cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
-                            commentPos);
+                            comment_pos);
         cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
         // Optional: handle the extra space if you use "// " style
-        if (text.size() > commentPos + 2 && text.at(commentPos + 2) == ' ') {
+        if (text.size() > comment_pos + 2 && text.at(comment_pos + 2) == ' ') {
           cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
         }
         cursor.removeSelectedText();
@@ -138,19 +138,19 @@ void TextEditor::IndentBlock() {
   int start = cursor.selectionStart();
   int end = cursor.selectionEnd();
 
-  QTextBlock startBlock = editor_->document()->findBlock(start);
-  QTextBlock endBlock = editor_->document()->findBlock(end);
+  QTextBlock start_block = editor_->document()->findBlock(start);
+  QTextBlock end_block = editor_->document()->findBlock(end);
 
-  if (end > start && endBlock.position() == end) {
-    endBlock = endBlock.previous();
+  if (end > start && end_block.position() == end) {
+    end_block = end_block.previous();
   }
 
-  const bool useSpaces = config::editor::useSpaces.Value();
-  const int tabWidth = config::editor::tabWidth.Value();
-  const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
+  const bool use_spaces = config::editor::use_spaces.Value();
+  const int tab_width = config::editor::tab_width.Value();
+  const QString indent = use_spaces ? QString(tab_width, ' ') : QString('\t');
 
-  for (QTextBlock block = startBlock;
-       block.isValid() && block.blockNumber() <= endBlock.blockNumber();
+  for (QTextBlock block = start_block;
+       block.isValid() && block.blockNumber() <= end_block.blockNumber();
        block = block.next()) {
     cursor.setPosition(block.position());
     cursor.movePosition(QTextCursor::StartOfBlock);
@@ -167,18 +167,18 @@ void TextEditor::OutdentBlock() {
   int start = cursor.selectionStart();
   int end = cursor.selectionEnd();
 
-  QTextBlock startBlock = editor_->document()->findBlock(start);
-  QTextBlock endBlock = editor_->document()->findBlock(end);
+  QTextBlock start_block = editor_->document()->findBlock(start);
+  QTextBlock end_block = editor_->document()->findBlock(end);
 
-  if (end > start && endBlock.position() == end) {
-    endBlock = endBlock.previous();
+  if (end > start && end_block.position() == end) {
+    end_block = end_block.previous();
   }
 
-  const bool useSpaces = config::editor::useSpaces.Value();
-  const int tabWidth = config::editor::tabWidth.Value();
+  const bool use_spaces = config::editor::use_spaces.Value();
+  const int tab_width = config::editor::tab_width.Value();
 
-  for (QTextBlock block = startBlock;
-       block.isValid() && block.blockNumber() <= endBlock.blockNumber();
+  for (QTextBlock block = start_block;
+       block.isValid() && block.blockNumber() <= end_block.blockNumber();
        block = block.next()) {
     const QString text = block.text();
     if (text.isEmpty()) {
@@ -188,20 +188,20 @@ void TextEditor::OutdentBlock() {
     cursor.setPosition(block.position());
     cursor.movePosition(QTextCursor::StartOfBlock);
 
-    if (!useSpaces) {
+    if (!use_spaces) {
       if (text.at(0) == '\t') {
         cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 1);
         cursor.removeSelectedText();
       }
     } else {
-      int spacesToRemove = 0;
-      while (spacesToRemove < tabWidth && spacesToRemove < text.size() &&
-             text.at(spacesToRemove) == ' ') {
-        ++spacesToRemove;
+      int spaces_to_remove = 0;
+      while (spaces_to_remove < tab_width && spaces_to_remove < text.size() &&
+             text.at(spaces_to_remove) == ' ') {
+        ++spaces_to_remove;
       }
-      if (spacesToRemove > 0) {
+      if (spaces_to_remove > 0) {
         cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
-                            spacesToRemove);
+                            spaces_to_remove);
         cursor.removeSelectedText();
       }
     }
@@ -215,42 +215,42 @@ void TextEditor::MoveBlockUp() {
   int start = cursor.selectionStart();
   int end = cursor.selectionEnd();
 
-  QTextBlock startBlock = editor_->document()->findBlock(start);
-  QTextBlock endBlock = editor_->document()->findBlock(end);
+  QTextBlock start_block = editor_->document()->findBlock(start);
+  QTextBlock end_block = editor_->document()->findBlock(end);
 
-  QTextBlock prevBlock = startBlock.previous();
-  if (!prevBlock.isValid()) {
+  QTextBlock prev_block = start_block.previous();
+  if (!prev_block.isValid()) {
     return;
   }
 
-  const int startPosition = prevBlock.position();
-  const int endPosition = endBlock.position() + endBlock.length() - 1;
+  const int start_position = prev_block.position();
+  const int end_position = end_block.position() + end_block.length() - 1;
 
-  const int newStartPosition = start - prevBlock.length();
-  const int newEndPosition = end - prevBlock.length();
+  const int new_start_position = start - prev_block.length();
+  const int new_end_position = end - prev_block.length();
 
   cursor.beginEditBlock();
 
   // Collect selected block texts
   QStringList lines;
-  for (QTextBlock block = startBlock;
-       block.isValid() && block.blockNumber() <= endBlock.blockNumber();
+  for (QTextBlock block = start_block;
+       block.isValid() && block.blockNumber() <= end_block.blockNumber();
        block = block.next()) {
     lines.append(block.text());
   }
-  const QString prev_text = prevBlock.text();
+  const QString prev_text = prev_block.text();
 
   // Replace whole block in single action
   QTextCursor replace_cursor(editor_->document());
-  replace_cursor.setPosition(startPosition);
-  replace_cursor.setPosition(endPosition, QTextCursor::KeepAnchor);
+  replace_cursor.setPosition(start_position);
+  replace_cursor.setPosition(end_position, QTextCursor::KeepAnchor);
   replace_cursor.insertText(lines.join('\n') + '\n' + prev_text);
 
   cursor.endEditBlock();
 
   // Restore cursor selection
-  cursor.setPosition(newStartPosition);
-  cursor.setPosition(newEndPosition, QTextCursor::KeepAnchor);
+  cursor.setPosition(new_start_position);
+  cursor.setPosition(new_end_position, QTextCursor::KeepAnchor);
   editor_->setTextCursor(cursor);
 }
 
@@ -259,40 +259,42 @@ void TextEditor::MoveBlockDown() {
   int start = cursor.selectionStart();
   int end = cursor.selectionEnd();
 
-  QTextBlock startBlock = editor_->document()->findBlock(start);
-  QTextBlock endBlock = editor_->document()->findBlock(end);
-  QTextBlock nextBlock = endBlock.next();
+  QTextBlock start_block = editor_->document()->findBlock(start);
+  QTextBlock end_block = editor_->document()->findBlock(end);
+  QTextBlock next_block = end_block.next();
 
-  if (!nextBlock.isValid()) return;
+  if (!next_block.isValid()) {
+    return;
+  }
 
-  const int startPosition = startBlock.position();
-  const int endPosition = nextBlock.position() + nextBlock.length() - 1;
-  const int newStartPosition = startBlock.position() + nextBlock.length();
-  const int newEndPosition = endPosition;
+  const int start_position = start_block.position();
+  const int end_position = next_block.position() + next_block.length() - 1;
+  const int new_start_position = start_block.position() + next_block.length();
+  const int new_end_position = end_position;
 
   cursor.beginEditBlock();
 
   // Collect selected block texts
   QStringList lines;
-  for (QTextBlock block = startBlock;
-       block.isValid() && block.blockNumber() <= endBlock.blockNumber();
+  for (QTextBlock block = start_block;
+       block.isValid() && block.blockNumber() <= end_block.blockNumber();
        block = block.next()) {
     lines.append(block.text());
   }
 
-  const QString nextText = nextBlock.text();
+  const QString next_text = next_block.text();
 
   // Replace whole block in single action
-  QTextCursor replaceCursor(editor_->document());
-  replaceCursor.setPosition(startPosition);
-  replaceCursor.setPosition(endPosition, QTextCursor::KeepAnchor);
-  replaceCursor.insertText(nextText + '\n' + lines.join('\n'));
+  QTextCursor replace_cursor(editor_->document());
+  replace_cursor.setPosition(start_position);
+  replace_cursor.setPosition(end_position, QTextCursor::KeepAnchor);
+  replace_cursor.insertText(next_text + '\n' + lines.join('\n'));
 
   cursor.endEditBlock();
 
   // Restore cursor selection
-  cursor.setPosition(newStartPosition);
-  cursor.setPosition(newEndPosition, QTextCursor::KeepAnchor);
+  cursor.setPosition(new_start_position);
+  cursor.setPosition(new_end_position, QTextCursor::KeepAnchor);
   editor_->setTextCursor(cursor);
 }
 

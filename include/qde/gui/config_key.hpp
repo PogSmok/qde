@@ -72,13 +72,13 @@ class ConfigKey : public ConfigKeyBase {
   using Validator = std::function<bool(const T&)>;
 
  public:
-  ConfigKey(QString category, QString field_name, T default_value,
+  ConfigKey(QString category, QString field_name, const T& default_value,
             QString display_name, QString description,
             std::optional<Validator> validator)
       : ConfigKeyBase(category + "." + field_name),
         category_(std::move(category)),
         fieldName_(std::move(field_name)),
-        value_(default_value),
+        value_(std::move(std::move(default_value))),
         displayName_(std::move(display_name)),
         description_(std::move(description)),
         validator_(std::move(validator)) {

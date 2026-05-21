@@ -103,25 +103,26 @@ void MainWindow::SetupStatusBar() {
 }
 
 void MainWindow::SetupActions() {
-  CreateAction("New File", config::shortcuts::fileNew.Value(),
+  CreateAction("New File", config::shortcuts::file_new.Value(),
                &MainWindow::NewFile);
-  CreateAction("Open File", config::shortcuts::fileOpen.Value(),
+  CreateAction("Open File", config::shortcuts::file_open.Value(),
                &MainWindow::OpenFile);
-  CreateAction("Save File", config::shortcuts::fileSave.Value(),
+  CreateAction("Save File", config::shortcuts::file_save.Value(),
                &MainWindow::SaveFile);
-  CreateAction("Save File As", config::shortcuts::fileSaveAs.Value(),
+  CreateAction("Save File As", config::shortcuts::file_save_as.Value(),
                &MainWindow::SaveFileAs);
 
-  CreateAction("Indent block", config::shortcuts::editIndent.Value(), editor_,
+  CreateAction("Indent block", config::shortcuts::edit_indent.Value(), editor_,
                &TextEditor::IndentBlock);
-  CreateAction("Outdent block", config::shortcuts::editOutdent.Value(), editor_,
-               &TextEditor::OutdentBlock);
-  CreateAction("Comment block", config::shortcuts::editComment.Value(), editor_,
-               &TextEditor::ToggleComment);
-  CreateAction("Move block up", config::shortcuts::editMoveBlockUp.Value(),
+  CreateAction("Outdent block", config::shortcuts::edit_outdent.Value(),
+               editor_, &TextEditor::OutdentBlock);
+  CreateAction("Comment block", config::shortcuts::edit_comment.Value(),
+               editor_, &TextEditor::ToggleComment);
+  CreateAction("Move block up", config::shortcuts::edit_move_block_up.Value(),
                editor_, &TextEditor::MoveBlockUp);
-  CreateAction("Move block down", config::shortcuts::editMoveBlockDown.Value(),
-               editor_, &TextEditor::MoveBlockDown);
+  CreateAction("Move block down",
+               config::shortcuts::edit_move_block_down.Value(), editor_,
+               &TextEditor::MoveBlockDown);
 }
 
 template <typename Func>

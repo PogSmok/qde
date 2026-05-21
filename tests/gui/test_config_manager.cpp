@@ -15,7 +15,7 @@ inline ConfigKey<int> testConfig("test", "testField", 4, "Display Name",
 
 inline ConfigKey<QKeySequence> testConfigKeySequence(
     "keytest", "testShortcut", QKeySequence("Alt+Left"), "Display Name",
-    "Description", shortcuts::shortcutValidator);
+    "Description", shortcuts::ShortcutValidator);
 
 class ConfigManagerTest : public ::testing::Test {
  protected:
@@ -170,12 +170,12 @@ class ConfigManagerTest : public ::testing::Test {
 TEST_F(ConfigManagerTest, LoadValidConfigFile) {
   PrepareValidConfig();
   DefaultValues();
-  auto& mgr = ConfigManager::instance();
+  auto& mgr = ConfigManager::Instance();
 
   EXPECT_EQ(testConfig.Value(), 4);
   EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Left"));
 
-  bool all_ok = mgr.load(tempDir->path());
+  bool all_ok = mgr.Load(tempDir->path());
   EXPECT_TRUE(all_ok);
 
   EXPECT_EQ(testConfig.Value(), 2);
@@ -185,12 +185,12 @@ TEST_F(ConfigManagerTest, LoadValidConfigFile) {
 TEST_F(ConfigManagerTest, LoadConfigFileInvalidValue) {
   PrepareInvalidConfig_BadValue();
   DefaultValues();
-  auto& mgr = ConfigManager::instance();
+  auto& mgr = ConfigManager::Instance();
 
   EXPECT_EQ(testConfig.Value(), 4);
   EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Left"));
 
-  bool all_ok = mgr.load(tempDir->path());
+  bool all_ok = mgr.Load(tempDir->path());
   EXPECT_FALSE(all_ok);
 
   EXPECT_EQ(testConfig.Value(), 4) << "Config file contains invalid value. "
@@ -204,12 +204,12 @@ TEST_F(ConfigManagerTest, LoadConfigFileInvalidValue) {
 TEST_F(ConfigManagerTest, LoadConfigFileInvalidJson) {
   PrepareInvalidConfig_BadJson();
   DefaultValues();
-  auto& mgr = ConfigManager::instance();
+  auto& mgr = ConfigManager::Instance();
 
   EXPECT_EQ(testConfig.Value(), 4);
   EXPECT_EQ(testConfigKeySequence.Value(), QKeySequence("Alt+Left"));
 
-  bool all_ok = mgr.load(tempDir->path());
+  bool all_ok = mgr.Load(tempDir->path());
   EXPECT_FALSE(all_ok);
 
   EXPECT_EQ(testConfig.Value(), 4) << "Config file contains bad syntax. Config "
@@ -223,12 +223,12 @@ TEST_F(ConfigManagerTest, LoadConfigFileInvalidJson) {
 TEST_F(ConfigManagerTest, SaveValidConfigKeys) {
   PrepareValidConfig();
   DefaultValues();
-  auto& mgr = ConfigManager::instance();
+  auto& mgr = ConfigManager::Instance();
 
   testConfig.SetValue(1);
   testConfigKeySequence.SetValue(QKeySequence("Alt+Right"));
 
-  bool all_ok = mgr.save(tempDir->path());
+  bool all_ok = mgr.Save(tempDir->path());
   EXPECT_TRUE(all_ok);
   {
     auto testConfigFileContent = ReadFile(testConfigFilePath);

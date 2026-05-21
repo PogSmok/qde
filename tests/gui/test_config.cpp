@@ -5,33 +5,33 @@
 using namespace qde::gui::config;
 
 TEST(ConfigTest, TabWidthValidator) {
-  editor::tabWidth.SetValue(4);
-  EXPECT_EQ(editor::tabWidth.Value(), 4);
-  editor::tabWidth.SetValue(1);
-  EXPECT_EQ(editor::tabWidth.Value(), 1);
-  editor::tabWidth.SetValue(16);
-  EXPECT_EQ(editor::tabWidth.Value(), 16);
-  editor::tabWidth.SetValue(0);
-  EXPECT_EQ(editor::tabWidth.Value(), 16);
-  editor::tabWidth.SetValue(20);
-  EXPECT_EQ(editor::tabWidth.Value(), 16);
-  editor::tabWidth.SetValue(-1);
-  EXPECT_EQ(editor::tabWidth.Value(), 16);
+  editor::tab_width.SetValue(4);
+  EXPECT_EQ(editor::tab_width.Value(), 4);
+  editor::tab_width.SetValue(1);
+  EXPECT_EQ(editor::tab_width.Value(), 1);
+  editor::tab_width.SetValue(16);
+  EXPECT_EQ(editor::tab_width.Value(), 16);
+  editor::tab_width.SetValue(0);
+  EXPECT_EQ(editor::tab_width.Value(), 16);
+  editor::tab_width.SetValue(20);
+  EXPECT_EQ(editor::tab_width.Value(), 16);
+  editor::tab_width.SetValue(-1);
+  EXPECT_EQ(editor::tab_width.Value(), 16);
 }
 
 TEST(ConfigTest, FontSizeValidator) {
-  editor::fontSize.SetValue(11);
-  EXPECT_EQ(editor::fontSize.Value(), 11);
-  editor::fontSize.SetValue(6);
-  EXPECT_EQ(editor::fontSize.Value(), 6);
-  editor::fontSize.SetValue(72);
-  EXPECT_EQ(editor::fontSize.Value(), 72);
-  editor::fontSize.SetValue(0);
-  EXPECT_EQ(editor::fontSize.Value(), 72);
-  editor::fontSize.SetValue(100);
-  EXPECT_EQ(editor::fontSize.Value(), 72);
-  editor::fontSize.SetValue(-1);
-  EXPECT_EQ(editor::fontSize.Value(), 72);
+  editor::font_size.SetValue(11);
+  EXPECT_EQ(editor::font_size.Value(), 11);
+  editor::font_size.SetValue(6);
+  EXPECT_EQ(editor::font_size.Value(), 6);
+  editor::font_size.SetValue(72);
+  EXPECT_EQ(editor::font_size.Value(), 72);
+  editor::font_size.SetValue(0);
+  EXPECT_EQ(editor::font_size.Value(), 72);
+  editor::font_size.SetValue(100);
+  EXPECT_EQ(editor::font_size.Value(), 72);
+  editor::font_size.SetValue(-1);
+  EXPECT_EQ(editor::font_size.Value(), 72);
 }
 
 TEST(ConfigTest, ThemeNameValidator) {
@@ -44,11 +44,11 @@ TEST(ConfigTest, ThemeNameValidator) {
 }
 
 TEST(ConfigTest, ShortcutValidator) {
-  EXPECT_TRUE(shortcuts::shortcutValidator(QKeySequence("Tab")));
-  EXPECT_TRUE(shortcuts::shortcutValidator(QKeySequence("Shift+Tab")));
-  EXPECT_TRUE(shortcuts::shortcutValidator(QKeySequence("Alt+Ctrl+Tab")));
-  EXPECT_TRUE(shortcuts::shortcutValidator(QKeySequence("Alt+Up")));
-  EXPECT_FALSE(shortcuts::shortcutValidator(QKeySequence("TabTab")));
-  EXPECT_FALSE(shortcuts::shortcutValidator(QKeySequence("-1")));
-  EXPECT_FALSE(shortcuts::shortcutValidator(QKeySequence("ABC")));
+  EXPECT_TRUE(shortcuts::ShortcutValidator(QKeySequence("Tab")));
+  EXPECT_TRUE(shortcuts::ShortcutValidator(QKeySequence("Shift+Tab")));
+  EXPECT_TRUE(shortcuts::ShortcutValidator(QKeySequence("Alt+Ctrl+Tab")));
+  EXPECT_TRUE(shortcuts::ShortcutValidator(QKeySequence("Alt+Up")));
+  EXPECT_FALSE(shortcuts::ShortcutValidator(QKeySequence("TabTab")));
+  EXPECT_FALSE(shortcuts::ShortcutValidator(QKeySequence("-1")));
+  EXPECT_FALSE(shortcuts::ShortcutValidator(QKeySequence("ABC")));
 }
