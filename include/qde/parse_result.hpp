@@ -13,34 +13,35 @@ namespace qde {
 
 class ParseResult {
  public:
-  [[nodiscard]] static ParseResult ok(Circuit circuit) {
+  [[nodiscard]] static ParseResult Ok(Circuit circuit) {
     return {std::move(circuit), {}};
   }
 
-  [[nodiscard]] static ParseResult fail(std::vector<SyntaxError> errors) {
+  [[nodiscard]] static ParseResult Fail(std::vector<SyntaxError> errors) {
     assert(!errors.empty() &&
-           "ParseResult::fail() called with no errors, "
+           "ParseResult::Fail() called with no errors, "
            "a failed result must explain why it failed");
     return {std::nullopt, std::move(errors)};
   }
 
-  [[nodiscard]] const Circuit& circuit() const {
-    assert(isOk() &&
-           "ParseResult::circuit() called on a failed result, "
-           "check isOk() before accessing the circuit");
+  [[nodiscard]] const Circuit& GetCircuit() const {
+    assert(IsOk() &&
+           "ParseResult::GetCircuit() called on a failed result, "
+           "check IsOk() before accessing the circuit");
     return *circuit_;
   }
 
-  [[nodiscard]] const std::vector<SyntaxError>& errors() const {
+  [[nodiscard]] const std::vector<SyntaxError>& Errors() const {
     return errors_;
   }
-  [[nodiscard]] bool isOk() const { return circuit_.has_value(); }
+  [[nodiscard]] bool IsOk() const { return circuit_.has_value(); }
 
  private:
-  ParseResult(std::optional<Circuit> circuit, std::vector<SyntaxError> errors)
+  ParseResult(std::optional<qde::Circuit> circuit,
+              std::vector<SyntaxError> errors)
       : circuit_(std::move(circuit)), errors_(std::move(errors)) {}
 
-  std::optional<Circuit> circuit_;
+  std::optional<qde::Circuit> circuit_;
   std::vector<SyntaxError> errors_;
 };
 

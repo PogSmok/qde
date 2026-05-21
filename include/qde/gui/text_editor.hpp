@@ -16,35 +16,35 @@ class TextEditor : public QWidget {
  public:
   explicit TextEditor(QWidget* parent = nullptr);
 
-  void newFile();
-  void openFile(const QString& path);
-  bool saveFile();
-  [[nodiscard]] bool saveFileAs(const QString& path);
-  void syncEditorToDoc();
+  void NewFile();
+  void OpenFile(const QString& path);
+  bool SaveFile();
+  [[nodiscard]] bool SaveFileAs(const QString& path);
+  void SyncEditorToDoc();
 
-  [[nodiscard]] QString plainText() const;
-  [[nodiscard]] QString filePath() const;
-  [[nodiscard]] bool isModified() const;
+  [[nodiscard]] QString PlainText() const;
+  [[nodiscard]] QString FilePath() const;
+  [[nodiscard]] bool IsModified() const;
 
-  [[nodiscard]] QTextDocument* document() const { return editor_->document(); }
-  [[nodiscard]] QPlainTextEdit* editor() const { return editor_; }
-  void setContent(const QString& content);
+  [[nodiscard]] QTextDocument* Document() const { return editor_->document(); }
+  [[nodiscard]] QPlainTextEdit* Editor() const { return editor_; }
+  void SetContent(const QString& content);
 
-  void setErrors(const std::vector<qde::SyntaxError>& errors);
-  void clearErrors();
+  void SetErrors(const std::vector<qde::SyntaxError>& errors);
+  void ClearErrors();
 
  signals:
-  void textChanged();
-  void fileChanged(const QString& path);
-  void modifiedChanged(bool modified);
+  void TextChanged();
+  void FileChanged(const QString& path);
+  void ModifiedChanged(bool modified);
 
  public slots:
-  void onEditorTextChanged();
-  void toggleComment();
-  void indentBlock();
-  void outdentBlock();
-  void moveBlockUp();
-  void moveBlockDown();
+  void OnEditorTextChanged();
+  void ToggleComment();
+  void IndentBlock();
+  void OutdentBlock();
+  void MoveBlockUp();
+  void MoveBlockDown();
 
  private:
   QPointer<CodeEditor> editor_;

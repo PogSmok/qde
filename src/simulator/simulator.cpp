@@ -232,8 +232,8 @@ std::vector<double> ComputeEigenvalues(const DensityMatrix& rho,
           }
           const std::complex<double> hrp = h[(r * dim) + p];
           const std::complex<double> hrq = h[(r * dim) + q];
-          h[(r * dim) + p] = c * hrp + s * std::conj(phase) * hrq;
-          h[(r * dim) + q] = -s * phase * hrp + c * hrq;
+          h[(r * dim) + p] = c * hrp + (s * std::conj(phase) * hrq);
+          h[(r * dim) + q] = (-s * phase * hrp) + c * hrq;
           h[(p * dim) + r] = std::conj(h[(r * dim) + p]);
           h[(q * dim) + r] = std::conj(h[(r * dim) + q]);
         }
@@ -273,7 +273,7 @@ SimulationState MakeSnapshot(const DensityMatrix& rho, std::size_t total_qubits,
 
 std::vector<SimulationState> Simulate(const SimulationCircuit& circuit,
                                       bool save_all) {
-  const std::size_t n = circuit.qubitCount();
+  const std::size_t n = circuit.QubitCount();
   const std::size_t dim = std::size_t{1} << n;
 
   // Initial state ρ = |0...0><0...0|
@@ -281,18 +281,18 @@ std::vector<SimulationState> Simulate(const SimulationCircuit& circuit,
   rho[0] = {1.0, 0.0};
 
   // All bits initially 0
-  std::vector<std::uint8_t> classical_bits(circuit.bitCount(), 0);
+  std::vector<std::uint8_t> classical_bits(circuit.BitCount(), 0);
   std::mt19937 rng{std::random_device{}()};
 
   std::vector<SimulationState> states;
   if (save_all) {
-    states.reserve(circuit.layers().size() + 1);
+    states.reserve(circuit.Layers().size() + 1);
     states.push_back(MakeSnapshot(rho, n, classical_bits, 0, 1.0));
   }
 
-  for (std::size_t layer_idx = 0; layer_idx < circuit.layers().size();
+  for (std::size_t layer_idx = 0; layer_idx < circuit.Layers().size();
        layer_idx++) {
-    for (const CompiledOperation& op : circuit.layers()[layer_idx]) {
+    for (const CompiledOperation& op : circuit.Layers()[layer_idx]) {
       if (op.condition) {
         const auto [bit_idx, expected] = *op.condition;
         if (classical_bits[bit_idx] != expected) {
@@ -303,7 +303,7 @@ std::vector<SimulationState> Simulate(const SimulationCircuit& circuit,
       switch (op.type) {
         case OperationType::kGate:
           if (op.gate) {
-            ApplyGate(rho, n, op.gate->matrix(op.gate_params), op.qubits);
+            ApplyGate(rho, n, op.gate->Matrix(op.gate_params), op.qubits);
           }
           break;
         case OperationType::kMeasure:
@@ -331,7 +331,7 @@ std::vector<SimulationState> Simulate(const SimulationCircuit& circuit,
 
   if (!save_all) {
     states.push_back(
-        MakeSnapshot(rho, n, classical_bits, circuit.layers().size(), 1.0));
+        MakeSnapshot(rho, n, classical_bits, circuit.Layers().size(), 1.0));
   }
 
   return states;
@@ -341,15 +341,15 @@ std::vector<SimulationState> Simulate(const SimulationCircuit& circuit,
 
 // ---- Simulator public API -------------------------------------------------
 
-void Simulator::setNoiseModel(std::shared_ptr<const NoiseModel> model) {
-  noise_model_ = std::move(model);
+void Simulator::SetNoiseModel(const std::shared_ptr<const NoiseModel>& model) {
+  noise_model_ = model;
 }
 
-std::vector<SimulationState> Simulator::run(const SimulationCircuit& circuit) {
+std::vector<SimulationState> Simulator::Run(const SimulationCircuit& circuit) {
   return Simulate(circuit, true);
 }
 
-SimulationState Simulator::runFinal(const SimulationCircuit& circuit) {
+SimulationState Simulator::RunFinal(const SimulationCircuit& circuit) {
   return Simulate(circuit, false).back();
 }
 

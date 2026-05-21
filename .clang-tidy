@@ -24,9 +24,10 @@ Checks: >
 WarningsAsErrors: >
   clang-diagnostic-*,
   clang-analyzer-*,
+  readability-identifier-naming,
 
 # Only report issues in our own headers, not Qt/ANTLR/system headers
-HeaderFilterRegex: '^.*include/qde/.*$'
+HeaderFilterRegex: '^.*include.qde.*$'
 
 FormatStyle: file
 
@@ -122,6 +123,8 @@ CheckOptions:
   - key:   readability-identifier-naming.NamespaceCase
     value: lower_case
 
-  # Macros: ALL_CAPS
+  # Macros: ALL_CAPS (header guards are exempt)
   - key:   readability-identifier-naming.MacroDefinitionCase
     value: UPPER_CASE
+  - key:   readability-identifier-naming.MacroDefinitionIgnoredRegexp
+    value: '^[A-Z0-9_]+_(H|HPP)_$'

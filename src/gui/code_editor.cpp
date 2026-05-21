@@ -14,12 +14,12 @@ class LineNumberArea : public QWidget {
   explicit LineNumberArea(CodeEditor* editor)
       : QWidget(editor), editor_(editor) {}
   [[nodiscard]] QSize sizeHint() const override {
-    return {editor_->lineNumberAreaWidth(), 0};
+    return {editor_->LineNumberAreaWidth(), 0};
   }
 
  protected:
   void paintEvent(QPaintEvent* ev) override {
-    editor_->lineNumberAreaPaintEvent(ev);
+    editor_->LineNumberAreaPaintEvent(ev);
   }
 
  private:
@@ -41,16 +41,16 @@ CodeEditor::CodeEditor(QWidget* parent)
                      qde::gui::config::editor::tabWidth.Value());
 
   connect(this, &QPlainTextEdit::blockCountChanged, this,
-          &CodeEditor::updateLineNumberAreaWidth);
+          &CodeEditor::UpdateLineNumberAreaWidth);
   connect(this, &QPlainTextEdit::updateRequest, this,
-          &CodeEditor::updateLineNumberArea);
+          &CodeEditor::UpdateLineNumberArea);
 
-  updateLineNumberAreaWidth(0);
+  UpdateLineNumberAreaWidth(0);
 
   new SyntaxHighlighter(document());
 }
 
-int CodeEditor::lineNumberAreaWidth() const {
+int CodeEditor::LineNumberAreaWidth() const {
   int digits = 1;
   int max = qMax(1, blockCount());
   while (max >= 10) {
@@ -60,11 +60,11 @@ int CodeEditor::lineNumberAreaWidth() const {
   return 8 + (fontMetrics().horizontalAdvance('9') * digits);
 }
 
-void CodeEditor::updateLineNumberAreaWidth(int /*unused*/) {
-  setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+void CodeEditor::UpdateLineNumberAreaWidth(int /*unused*/) {
+  setViewportMargins(LineNumberAreaWidth(), 0, 0, 0);
 }
 
-void CodeEditor::updateLineNumberArea(const QRect& rect, int dy) {
+void CodeEditor::UpdateLineNumberArea(const QRect& rect, int dy) {
   if (dy != 0) {
     lineNumberArea_->scroll(0, dy);
   } else {
@@ -73,7 +73,7 @@ void CodeEditor::updateLineNumberArea(const QRect& rect, int dy) {
   }
 
   if (rect.contains(viewport()->rect())) {
-    updateLineNumberAreaWidth(0);
+    UpdateLineNumberAreaWidth(0);
   }
 }
 
@@ -81,10 +81,10 @@ void CodeEditor::resizeEvent(QResizeEvent* event) {
   QPlainTextEdit::resizeEvent(event);
   QRect cr = contentsRect();
   lineNumberArea_->setGeometry(
-      {cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()});
+      {cr.left(), cr.top(), LineNumberAreaWidth(), cr.height()});
 }
 
-void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
+void CodeEditor::LineNumberAreaPaintEvent(const QPaintEvent* event) const {
   QPainter painter(lineNumberArea_);
   painter.fillRect(event->rect(), theme::kLineNumberBackground);
 
@@ -109,7 +109,7 @@ void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent* event) const {
   }
 }
 
-void CodeEditor::setErrors(const std::vector<qde::SyntaxError>& errors) {
+void CodeEditor::SetErrors(const std::vector<qde::SyntaxError>& errors) {
   QList<QTextEdit::ExtraSelection> selections;
 
   for (const auto& [line, column, message] : errors) {
@@ -139,7 +139,7 @@ void CodeEditor::setErrors(const std::vector<qde::SyntaxError>& errors) {
   setExtraSelections(selections);
 }
 
-void CodeEditor::clearErrors() {
+void CodeEditor::ClearErrors() {
   setExtraSelections(QList<QTextEdit::ExtraSelection>());
 }
 

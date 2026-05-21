@@ -7,11 +7,11 @@ namespace qde::gui {
 
 TextDocument::TextDocument(QObject* parent) : QObject(parent) {}
 
-QString TextDocument::filePath() const {
+QString TextDocument::FilePath() const {
   return QString::fromStdString(path_.string());
 }
 
-bool TextDocument::load(const std::filesystem::path& path) {
+bool TextDocument::Load(const std::filesystem::path& path) {
   QFile file(QString::fromStdString(path.string()));
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     return false;
@@ -19,20 +19,20 @@ bool TextDocument::load(const std::filesystem::path& path) {
   QTextStream in(&file);
   content_ = in.readAll();
   path_ = path;
-  setModified(false);
-  emit contentChanged();
-  emit filePathChanged(filePath());
+  SetModified(false);
+  emit ContentChanged();
+  emit FilePathChanged(FilePath());
   return true;
 }
 
-bool TextDocument::save() {
+bool TextDocument::Save() {
   if (path_.empty()) {
     return false;
   }
-  return saveAs(path_);
+  return SaveAs(path_);
 }
 
-bool TextDocument::saveAs(const std::filesystem::path& path) {
+bool TextDocument::SaveAs(const std::filesystem::path& path) {
   QFile file(QString::fromStdString(path.string()));
   if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
     return false;
@@ -40,26 +40,26 @@ bool TextDocument::saveAs(const std::filesystem::path& path) {
   QTextStream out(&file);
   out << content_;
   path_ = path;
-  setModified(false);
-  emit filePathChanged(filePath());
+  SetModified(false);
+  emit FilePathChanged(FilePath());
   return true;
 }
 
-void TextDocument::setModified(bool v) {
+void TextDocument::SetModified(bool v) {
   if (modified_ == v) {
     return;
   }
   modified_ = v;
-  emit modifiedChanged(v);
+  emit ModifiedChanged(v);
 }
 
-void TextDocument::setContent(const QString& text) {
+void TextDocument::SetContent(const QString& text) {
   if (content_ == text) {
     return;
   }
   content_ = text;
-  setModified(true);
-  emit contentChanged();
+  SetModified(true);
+  emit ContentChanged();
 }
 
 }  // namespace qde::gui
