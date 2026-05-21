@@ -298,7 +298,7 @@ void TextEditor::MoveBlockDown() {
 
 void TextEditor::SyncEditorToDoc() {
   QSignalBlocker block(editor_);
-  editor_->SetPlainText(document_->Content());
+  editor_->setPlainText(document_->Content());
   block.unblock();
 }
 
