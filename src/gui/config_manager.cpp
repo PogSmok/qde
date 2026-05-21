@@ -14,19 +14,19 @@
 
 namespace qde::gui::config {
 
-ConfigManager& ConfigManager::instance() {
+ConfigManager& ConfigManager::Instance() {
   static ConfigManager instance;
   return instance;
 }
 
-QString ConfigManager::defaultConfigPath() {
+QString ConfigManager::DefaultConfigPath() {
   // e.g. ~/.config/<AppName>  on Linux
   //       ~/Library/Preferences/<AppName>  on macOS
   //       %APPDATA%\<AppName>  on Windows
   return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
 }
 
-bool ConfigManager::save(const QString& dir_path) {
+bool ConfigManager::Save(const QString& dir_path) {
   // Partition the flat registry into per-category buckets.
   std::map<QString, std::vector<ConfigKeyBase*>> by_category;
   for (auto& [id, key] : ConfigKeyBase::config_registry) {
@@ -35,14 +35,14 @@ bool ConfigManager::save(const QString& dir_path) {
 
   bool all_ok = true;
   for (const auto& [category, keys] : by_category) {
-    all_ok &= saveCategory(category, keys, dir_path);
+    all_ok &= SaveCategory(category, keys, dir_path);
   }
   return all_ok;
 }
 
-bool ConfigManager::saveCategory(const QString& category,
+bool ConfigManager::SaveCategory(const QString& category,
                                  const std::vector<ConfigKeyBase*>& keys,
-                                 const QString& dir_path) const {
+                                 const QString& dir_path) {
   // Ensure destination directory exists.
   const QDir dir(dir_path);
   if (!dir.exists() && !QDir().mkpath(dir_path)) {
@@ -77,7 +77,7 @@ bool ConfigManager::saveCategory(const QString& category,
   return true;
 }
 
-bool ConfigManager::load(const QString& dir_path) {
+bool ConfigManager::Load(const QString& dir_path) {
   const QDir dir(dir_path);
   if (!dir.exists()) {
     // No config directory yet; silently keep all defaults.
@@ -89,12 +89,12 @@ bool ConfigManager::load(const QString& dir_path) {
 
   bool all_ok = true;
   for (const QString& filename : json_files) {
-    all_ok &= loadFile(dir.filePath(filename));
+    all_ok &= LoadFile(dir.filePath(filename));
   }
   return all_ok;
 }
 
-bool ConfigManager::loadFile(const QString& file_path) const {
+bool ConfigManager::LoadFile(const QString& file_path) {
   QFile file(file_path);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     qWarning("ConfigManager::load - cannot open: %s - %s",

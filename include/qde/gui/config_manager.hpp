@@ -35,24 +35,24 @@ namespace qde::gui::config {
 class ConfigManager {
  public:
   // Meyer's singleton — construction is deferred until first call.
-  static ConfigManager& instance();
+  static ConfigManager& Instance();
 
   // Saves every category to <dir_path>/<category>.json.
   // Creates dir_path (and parents) if absent.
   // Returns true iff every file was written successfully.
-  bool save(const QString& dir_path = defaultConfigPath());
+  bool Save(const QString& dir_path = DefaultConfigPath());
 
   // Loads every *.json file found under dir_path.
   // Missing dir -> no-op (returns true; defaults remain in effect).
   // Unknown keys in a file are skipped with a warning.
   // Invalid values (validator rejection) are skipped; default is kept.
   // Returns true iff every file was parsed and every value applied.
-  bool load(const QString& dir_path = defaultConfigPath());
+  bool Load(const QString& dir_path = DefaultConfigPath());
 
   // QStandardPaths::AppConfigLocation for the running application.
   // Requires QCoreApplication::setApplicationName() to be called first
   // for a meaningful path.
-  [[nodiscard]] static QString defaultConfigPath();
+  [[nodiscard]] static QString DefaultConfigPath();
 
   // Non-copyable, non-movable (singleton).
   ConfigManager(const ConfigManager&) = delete;
@@ -65,12 +65,12 @@ class ConfigManager {
   ~ConfigManager() = default;
 
   // Serializes one category bucket to <dir_path>/<category>.json.
-  bool saveCategory(const QString& category,
-                    const std::vector<ConfigKeyBase*>& keys,
-                    const QString& dir_path) const;
+  [[nodiscard]] static bool SaveCategory(
+      const QString& category, const std::vector<ConfigKeyBase*>& keys,
+      const QString& dir_path);
 
   // Deserializes one JSON file and applies values to the registry.
-  bool loadFile(const QString& file_path) const;
+  [[nodiscard]] static bool LoadFile(const QString& file_path);
 };
 
 }  // namespace qde::gui::config

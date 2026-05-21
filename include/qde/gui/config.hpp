@@ -19,50 +19,50 @@ namespace qde::gui::config {
 
 namespace editor {
 
-inline ConfigKey<int> tabWidth("editor", "tabWidth", 4, "Tab Width",
-                               "Number of spaces per tab stop (1–16).",
-                               [](const int& v) { return v >= 1 && v <= 16; });
+inline ConfigKey<int> tab_width("editor", "tabWidth", 4, "Tab Width",
+                                "Number of spaces per tab stop (1–16).",
+                                [](const int& v) { return v >= 1 && v <= 16; });
 
-inline ConfigKey<bool> useSpaces(
+inline ConfigKey<bool> use_spaces(
     "editor", "useSpaces", true, "Use Spaces",
     "Insert spaces instead of real tab characters.", nullptr);
 
-inline ConfigKey<bool> wordWrap("editor", "wordWrap", false, "Word Wrap",
-                                "Wrap long lines at the viewport edge.",
-                                nullptr);
+inline ConfigKey<bool> word_wrap("editor", "wordWrap", false, "Word Wrap",
+                                 "Wrap long lines at the viewport edge.",
+                                 nullptr);
 
-inline ConfigKey<int> fontSize("editor", "fontSize", 11, "Font Size",
-                               "Editor font size in points (6–72).",
-                               [](const int& v) { return v >= 6 && v <= 72; });
+inline ConfigKey<int> font_size("editor", "fontSize", 11, "Font Size",
+                                "Editor font size in points (6–72).",
+                                [](const int& v) { return v >= 6 && v <= 72; });
 
-inline ConfigKey<QString> fontFamily("editor", "fontFamily",
-                                     QStringLiteral("Cascadia Code"),
-                                     "Font Family",
-                                     "Monospace font used in the editor pane.",
-                                     nullptr);
+inline ConfigKey<QString> font_family("editor", "fontFamily",
+                                      QStringLiteral("Cascadia Code"),
+                                      "Font Family",
+                                      "Monospace font used in the editor pane.",
+                                      nullptr);
 
-inline ConfigKey<bool> lineNumbers("editor", "lineNumbers", true,
-                                   "Line Numbers",
-                                   "Display line numbers in the gutter.",
-                                   nullptr);
+inline ConfigKey<bool> line_numbers("editor", "lineNumbers", true,
+                                    "Line Numbers",
+                                    "Display line numbers in the gutter.",
+                                    nullptr);
 
-inline ConfigKey<bool> autoSave(
+inline ConfigKey<bool> auto_save(
     // Not Implemented
     "editor", "autoSave", false, "Auto Save",
     "Save the file automatically after idle.", nullptr);
 
-inline ConfigKey<int> autoSaveDelayMs(
+inline ConfigKey<int> auto_save_delay_ms(
     // Not Implemented
     "editor", "autoSaveDelayMs", 1000, "Auto Save Delay (ms)",
     "Milliseconds of idle before auto-save fires (100–10 000).",
     [](const int& v) { return v >= 100 && v <= 10'000; });
 
-inline ConfigKey<bool> highlightCurrentLine("editor", "highlightCurrentLine",
-                                            true, "Highlight Current Line",
-                                            "Tint the line the cursor is on.",
-                                            nullptr);
+inline ConfigKey<bool> highlight_current_line("editor", "highlightCurrentLine",
+                                              true, "Highlight Current Line",
+                                              "Tint the line the cursor is on.",
+                                              nullptr);
 
-inline ConfigKey<int> scrollOffLines(
+inline ConfigKey<int> scroll_off_lines(
     // Not Implemented
     "editor", "scrollOffLines", 5, "Scroll-Off Lines",
     "Minimum lines kept above/below cursor (0–20).",
@@ -76,22 +76,22 @@ inline ConfigKey<QString> name(
     // Not Implemented
     "theme", "name", QStringLiteral("dark"), "Theme",
     "UI color theme ('dark' | 'light').", [](const QString& v) {
-      static const QStringList valid{QStringLiteral("dark"),
-                                     QStringLiteral("light")};
-      return valid.contains(v);
+      static const QStringList kValid{QStringLiteral("dark"),
+                                      QStringLiteral("light")};
+      return kValid.contains(v);
     });
 
-inline ConfigKey<bool> syntaxHighlighting("theme", "syntaxHighlighting", true,
-                                          "Syntax Highlighting",
-                                          "Colorize tokens based on grammar.",
-                                          nullptr);
+inline ConfigKey<bool> syntax_highlighting("theme", "syntaxHighlighting", true,
+                                           "Syntax Highlighting",
+                                           "Colorize tokens based on grammar.",
+                                           nullptr);
 
-inline ConfigKey<bool> matchBrackets(
+inline ConfigKey<bool> match_brackets(
     // Not Implemented
     "theme", "matchBrackets", true, "Match Brackets",
     "Highlight matching bracket/paren pairs.", nullptr);
 
-inline ConfigKey<bool> renderWhitespace(
+inline ConfigKey<bool> render_whitespace(
     // Not Implemented
     "theme", "renderWhitespace", false, "Render Whitespace",
     "Show spaces and tabs as visible glyphs.", nullptr);
@@ -100,7 +100,7 @@ inline ConfigKey<bool> renderWhitespace(
 
 namespace shortcuts {
 
-inline bool shortcutValidator(const QKeySequence& v) {
+inline bool ShortcutValidator(const QKeySequence& v) {
   for (int i = 0; i < v.count(); i++) {
     if (v[i].key() == Qt::Key_unknown) {
       return false;
@@ -109,48 +109,47 @@ inline bool shortcutValidator(const QKeySequence& v) {
   return true;
 }
 
-inline ConfigKey<QKeySequence> fileNew("shortcut", "fileNew",
-                                       QKeySequence("Ctrl+n"),
-                                       "Create new file",
-                                       "Key shortcut for creating new file.",
-                                       shortcutValidator);
+inline ConfigKey<QKeySequence> file_new("shortcut", "fileNew",
+                                        QKeySequence("Ctrl+n"),
+                                        "Create new file",
+                                        "Key shortcut for creating new file.",
+                                        ShortcutValidator);
 
-inline ConfigKey<QKeySequence> fileOpen(
+inline ConfigKey<QKeySequence> file_open(
     "shortcut", "fileOpen", QKeySequence("Ctrl+o"), "Open file",
-    "Key shortcut for opening file via file system.", shortcutValidator);
+    "Key shortcut for opening file via file system.", ShortcutValidator);
 
-inline ConfigKey<QKeySequence> fileSave("shortcut", "fileSave",
-                                        QKeySequence("Ctrl+s"), "Save file",
-                                        "Key shortcut for saving current file.",
-                                        shortcutValidator);
+inline ConfigKey<QKeySequence> file_save(
+    "shortcut", "fileSave", QKeySequence("Ctrl+s"), "Save file",
+    "Key shortcut for saving current file.", ShortcutValidator);
 
-inline ConfigKey<QKeySequence> fileSaveAs(
+inline ConfigKey<QKeySequence> file_save_as(
     "shortcut", "fileSaveAs", QKeySequence("Ctrl+Shift+s"), "Save file as",
-    "Key shortcut for saving current buffer as new file.", shortcutValidator);
+    "Key shortcut for saving current buffer as new file.", ShortcutValidator);
 
-inline ConfigKey<QKeySequence> editIndent(
+inline ConfigKey<QKeySequence> edit_indent(
     "shortcut", "editIndent", QKeySequence("Tab"), "Indent block",
-    "Key shortcut for indenting selected block of code.", shortcutValidator);
+    "Key shortcut for indenting selected block of code.", ShortcutValidator);
 
-inline ConfigKey<QKeySequence> editOutdent(
+inline ConfigKey<QKeySequence> edit_outdent(
     "shortcut", "editOutdent", QKeySequence("Shift+Tab"), "Outdent block",
-    "Key shortcut for outdenting selected block of code.", shortcutValidator);
+    "Key shortcut for outdenting selected block of code.", ShortcutValidator);
 
-inline ConfigKey<QKeySequence> editComment(
+inline ConfigKey<QKeySequence> edit_comment(
     "shortcut", "editComment", QKeySequence("Ctrl+/"), "Toggle block comment",
     "Key shortcut for toggling comment for selected block of code.",
-    shortcutValidator);
+    ShortcutValidator);
 
-inline ConfigKey<QKeySequence> editMoveBlockUp(
+inline ConfigKey<QKeySequence> edit_move_block_up(
     "shortcut", "editMoveBlockUp", QKeySequence("Alt+Up"), "Move block up",
     "Key shortcut for moving selected block of code up a line.",
-    shortcutValidator);
+    ShortcutValidator);
 
-inline ConfigKey<QKeySequence> editMoveBlockDown(
+inline ConfigKey<QKeySequence> edit_move_block_down(
     "shortcut", "editMoveBlockDown", QKeySequence("Alt+Down"),
     "Move block down",
     "Key shortcut for moving selected block of code down a line.",
-    shortcutValidator);
+    ShortcutValidator);
 
 }  // namespace shortcuts
 

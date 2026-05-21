@@ -150,16 +150,16 @@ TEST_F(TextEditorTest, IndentSingleLine) {
   editor_->SetContent("line of code");
   SetSelection(0, 0);
   editor_->IndentBlock();
-  const bool useSpaces = config::editor::useSpaces.Value();
-  const int tabWidth = config::editor::tabWidth.Value();
-  const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
+  const bool use_spaces = config::editor::use_spaces.Value();
+  const int tab_width = config::editor::tab_width.Value();
+  const QString indent = use_spaces ? QString(tab_width, ' ') : QString('\t');
   EXPECT_EQ(editor_->PlainText(), indent + "line of code");
 }
 
 TEST_F(TextEditorTest, OutdentSingleLine) {
-  const bool useSpaces = config::editor::useSpaces.Value();
-  const int tabWidth = config::editor::tabWidth.Value();
-  const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
+  const bool use_spaces = config::editor::use_spaces.Value();
+  const int tab_width = config::editor::tab_width.Value();
+  const QString indent = use_spaces ? QString(tab_width, ' ') : QString('\t');
   editor_->SetContent(indent + "line of code");
   SetSelection(0, 0);
   editor_->OutdentBlock();
@@ -170,18 +170,18 @@ TEST_F(TextEditorTest, IndentMultipleLines) {
   editor_->SetContent("1. line\n2. line");
   SetSelection(0, 10);
   editor_->IndentBlock();
-  const bool useSpaces = config::editor::useSpaces.Value();
-  const int tabWidth = config::editor::tabWidth.Value();
-  const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
+  const bool use_spaces = config::editor::use_spaces.Value();
+  const int tab_width = config::editor::tab_width.Value();
+  const QString indent = use_spaces ? QString(tab_width, ' ') : QString('\t');
   EXPECT_EQ(editor_->PlainText(), indent + "1. line\n" + indent + "2. line");
 }
 
 TEST_F(TextEditorTest, OutdentMultipleLines) {
-  const bool useSpaces = config::editor::useSpaces.Value();
-  const int tabWidth = config::editor::tabWidth.Value();
-  const QString indent = useSpaces ? QString(tabWidth, ' ') : QString('\t');
+  const bool use_spaces = config::editor::use_spaces.Value();
+  const int tab_width = config::editor::tab_width.Value();
+  const QString indent = use_spaces ? QString(tab_width, ' ') : QString('\t');
   editor_->SetContent(indent + "1. line\n" + indent + "2. line");
-  SetSelection(0, 10 + tabWidth);
+  SetSelection(0, 10 + tab_width);
   editor_->OutdentBlock();
   EXPECT_EQ(editor_->PlainText(), "1. line\n2. line");
 }
