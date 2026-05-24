@@ -5,7 +5,6 @@
 
 #include "qde/gui/config_key.hpp"
 
-
 namespace qde::gui::config {
 
 namespace editor {
@@ -39,7 +38,8 @@ inline ConfigKey<bool> line_numbers("editor", "lineNumbers", true,
 
 // Not Implemented
 inline ConfigKey<bool> auto_save("editor", "autoSave", false, "Auto Save",
-    "Save the file automatically after idle.", nullptr);
+                                 "Save the file automatically after idle.",
+                                 nullptr);
 
 // Not Implemented
 inline ConfigKey<int> auto_save_delay_ms(
@@ -64,11 +64,13 @@ namespace theme {
 
 // Not Implemented
 inline ConfigKey<QString> name("theme", "name", QStringLiteral("dark"), "Theme",
-    "UI color theme ('dark' | 'light').", [](const QString& v) {
-      static const QStringList kValid{QStringLiteral("dark"),
-                                      QStringLiteral("light")};
-      return kValid.contains(v);
-    });
+                               "UI color theme ('dark' | 'light').",
+                               [](const QString& v) {
+                                 static const QStringList kValid{
+                                     QStringLiteral("dark"),
+                                     QStringLiteral("light")};
+                                 return kValid.contains(v);
+                               });
 
 inline ConfigKey<bool> syntax_highlighting("theme", "syntaxHighlighting", true,
                                            "Syntax Highlighting",
@@ -76,8 +78,10 @@ inline ConfigKey<bool> syntax_highlighting("theme", "syntaxHighlighting", true,
                                            nullptr);
 
 // Not Implemented
-inline ConfigKey<bool> match_brackets("theme", "matchBrackets", true, "Match Brackets",
-    "Highlight matching bracket/paren pairs.", nullptr);
+inline ConfigKey<bool> match_brackets("theme", "matchBrackets", true,
+                                      "Match Brackets",
+                                      "Highlight matching bracket/paren pairs.",
+                                      nullptr);
 
 // Not Implemented
 inline ConfigKey<bool> render_whitespace(

@@ -12,7 +12,7 @@ namespace qde::gui::config {
 
 class ConfigKeyBase {
  public:
-  explicit ConfigKeyBase(QString category, QString field_name)
+  explicit ConfigKeyBase(const QString& category, const QString& field_name)
       : registered_id_(category + "." + field_name) {
     config_registry[registered_id_] = this;
   }
@@ -80,7 +80,7 @@ class ConfigKey : public ConfigKeyBase {
   using Validator = std::function<bool(const T&)>;
 
  public:
-  ConfigKey(QString category, QString field_name, const T default_value,
+  ConfigKey(QString category, QString field_name, const T&& default_value,
             QString display_name, QString description,
             std::optional<Validator> validator)
       : ConfigKeyBase(category, field_name),

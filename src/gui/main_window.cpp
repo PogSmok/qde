@@ -137,7 +137,7 @@ void MainWindow::CreateAction(const QString& text, const QKeySequence& ks,
 
 template <typename ObjPtr, typename Func>
 void MainWindow::CreateAction(const QString& text, const QKeySequence& ks,
-                              ObjPtr obj, Func slot) {
+                              const ObjPtr& obj, Func slot) {
   auto* action = new QAction(text, this);
   action->setShortcut(ks);
   action->setShortcutContext(Qt::WindowShortcut);
