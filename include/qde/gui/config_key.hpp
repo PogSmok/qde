@@ -12,12 +12,12 @@ namespace qde::gui::config {
 
 class ConfigKeyBase {
  public:
-  explicit ConfigKeyBase(QString category, QString field_name)
+  explicit ConfigKeyBase(const QString& category, const QString& field_name)
       : registered_id_(category + "." + field_name) {
-    config_registry[registered_id_] = this;
+    config_registry_[registered_id_] = this;
   }
 
-  virtual ~ConfigKeyBase() { config_registry.erase(registered_id_); }
+  virtual ~ConfigKeyBase() { config_registry_.erase(registered_id_); }
   ConfigKeyBase(const ConfigKeyBase&) = delete;
   virtual ConfigKeyBase& operator=(const ConfigKeyBase&) = delete;
   ConfigKeyBase(ConfigKeyBase&&) = delete;
@@ -33,11 +33,11 @@ class ConfigKeyBase {
 
   [[nodiscard]] static std::unordered_map<QString, ConfigKeyBase*>&
   GetRegistry() {
-    return config_registry;
+    return config_registry_;
   }
 
  private:
-  inline static auto config_registry =
+  inline static auto config_registry_ =
       std::unordered_map<QString, ConfigKeyBase*>();
 
  protected:
@@ -85,9 +85,9 @@ class ConfigKey : public ConfigKeyBase {
             std::optional<Validator> validator)
       : ConfigKeyBase(category, field_name),
         category_(std::move(category)),
-        fieldName_(std::move(field_name)),
+        field_name_(std::move(field_name)),
         value_(std::move(default_value)),
-        displayName_(std::move(display_name)),
+        display_name_(std::move(display_name)),
         description_(std::move(description)) {
     if (validator.has_value() && *validator) {
       validator_.swap(validator);
@@ -111,12 +111,14 @@ class ConfigKey : public ConfigKeyBase {
 
   [[nodiscard]] const QString& Category() const override { return category_; }
 
-  [[nodiscard]] const QString& FieldName() const override { return fieldName_; }
+  [[nodiscard]] const QString& FieldName() const override {
+    return field_name_;
+  }
 
   [[nodiscard]] const QString& Id() const override { return registered_id_; }
 
   [[nodiscard]] const QString& DisplayName() const override {
-    return displayName_;
+    return display_name_;
   }
 
   [[nodiscard]] const QString& Description() const override {
@@ -139,9 +141,9 @@ class ConfigKey : public ConfigKeyBase {
 
  private:
   QString category_;
-  QString fieldName_;
+  QString field_name_;
   T value_;
-  QString displayName_;
+  QString display_name_;
   QString description_;
   std::optional<Validator> validator_;
 };

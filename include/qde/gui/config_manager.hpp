@@ -40,14 +40,14 @@ class ConfigManager {
   // Saves every category to <dir_path>/<category>.json.
   // Creates dir_path (and parents) if absent.
   // Returns true iff every file was written successfully.
-  bool Save(const QString& dir_path = DefaultConfigPath());
+  static bool Save(const QString& dir_path = DefaultConfigPath());
 
   // Loads every *.json file found under dir_path.
   // Missing dir -> no-op (returns true; defaults remain in effect).
   // Unknown keys in a file are skipped with a warning.
   // Invalid values (validator rejection) are skipped; default is kept.
   // Returns true iff every file was parsed and every value applied.
-  bool Load(const QString& dir_path = DefaultConfigPath());
+  static bool Load(const QString& dir_path = DefaultConfigPath());
 
   // QStandardPaths::AppConfigLocation for the running application.
   // Requires QCoreApplication::setApplicationName() to be called first

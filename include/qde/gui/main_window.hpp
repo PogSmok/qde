@@ -37,8 +37,8 @@ class MainWindow : public QMainWindow {
   void CreateAction(const QString& text, const QKeySequence& ks, Func slot);
 
   template <class ObjPtr, class Func>
-  void CreateAction(const QString& text, const QKeySequence& ks, ObjPtr obj,
-                    Func slot);
+  void CreateAction(const QString& text, const QKeySequence& ks,
+                    const ObjPtr& obj, Func slot);
   void UpdateTitle();
 
   QPointer<TextEditor> editor_;
