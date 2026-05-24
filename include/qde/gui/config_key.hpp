@@ -88,10 +88,9 @@ class ConfigKey : public ConfigKeyBase {
         fieldName_(std::move(field_name)),
         value_(std::move(default_value)),
         displayName_(std::move(display_name)),
-        description_(std::move(description)),
-        validator_(std::move(validator)) {
-    if (validator_ && !(*validator_)) {
-      validator_.reset();
+        description_(std::move(description)) {
+    if (validator.has_value() && *validator) {
+      validator_.swap(validator);
     }
   }
 
@@ -135,7 +134,7 @@ class ConfigKey : public ConfigKeyBase {
   }
 
   [[nodiscard]] bool Validate(const T& val) const {
-    return !validator_ || !(*validator_) || (*validator_)(val);
+    return !validator_.has_value() || (*validator_)(val);
   }
 
  private:
