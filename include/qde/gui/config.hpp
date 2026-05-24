@@ -5,15 +5,6 @@
 
 #include "qde/gui/config_key.hpp"
 
-// ============================================================
-// Single source of truth for every setting in the IDE.
-// Each key is an `inline const ConfigKey<T>` global — one
-// definition, zero runtime cost, no header ordering issues.
-//
-// Add a new setting by adding one line here.
-// The type system enforces correct get()/set() call sites.
-//
-// ============================================================
 
 namespace qde::gui::config {
 
@@ -46,13 +37,12 @@ inline ConfigKey<bool> line_numbers("editor", "lineNumbers", true,
                                     "Display line numbers in the gutter.",
                                     nullptr);
 
-inline ConfigKey<bool> auto_save(
-    // Not Implemented
-    "editor", "autoSave", false, "Auto Save",
+// Not Implemented
+inline ConfigKey<bool> auto_save("editor", "autoSave", false, "Auto Save",
     "Save the file automatically after idle.", nullptr);
 
+// Not Implemented
 inline ConfigKey<int> auto_save_delay_ms(
-    // Not Implemented
     "editor", "autoSaveDelayMs", 1000, "Auto Save Delay (ms)",
     "Milliseconds of idle before auto-save fires (100–10 000).",
     [](const int& v) { return v >= 100 && v <= 10'000; });
@@ -62,8 +52,8 @@ inline ConfigKey<bool> highlight_current_line("editor", "highlightCurrentLine",
                                               "Tint the line the cursor is on.",
                                               nullptr);
 
+// Not Implemented
 inline ConfigKey<int> scroll_off_lines(
-    // Not Implemented
     "editor", "scrollOffLines", 5, "Scroll-Off Lines",
     "Minimum lines kept above/below cursor (0–20).",
     [](const int& v) { return v >= 0 && v <= 20; });
@@ -72,9 +62,8 @@ inline ConfigKey<int> scroll_off_lines(
 
 namespace theme {
 
-inline ConfigKey<QString> name(
-    // Not Implemented
-    "theme", "name", QStringLiteral("dark"), "Theme",
+// Not Implemented
+inline ConfigKey<QString> name("theme", "name", QStringLiteral("dark"), "Theme",
     "UI color theme ('dark' | 'light').", [](const QString& v) {
       static const QStringList kValid{QStringLiteral("dark"),
                                       QStringLiteral("light")};
@@ -86,13 +75,12 @@ inline ConfigKey<bool> syntax_highlighting("theme", "syntaxHighlighting", true,
                                            "Colorize tokens based on grammar.",
                                            nullptr);
 
-inline ConfigKey<bool> match_brackets(
-    // Not Implemented
-    "theme", "matchBrackets", true, "Match Brackets",
+// Not Implemented
+inline ConfigKey<bool> match_brackets("theme", "matchBrackets", true, "Match Brackets",
     "Highlight matching bracket/paren pairs.", nullptr);
 
+// Not Implemented
 inline ConfigKey<bool> render_whitespace(
-    // Not Implemented
     "theme", "renderWhitespace", false, "Render Whitespace",
     "Show spaces and tabs as visible glyphs.", nullptr);
 
@@ -110,21 +98,21 @@ inline bool ShortcutValidator(const QKeySequence& v) {
 }
 
 inline ConfigKey<QKeySequence> file_new("shortcut", "fileNew",
-                                        QKeySequence("Ctrl+n"),
+                                        QKeySequence("Ctrl+N"),
                                         "Create new file",
                                         "Key shortcut for creating new file.",
                                         ShortcutValidator);
 
 inline ConfigKey<QKeySequence> file_open(
-    "shortcut", "fileOpen", QKeySequence("Ctrl+o"), "Open file",
+    "shortcut", "fileOpen", QKeySequence("Ctrl+O"), "Open file",
     "Key shortcut for opening file via file system.", ShortcutValidator);
 
 inline ConfigKey<QKeySequence> file_save(
-    "shortcut", "fileSave", QKeySequence("Ctrl+s"), "Save file",
+    "shortcut", "fileSave", QKeySequence("Ctrl+S"), "Save file",
     "Key shortcut for saving current file.", ShortcutValidator);
 
 inline ConfigKey<QKeySequence> file_save_as(
-    "shortcut", "fileSaveAs", QKeySequence("Ctrl+Shift+s"), "Save file as",
+    "shortcut", "fileSaveAs", QKeySequence("Ctrl+Shift+S"), "Save file as",
     "Key shortcut for saving current buffer as new file.", ShortcutValidator);
 
 inline ConfigKey<QKeySequence> edit_indent(

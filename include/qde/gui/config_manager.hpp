@@ -26,7 +26,7 @@ namespace qde::gui::config {
 // Typical usage:
 //   auto& mgr = ConfigManager::instance();
 //   mgr.load();          // at startup — populates all ConfigKey values
-//   …user changes settings…
+//   ...user changes settings...
 //   mgr.save();          // at shutdown / apply
 //
 // Both save() and load() are non-throwing; errors are reported via
