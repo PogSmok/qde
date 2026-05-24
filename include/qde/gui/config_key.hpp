@@ -12,7 +12,8 @@ namespace qde::gui::config {
 
 class ConfigKeyBase {
  public:
-  explicit ConfigKeyBase(QString id) : registered_id_(std::move(id)) {
+  explicit ConfigKeyBase(QString category, QString field_name)
+      : registered_id_(category + "." + field_name) {
     config_registry[registered_id_] = this;
   }
 
@@ -24,15 +25,22 @@ class ConfigKeyBase {
 
   [[nodiscard]] virtual QJsonValue ToJsonValue() const = 0;
   virtual bool FromJsonValue(const QJsonValue& json_value) = 0;
-  [[nodiscard]] virtual QString Category() const = 0;
-  [[nodiscard]] virtual QString FieldName() const = 0;
-  [[nodiscard]] virtual QString Id() const = 0;
-  [[nodiscard]] virtual QString DisplayName() const = 0;
-  [[nodiscard]] virtual QString Description() const = 0;
+  [[nodiscard]] virtual const QString& Category() const = 0;
+  [[nodiscard]] virtual const QString& FieldName() const = 0;
+  [[nodiscard]] virtual const QString& Id() const = 0;
+  [[nodiscard]] virtual const QString& DisplayName() const = 0;
+  [[nodiscard]] virtual const QString& Description() const = 0;
 
-  inline static auto config_registry = std::map<QString, ConfigKeyBase*>();
+  [[nodiscard]] static std::unordered_map<QString, ConfigKeyBase*>&
+  GetRegistry() {
+    return config_registry;
+  }
 
  private:
+  inline static auto config_registry =
+      std::unordered_map<QString, ConfigKeyBase*>();
+
+ protected:
   QString registered_id_;
 };
 
@@ -72,13 +80,13 @@ class ConfigKey : public ConfigKeyBase {
   using Validator = std::function<bool(const T&)>;
 
  public:
-  ConfigKey(QString category, QString field_name, const T& default_value,
+  ConfigKey(QString category, QString field_name, const T default_value,
             QString display_name, QString description,
             std::optional<Validator> validator)
-      : ConfigKeyBase(category + "." + field_name),
+      : ConfigKeyBase(category, field_name),
         category_(std::move(category)),
         fieldName_(std::move(field_name)),
-        value_(std::move(std::move(default_value))),
+        value_(std::move(default_value)),
         displayName_(std::move(display_name)),
         description_(std::move(description)),
         validator_(std::move(validator)) {
@@ -102,17 +110,19 @@ class ConfigKey : public ConfigKeyBase {
     return SetValue(std::move(candidate));
   }
 
-  [[nodiscard]] QString Category() const override { return category_; }
+  [[nodiscard]] const QString& Category() const override { return category_; }
 
-  [[nodiscard]] QString FieldName() const override { return fieldName_; }
+  [[nodiscard]] const QString& FieldName() const override { return fieldName_; }
 
-  [[nodiscard]] QString Id() const override {
-    return category_ + "." + fieldName_;
+  [[nodiscard]] const QString& Id() const override { return registered_id_; }
+
+  [[nodiscard]] const QString& DisplayName() const override {
+    return displayName_;
   }
 
-  [[nodiscard]] QString DisplayName() const override { return displayName_; }
-
-  [[nodiscard]] QString Description() const override { return description_; }
+  [[nodiscard]] const QString& Description() const override {
+    return description_;
+  }
 
   [[nodiscard]] T Value() const { return value_; }
 

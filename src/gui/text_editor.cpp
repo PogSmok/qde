@@ -93,8 +93,7 @@ void TextEditor::ToggleComment() {
   // Logic: If any line in selection is NOT commented, we add comments to all
   bool all_commented = true;
   for (QTextBlock block = start_block;
-       block.isValid() && block.blockNumber() <= end_block.blockNumber();
-       block = block.next()) {
+       block.isValid() && block != end_block.next(); block = block.next()) {
     QString text = block.text().trimmed();
     if (!text.isEmpty() && !text.startsWith("//")) {
       all_commented = false;
@@ -103,8 +102,7 @@ void TextEditor::ToggleComment() {
   }
 
   for (QTextBlock block = start_block;
-       block.isValid() && block.blockNumber() <= end_block.blockNumber();
-       block = block.next()) {
+       block.isValid() && block != end_block.next(); block = block.next()) {
     cursor.setPosition(block.position());
     cursor.movePosition(QTextCursor::StartOfBlock);
 
@@ -150,8 +148,7 @@ void TextEditor::IndentBlock() {
   const QString indent = use_spaces ? QString(tab_width, ' ') : QString('\t');
 
   for (QTextBlock block = start_block;
-       block.isValid() && block.blockNumber() <= end_block.blockNumber();
-       block = block.next()) {
+       block.isValid() && block != end_block.next(); block = block.next()) {
     cursor.setPosition(block.position());
     cursor.movePosition(QTextCursor::StartOfBlock);
     cursor.insertText(indent);
@@ -178,8 +175,7 @@ void TextEditor::OutdentBlock() {
   const int tab_width = config::editor::tab_width.Value();
 
   for (QTextBlock block = start_block;
-       block.isValid() && block.blockNumber() <= end_block.blockNumber();
-       block = block.next()) {
+       block.isValid() && block != end_block.next(); block = block.next()) {
     const QString text = block.text();
     if (text.isEmpty()) {
       continue;
@@ -234,8 +230,7 @@ void TextEditor::MoveBlockUp() {
   // Collect selected block texts
   QStringList lines;
   for (QTextBlock block = start_block;
-       block.isValid() && block.blockNumber() <= end_block.blockNumber();
-       block = block.next()) {
+       block.isValid() && block != end_block.next(); block = block.next()) {
     lines.append(block.text());
   }
   const QString prev_text = prev_block.text();
@@ -277,8 +272,7 @@ void TextEditor::MoveBlockDown() {
   // Collect selected block texts
   QStringList lines;
   for (QTextBlock block = start_block;
-       block.isValid() && block.blockNumber() <= end_block.blockNumber();
-       block = block.next()) {
+       block.isValid() && block != end_block.next(); block = block.next()) {
     lines.append(block.text());
   }
 

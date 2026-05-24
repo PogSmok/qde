@@ -29,13 +29,13 @@ QString ConfigManager::DefaultConfigPath() {
 bool ConfigManager::Save(const QString& dir_path) {
   // Partition the flat registry into per-category buckets.
   std::map<QString, std::vector<ConfigKeyBase*>> by_category;
-  for (auto& [id, key] : ConfigKeyBase::config_registry) {
+  for (const auto& [id, key] : ConfigKeyBase::GetRegistry()) {
     by_category[key->Category()].push_back(key);
   }
 
   bool all_ok = true;
   for (const auto& [category, keys] : by_category) {
-    all_ok &= SaveCategory(category, keys, dir_path);
+    all_ok = all_ok && SaveCategory(category, keys, dir_path);
   }
   return all_ok;
 }
@@ -46,7 +46,7 @@ bool ConfigManager::SaveCategory(const QString& category,
   // Ensure destination directory exists.
   const QDir dir(dir_path);
   if (!dir.exists() && !QDir().mkpath(dir_path)) {
-    qWarning("ConfigManager::save - cannot create directory: %s",
+    qWarning("ConfigManager::Save - cannot create directory: %s",
              qPrintable(dir_path));
     return false;
   }
@@ -61,7 +61,7 @@ bool ConfigManager::SaveCategory(const QString& category,
   QFile file(file_path);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate |
                  QIODevice::Text)) {
-    qWarning("ConfigManager::save - cannot open for writing: %s - %s",
+    qWarning("ConfigManager::Save - cannot open for writing: %s - %s",
              qPrintable(file_path), qPrintable(file.errorString()));
     return false;
   }
@@ -69,7 +69,7 @@ bool ConfigManager::SaveCategory(const QString& category,
   const qint64 written =
       file.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
   if (written < 0) {
-    qWarning("ConfigManager::save - write error on: %s - %s",
+    qWarning("ConfigManager::Save - write error on: %s - %s",
              qPrintable(file_path), qPrintable(file.errorString()));
     return false;
   }
@@ -97,7 +97,7 @@ bool ConfigManager::Load(const QString& dir_path) {
 bool ConfigManager::LoadFile(const QString& file_path) {
   QFile file(file_path);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    qWarning("ConfigManager::load - cannot open: %s - %s",
+    qWarning("ConfigManager::Load - cannot open: %s - %s",
              qPrintable(file_path), qPrintable(file.errorString()));
     return false;
   }
@@ -107,14 +107,14 @@ bool ConfigManager::LoadFile(const QString& file_path) {
       QJsonDocument::fromJson(file.readAll(), &parse_error);
 
   if (parse_error.error != QJsonParseError::NoError) {
-    qWarning("ConfigManager::load - JSON parse error in %s at offset %d: %s",
+    qWarning("ConfigManager::Load - JSON parse error in %s at offset %d: %s",
              qPrintable(file_path), parse_error.offset,
              qPrintable(parse_error.errorString()));
     return false;
   }
 
   if (!doc.isObject()) {
-    qWarning("ConfigManager::load - root is not a JSON object in: %s",
+    qWarning("ConfigManager::Load - root is not a JSON object in: %s",
              qPrintable(file_path));
     return false;
   }
@@ -128,16 +128,16 @@ bool ConfigManager::LoadFile(const QString& file_path) {
   for (auto it = obj.constBegin(); it != obj.constEnd(); ++it) {
     const QString key_id = category + "." + it.key();
 
-    const auto registry_it = ConfigKeyBase::config_registry.find(key_id);
-    if (registry_it == ConfigKeyBase::config_registry.cend()) {
-      qWarning("ConfigManager::load - unknown key '%s' in %s - skipped",
+    const auto registry_it = ConfigKeyBase::GetRegistry().find(key_id);
+    if (registry_it == ConfigKeyBase::GetRegistry().cend()) {
+      qWarning("ConfigManager::Load - unknown key '%s' in %s - skipped",
                qPrintable(key_id), qPrintable(file_path));
       continue;
     }
 
     if (!registry_it->second->FromJsonValue(it.value())) {
       qWarning(
-          "ConfigManager::load - value for '%s' in %s failed validation - "
+          "ConfigManager::Load - value for '%s' in %s failed validation - "
           "keeping default",
           qPrintable(key_id), qPrintable(file_path));
       all_ok = false;
