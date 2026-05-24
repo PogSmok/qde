@@ -86,6 +86,14 @@ CheckOptions:
   - key:   readability-identifier-naming.ProtectedMemberSuffix
     value: '_'
 
+  # Static member variables, same convention as regular members
+  - key: readability-identifier-naming.ClassMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateClassMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.ProtectedClassMemberSuffix
+    value: '_'
+
   # Global variables: snake_case
   - key:   readability-identifier-naming.GlobalVariableCase
     value: lower_case

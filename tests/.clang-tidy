@@ -18,7 +18,7 @@ Checks: >
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
-  -hicpp-signed-bitwise
+  -hicpp-signed-bitwise,
 
 # Only fail CI on high-signal checks
 WarningsAsErrors: >
@@ -83,6 +83,14 @@ CheckOptions:
   - key:   readability-identifier-naming.PrivateMemberSuffix
     value: '_'
   - key:   readability-identifier-naming.ProtectedMemberSuffix
+    value: '_'
+
+  # Static member variables, same convention as regular members
+  - key: readability-identifier-naming.ClassMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateClassMemberSuffix
+    value: '_'
+  - key: readability-identifier-naming.ProtectedClassMemberSuffix
     value: '_'
 
   # Global variables: snake_case
