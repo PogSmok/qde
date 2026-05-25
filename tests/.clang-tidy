@@ -22,6 +22,7 @@ Checks: >
 
 # Only fail CI on high-signal checks
 WarningsAsErrors: >
+  clang-diagnostic-*,
   clang-analyzer-*,
   readability-identifier-naming,
 
