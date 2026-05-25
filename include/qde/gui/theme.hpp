@@ -33,11 +33,6 @@ inline constexpr auto kStatusBarBackground = "#1e1e1e";
 inline constexpr auto kSuccessText = "#4caf50";
 inline constexpr auto kErrorText = "#f44336";
 
-// Editor font
-inline constexpr auto kEditorFontFamily = "Cascadia Code";
-inline constexpr auto kEditorFontSize = 11;
-inline constexpr auto kEditorTabStop = 4;
-
 inline constexpr auto kTextBlockLeftPadding = 4;
 
 // Editor syntax colours

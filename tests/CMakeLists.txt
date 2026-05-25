@@ -41,6 +41,9 @@ set(GUI_TEST_SOURCES
     gui/test_main.cpp
     gui/test_text_document.cpp
     gui/test_code_editor.cpp
+        gui/test_config.cpp
+        gui/test_config_key.cpp
+        gui/test_config_manager.cpp
     gui/test_text_editor.cpp
     gui/test_app_controller.cpp
     gui/test_quantum_circuit_view.cpp

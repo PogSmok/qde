@@ -31,6 +31,14 @@ class MainWindow : public QMainWindow {
  private:
   void SetupMenuBar();
   void SetupStatusBar();
+  void SetupActions();
+
+  template <class Func>
+  void CreateAction(const QString& text, const QKeySequence& ks, Func slot);
+
+  template <class ObjPtr, class Func>
+  void CreateAction(const QString& text, const QKeySequence& ks,
+                    const ObjPtr& obj, Func slot);
   void UpdateTitle();
 
   QPointer<TextEditor> editor_;

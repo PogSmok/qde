@@ -26,7 +26,8 @@ class TextEditor : public QWidget {
   [[nodiscard]] QString FilePath() const;
   [[nodiscard]] bool IsModified() const;
 
-  [[nodiscard]] const TextDocument* Document() const { return document_; }
+  [[nodiscard]] QTextDocument* Document() const { return editor_->document(); }
+  [[nodiscard]] QPlainTextEdit* Editor() const { return editor_; }
   void SetContent(const QString& content);
 
   void SetErrors(const std::vector<qde::SyntaxError>& errors);
@@ -39,6 +40,11 @@ class TextEditor : public QWidget {
 
  public slots:
   void OnEditorTextChanged();
+  void ToggleComment();
+  void IndentBlock();
+  void OutdentBlock();
+  void MoveBlockUp();
+  void MoveBlockDown();
 
  private:
   QPointer<CodeEditor> editor_;

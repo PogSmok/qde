@@ -18,7 +18,7 @@ Checks: >
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
-  -hicpp-signed-bitwise
+  -hicpp-signed-bitwise,
 
 # Only fail CI on high-signal checks
 WarningsAsErrors: >
@@ -84,6 +84,12 @@ CheckOptions:
     value: '_'
   - key:   readability-identifier-naming.ProtectedMemberSuffix
     value: '_'
+
+  # Static member variables, allow trailing underscore
+  - key: readability-identifier-naming.ClassMemberCase
+    value: lower_case
+  - key: readability-identifier-naming.ClassMemberIgnoredRegexp
+    value: '^[a-z][a-z0-9_]*_$'
 
   # Global variables: snake_case
   - key:   readability-identifier-naming.GlobalVariableCase

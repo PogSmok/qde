@@ -1,0 +1,153 @@
+#ifndef GUI_CONFIG_KEY_HPP_
+#define GUI_CONFIG_KEY_HPP_
+
+#include <QJsonValue>
+#include <QKeySequence>
+#include <QVariant>
+#include <functional>
+#include <optional>
+#include <utility>
+
+namespace qde::gui::config {
+
+class ConfigKeyBase {
+ public:
+  explicit ConfigKeyBase(const QString& category, const QString& field_name)
+      : registered_id_(category + "." + field_name) {
+    config_registry_[registered_id_] = this;
+  }
+
+  virtual ~ConfigKeyBase() { config_registry_.erase(registered_id_); }
+  ConfigKeyBase(const ConfigKeyBase&) = delete;
+  virtual ConfigKeyBase& operator=(const ConfigKeyBase&) = delete;
+  ConfigKeyBase(ConfigKeyBase&&) = delete;
+  virtual ConfigKeyBase& operator=(ConfigKeyBase&&) = delete;
+
+  [[nodiscard]] virtual QJsonValue ToJsonValue() const = 0;
+  virtual bool FromJsonValue(const QJsonValue& json_value) = 0;
+  [[nodiscard]] virtual const QString& Category() const = 0;
+  [[nodiscard]] virtual const QString& FieldName() const = 0;
+  [[nodiscard]] virtual const QString& Id() const = 0;
+  [[nodiscard]] virtual const QString& DisplayName() const = 0;
+  [[nodiscard]] virtual const QString& Description() const = 0;
+
+  [[nodiscard]] static std::unordered_map<QString, ConfigKeyBase*>&
+  GetRegistry() {
+    return config_registry_;
+  }
+
+ private:
+  inline static auto config_registry_ =
+      std::unordered_map<QString, ConfigKeyBase*>();
+
+ protected:
+  QString registered_id_;
+};
+
+template <typename T>
+struct ConfigKeySerializer {
+  [[nodiscard]] static QJsonValue ToJson(const T& value) {
+    return QJsonValue::fromVariant(QVariant::fromValue(value));
+  }
+
+  [[nodiscard]] static T FromJson(const QJsonValue& json_value,
+                                  const T& fallback) {
+    const QVariant var = json_value.toVariant();
+    if (!var.canConvert<T>()) {
+      return fallback;
+    }
+    return var.value<T>();
+  }
+};
+
+template <>
+struct ConfigKeySerializer<QKeySequence> {
+  [[nodiscard]] static QJsonValue ToJson(const QKeySequence& value) {
+    return {value.toString(QKeySequence::PortableText)};
+  }
+
+  [[nodiscard]] static QKeySequence FromJson(const QJsonValue& json_value,
+                                             const QKeySequence& fallback) {
+    if (!json_value.isString()) {
+      return fallback;
+    }
+    return {json_value.toString(), QKeySequence::PortableText};
+  }
+};
+
+template <typename T>
+class ConfigKey : public ConfigKeyBase {
+  using Validator = std::function<bool(const T&)>;
+
+ public:
+  ConfigKey(QString category, QString field_name, T&& default_value,
+            QString display_name, QString description,
+            std::optional<Validator> validator)
+      : ConfigKeyBase(category, field_name),
+        category_(std::move(category)),
+        field_name_(std::move(field_name)),
+        value_(std::move(default_value)),
+        display_name_(std::move(display_name)),
+        description_(std::move(description)) {
+    if (validator.has_value() && *validator) {
+      validator_.swap(validator);
+    }
+  }
+
+  ~ConfigKey() override = default;
+  ConfigKey(const ConfigKey&) = delete;
+  ConfigKey& operator=(const ConfigKey&) = delete;
+  ConfigKey(ConfigKey&&) = delete;
+  ConfigKey& operator=(ConfigKey&&) = delete;
+
+  [[nodiscard]] QJsonValue ToJsonValue() const override {
+    return ConfigKeySerializer<T>::ToJson(value_);
+  }
+
+  bool FromJsonValue(const QJsonValue& json_value) override {
+    T candidate = ConfigKeySerializer<T>::FromJson(json_value, value_);
+    return SetValue(std::move(candidate));
+  }
+
+  [[nodiscard]] const QString& Category() const override { return category_; }
+
+  [[nodiscard]] const QString& FieldName() const override {
+    return field_name_;
+  }
+
+  [[nodiscard]] const QString& Id() const override { return registered_id_; }
+
+  [[nodiscard]] const QString& DisplayName() const override {
+    return display_name_;
+  }
+
+  [[nodiscard]] const QString& Description() const override {
+    return description_;
+  }
+
+  [[nodiscard]] T Value() const { return value_; }
+
+  bool SetValue(T value) {
+    if (!Validate(value)) {
+      return false;
+    }
+    value_ = std::move(value);
+    return true;
+  }
+
+  [[nodiscard]] bool Validate(const T& val) const {
+    return !validator_.has_value() || (*validator_)(val);
+  }
+
+ private:
+  QString category_;
+  QString field_name_;
+  T value_;
+  QString display_name_;
+  QString description_;
+  std::optional<Validator> validator_;
+};
+
+}  // namespace qde::gui::config
+
+#endif  // GUI_CONFIG_KEY_HPP_

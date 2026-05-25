@@ -2,6 +2,7 @@
 #include <QTextBlock>
 
 #include "qde/gui/code_editor.hpp"
+#include "qde/gui/config.hpp"
 #include "qde/gui/syntax_highlighter.hpp"
 #include "qde/gui/theme.hpp"
 
@@ -32,11 +33,12 @@ CodeEditor::CodeEditor(QWidget* parent)
   p.setColor(QPalette::Text, theme::kEditorText);
   setPalette(p);
 
-  QFont font(theme::kEditorFontFamily, theme::kEditorFontSize);
+  QFont font(qde::gui::config::editor::font_family.Value(),
+             qde::gui::config::editor::font_size.Value());
   font.setFixedPitch(true);
   setFont(font);
   setTabStopDistance(QFontMetrics(font).horizontalAdvance(' ') *
-                     theme::kEditorTabStop);
+                     qde::gui::config::editor::tab_width.Value());
 
   connect(this, &QPlainTextEdit::blockCountChanged, this,
           &CodeEditor::UpdateLineNumberAreaWidth);
