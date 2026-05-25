@@ -43,7 +43,6 @@ bool ConfigManager::Save(const QString& dir_path) {
 bool ConfigManager::SaveCategory(const QString& category,
                                  const std::vector<ConfigKeyBase*>& keys,
                                  const QString& dir_path) {
-  // Ensure destination directory exists.
   const QDir dir(dir_path);
   if (!dir.exists() && !QDir().mkpath(dir_path)) {
     qWarning("ConfigManager::Save - cannot create directory: %s",
@@ -51,7 +50,6 @@ bool ConfigManager::SaveCategory(const QString& category,
     return false;
   }
 
-  // Build JSON object: { fieldName: value, … }
   QJsonObject obj;
   for (const ConfigKeyBase* key : keys) {
     obj.insert(key->FieldName(), key->ToJsonValue());
@@ -119,7 +117,6 @@ bool ConfigManager::LoadFile(const QString& file_path) {
     return false;
   }
 
-  // The category is the file stem (e.g. "editor" from "editor.json").
   const QString category = QFileInfo(file_path).completeBaseName();
 
   bool all_ok = true;
