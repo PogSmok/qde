@@ -4,27 +4,56 @@ Checks: >
   clang-analyzer-*,
   bugprone-*,
   modernize-*,
+  misc-*,
   performance-*,
   readability-*,
   cppcoreguidelines-*,
+  cert-*,
+  hicpp-multiway-paths-covered,
+  hicpp-exception-baseclass,
   -fuchsia-*,
   -llvm-*,
   -llvmlibc-*,
   -google-*,
   -altera-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-branch-clone,
+  -modernize-use-nodiscard,
+  -cppcoreguidelines-special-member-functions,
+  -performance-unnecessary-value-param,
+  -misc-include-cleaner,
+  -misc-non-private-member-variables-in-classes,
+  -misc-no-recursion,
+  -misc-use-internal-linkage,
+  -misc-use-anonymous-namespace,
+  -cert-err58-cpp,
+  -cert-msc51-cpp,
+  -cppcoreguidelines-owning-memory,
+  -readability-function-cognitive-complexity,
   -modernize-use-trailing-return-type,
   -readability-magic-numbers,
-  -readability-identifier-length,
   -cppcoreguidelines-avoid-magic-numbers,
+  -readability-identifier-length,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
   -hicpp-signed-bitwise,
+  -readability-convert-member-functions-to-static,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-macro-usage,
+  -modernize-pass-by-value,
+  -bugprone-narrowing-conversions,
+  -cppcoreguidelines-narrowing-conversions,
+  -bugprone-switch-missing-default-case,
 
 # Only fail CI on high-signal checks
 WarningsAsErrors: >
   clang-diagnostic-*,
   clang-analyzer-*,
   readability-identifier-naming,
+  bugprone-use-after-move,
+  bugprone-unchecked-optional-access,
+  performance-move-const-arg,
 
 # Only report issues in our own headers, not Qt/ANTLR/system headers
 HeaderFilterRegex: '^.*include.qde.*$'
@@ -134,3 +163,15 @@ CheckOptions:
     value: UPPER_CASE
   - key:   readability-identifier-naming.MacroDefinitionIgnoredRegexp
     value: '^[A-Z0-9_]+_(H|HPP)_$'
+
+  # misc-const-correctness: values and refs only, skip pointer-as-value
+  - key: misc-const-correctness.AllowedTypes
+    value: 'QTextCursor;QTextBlock;QTextStream;QFile'
+  - key: misc-const-correctness.WarnPointersAsValues
+    value: '0'
+  - key: misc-const-correctness.TransformValues
+    value: '1'
+  - key: misc-const-correctness.TransformReferences
+    value: '1'
+  - key: misc-const-correctness.TransformPointersAsValues
+    value: '0'
