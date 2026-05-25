@@ -80,7 +80,7 @@ class ConfigKey : public ConfigKeyBase {
   using Validator = std::function<bool(const T&)>;
 
  public:
-  ConfigKey(QString category, QString field_name, const T&& default_value,
+  ConfigKey(QString category, QString field_name, const T default_value,
             QString display_name, QString description,
             std::optional<Validator> validator)
       : ConfigKeyBase(category, field_name),
