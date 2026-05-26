@@ -151,7 +151,7 @@ class ExprNode {
       case ExprKind::kMul:
         return Eval(n->lhs, params) * Eval(n->rhs, params);
       case ExprKind::kDiv: {
-        double r = Eval(n->rhs, params);
+        double const r = Eval(n->rhs, params);
         return r != 0.0 ? Eval(n->lhs, params) / r : 0.0;
       }
       case ExprKind::kMod:
@@ -245,8 +245,8 @@ double ParseTimingLiteral(const std::string& text, double dt_ns) {
   while (i < text.size() && ((std::isdigit(text[i]) != 0) || text[i] == '.')) {
     ++i;
   }
-  double num = std::stod(text.substr(0, i));
-  std::string unit = text.substr(i);
+  double const num = std::stod(text.substr(0, i));
+  std::string const unit = text.substr(i);
   if (unit == "ns") {
     return num;
   }
@@ -390,7 +390,7 @@ Mat EmbedGate(const Mat& gate_mat, std::uint8_t gate_n,
       }
     }
     for (std::size_t gate_out = 0; gate_out < gate_dim; ++gate_out) {
-      C amp = gate_mat[(gate_out * gate_dim) + gate_in];
+      C const amp = gate_mat[(gate_out * gate_dim) + gate_in];
       std::size_t out_state = in_state;
       for (std::uint8_t k = 0; k < gate_n; ++k) {
         std::uint8_t bit = total_n - 1 - qubit_indices[k];
@@ -997,7 +997,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
 
     // Deferred modifier kind — used when base gate is parametric
     struct BodyMod {
-      enum class Kind { kInv, kPow, kCtrl, kNegCtrl };
+      enum class Kind : uint8_t { kInv, kPow, kCtrl, kNegCtrl };
       Kind kind;
       int count = 1;
     };
@@ -1075,9 +1075,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
           if (it != local_qubit_idx.end()) {
             bc.qubit_indices.push_back(it->second);
           } else {
-            AddError("undefined qubit parameter '" + qname +
-                         "' in body of gate '" + name + "'",
-                     call);
+            std::string err_msg = "undefined qubit parameter '";
+            err_msg += qname;
+            err_msg += "' in body of gate '";
+            err_msg += name;
+            err_msg += '\'';
+            AddError(err_msg, call);
           }
         }
       }
@@ -1089,9 +1092,9 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       const std::size_t dim = std::size_t{1} << num_qubits;
       Mat result = IdentityMatrix(num_qubits);
       for (auto& bc : body) {
-        Mat gate_mat = bc.gate->Matrix({});
-        Mat embedded = EmbedGate(gate_mat, bc.gate->NumQubits(),
-                                 bc.qubit_indices, num_qubits);
+        Mat const gate_mat = bc.gate->Matrix({});
+        Mat const embedded = EmbedGate(gate_mat, bc.gate->NumQubits(),
+                                       bc.qubit_indices, num_qubits);
         result = MatMul(embedded, result, dim);
       }
       registry_.Add(GateDefinition(name, num_qubits, std::move(result)));
@@ -1134,7 +1137,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                     break;
                 }
               }
-              Mat embedded =
+              Mat const embedded =
                   EmbedGate(gate_mat, gate_n, bc.qubit_indices, num_qubits);
               result = MatMul(embedded, result, dim);
             }
@@ -1343,15 +1346,19 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     std::unordered_set<std::string> const_names;
   };
 
-  enum class UndefinedKind {
+  enum class UndefinedKind : uint8_t {
     kGate,
     kSubroutine,
     kQubitRegister,
     kBitRegister,
     kVariable
   };
-  enum class RedeclaredKind { kQubitRegister, kBitRegister, kVariable };
-  enum class RedefinedKind { kGate, kSubroutine };
+  enum class RedeclaredKind : uint8_t {
+    kQubitRegister,
+    kBitRegister,
+    kVariable
+  };
+  enum class RedefinedKind : uint8_t { kGate, kSubroutine };
 
   // ---- circuit state ------------------------------------------------------
 
@@ -1791,14 +1798,14 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         // Gate param refs in array indices evaluate to 0.0 here since actual
         // param values are only known at call time. a[theta] in a gate body
         // is unsupported, gate params are rotation angles, not integer indices.
-        std::vector<double> dummy(param_idx.size(), 0.0);
+        std::vector<double> const dummy(param_idx.size(), 0.0);
 
         // handle both [] and comma-separated indices (arr[i][j] and arr[i, j])
         for (size_t i = 0; i < idx_op->expression().size(); ++i) {
           auto idx_tree =
               BuildExprTreeImpl(idx_op->expression(i), param_idx, const_vals);
 
-          int idx = static_cast<int>(ExprNode::Eval(idx_tree, dummy));
+          int const idx = static_cast<int>(ExprNode::Eval(idx_tree, dummy));
           indices.push_back(idx);
         }
 
@@ -2056,7 +2063,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         }
         n->value = static_cast<double>(std::stoul(s, nullptr, 8));
       } else if (e->BinaryIntegerLiteral() != nullptr) {
-        std::string s = e->BinaryIntegerLiteral()->getText();
+        std::string const s = e->BinaryIntegerLiteral()->getText();
         n->value = static_cast<double>(std::stoul(s.substr(2), nullptr, 2));
       } else if (e->ImaginaryLiteral() != nullptr) {
         n->value = 0.0;  // real part of a purely imaginary number is 0
@@ -2072,7 +2079,7 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       } else if (e->HardwareQubit() != nullptr) {
         n->value = 0.0;  // hardware qubit refs not meaningful as doubles
       } else if (e->Identifier() != nullptr) {
-        std::string id = e->Identifier()->getText();
+        std::string const id = e->Identifier()->getText();
         auto pit = param_idx.find(id);
         if (pit != param_idx.end()) {
           n->kind = ExprNode::ExprKind::kParamRef;
