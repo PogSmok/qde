@@ -23,10 +23,10 @@ Checks: >
   -performance-unnecessary-value-param,
   -misc-include-cleaner,
   -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
   -misc-no-recursion,
   -misc-use-internal-linkage,
   -misc-use-anonymous-namespace,
-  -cert-err58-cpp,
   -cert-msc51-cpp,
   -cppcoreguidelines-owning-memory,
   -readability-function-cognitive-complexity,
@@ -42,9 +42,14 @@ Checks: >
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-macro-usage,
   -modernize-pass-by-value,
+  -cert-oop11-cpp,
   -bugprone-narrowing-conversions,
   -cppcoreguidelines-narrowing-conversions,
   -bugprone-switch-missing-default-case,
+  -misc-header-include-cycle,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -bugprone-throwing-static-initialization,
+  -cert-err58-cpp,
 
 # Only fail CI on high-signal checks
 WarningsAsErrors: >

@@ -28,9 +28,10 @@ QString ConfigManager::DefaultConfigPath() {
 
 bool ConfigManager::Save(const QString& dir_path) {
   // Partition the flat registry into per-category buckets.
-  std::map<QString, std::vector<ConfigKeyBase*>> by_category;
-  for (const auto& [id, key] : ConfigKeyBase::GetRegistry()) {
-    by_category[key->Category()].push_back(key);
+  std::map<QString, std::vector<const ConfigKeyBase*>> by_category;
+  for (const ConfigKeyBase* key = ConfigKeyBase::First(); key != nullptr;
+       key = key->Next()) {
+    by_category[QLatin1StringView{key->Category()}].push_back(key);
   }
 
   bool all_ok = true;
@@ -41,7 +42,7 @@ bool ConfigManager::Save(const QString& dir_path) {
 }
 
 bool ConfigManager::SaveCategory(const QString& category,
-                                 const std::vector<ConfigKeyBase*>& keys,
+                                 const std::vector<const ConfigKeyBase*>& keys,
                                  const QString& dir_path) {
   const QDir dir(dir_path);
   if (!dir.exists() && !QDir().mkpath(dir_path)) {
@@ -52,7 +53,7 @@ bool ConfigManager::SaveCategory(const QString& category,
 
   QJsonObject obj;
   for (const ConfigKeyBase* key : keys) {
-    obj.insert(key->FieldName(), key->ToJsonValue());
+    obj.insert(QLatin1StringView{key->FieldName()}, key->ToJsonValue());
   }
 
   const QString file_path = dir.filePath(category + ".json");
@@ -125,14 +126,14 @@ bool ConfigManager::LoadFile(const QString& file_path) {
   for (auto it = obj.constBegin(); it != obj.constEnd(); ++it) {
     const QString key_id = category + "." + it.key();
 
-    const auto registry_it = ConfigKeyBase::GetRegistry().find(key_id);
-    if (registry_it == ConfigKeyBase::GetRegistry().cend()) {
+    ConfigKeyBase* found = ConfigKeyBase::Find(key_id);
+    if (found == nullptr) {
       qWarning("ConfigManager::Load - unknown key '%s' in %s - skipped",
                qPrintable(key_id), qPrintable(file_path));
       continue;
     }
 
-    if (!registry_it->second->FromJsonValue(it.value())) {
+    if (!found->FromJsonValue(it.value())) {
       qWarning(
           "ConfigManager::Load - value for '%s' in %s failed validation - "
           "keeping default",

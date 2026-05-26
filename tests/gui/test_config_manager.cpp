@@ -176,7 +176,7 @@ TEST_F(ConfigManagerTest, LoadValidConfigFile) {
   EXPECT_EQ(test_config.Value(), 4);
   EXPECT_EQ(test_config_key_sequence.Value(), QKeySequence("Alt+Left"));
 
-  bool all_ok = mgr.Load(tempDir_->path());
+  bool all_ok = qde::gui::config::ConfigManager::Load(tempDir_->path());
   EXPECT_TRUE(all_ok);
 
   EXPECT_EQ(test_config.Value(), 2);
@@ -191,7 +191,7 @@ TEST_F(ConfigManagerTest, LoadConfigFileInvalidValue) {
   EXPECT_EQ(test_config.Value(), 4);
   EXPECT_EQ(test_config_key_sequence.Value(), QKeySequence("Alt+Left"));
 
-  bool all_ok = mgr.Load(tempDir_->path());
+  bool all_ok = qde::gui::config::ConfigManager::Load(tempDir_->path());
   EXPECT_FALSE(all_ok);
 
   EXPECT_EQ(test_config.Value(), 4)
@@ -211,7 +211,7 @@ TEST_F(ConfigManagerTest, LoadConfigFileInvalidJson) {
   EXPECT_EQ(test_config.Value(), 4);
   EXPECT_EQ(test_config_key_sequence.Value(), QKeySequence("Alt+Left"));
 
-  bool all_ok = mgr.Load(tempDir_->path());
+  bool all_ok = qde::gui::config::ConfigManager::Load(tempDir_->path());
   EXPECT_FALSE(all_ok);
 
   EXPECT_EQ(test_config.Value(), 4)
@@ -231,7 +231,7 @@ TEST_F(ConfigManagerTest, SaveValidConfigKeys) {
   test_config.SetValue(1);
   test_config_key_sequence.SetValue(QKeySequence("Alt+Right"));
 
-  bool all_ok = mgr.Save(tempDir_->path());
+  bool all_ok = qde::gui::config::ConfigManager::Save(tempDir_->path());
   EXPECT_TRUE(all_ok);
   {
     auto test_config_file_content = ReadFile(testConfigFilePath_);

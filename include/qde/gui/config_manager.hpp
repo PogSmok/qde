@@ -66,7 +66,7 @@ class ConfigManager {
 
   // Serializes one category bucket to <dir_path>/<category>.json.
   [[nodiscard]] static bool SaveCategory(
-      const QString& category, const std::vector<ConfigKeyBase*>& keys,
+      const QString& category, const std::vector<const ConfigKeyBase*>& keys,
       const QString& dir_path);
 
   // Deserializes one JSON file and applies values to the registry.

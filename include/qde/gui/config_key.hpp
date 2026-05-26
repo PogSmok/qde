@@ -4,45 +4,85 @@
 #include <QJsonValue>
 #include <QKeySequence>
 #include <QVariant>
-#include <functional>
-#include <optional>
 #include <utility>
 
 namespace qde::gui::config {
 
+// Keys self-register via an intrusive singly-linked list for stack allocation
 class ConfigKeyBase {
  public:
-  explicit ConfigKeyBase(const QString& category, const QString& field_name)
-      : registered_id_(category + "." + field_name) {
-    config_registry_[registered_id_] = this;
+  ConfigKeyBase(const char* category, const char* field_name,
+                const char* display_name,
+                const char* description) noexcept
+      : category_(category),
+        field_name_(field_name),
+        display_name_(display_name),
+        description_(description) {
+    head_ = this;
   }
 
-  virtual ~ConfigKeyBase() { config_registry_.erase(registered_id_); }
+  virtual ~ConfigKeyBase() noexcept {
+    if (head_ == this) {
+      head_ = next_;
+      return;
+    }
+    for (ConfigKeyBase* p = head_; p != nullptr; p = p->next_) {
+      if (p->next_ == this) {
+        p->next_ = next_;
+        return;
+      }
+    }
+  }
+
   ConfigKeyBase(const ConfigKeyBase&) = delete;
-  virtual ConfigKeyBase& operator=(const ConfigKeyBase&) = delete;
+  ConfigKeyBase& operator=(const ConfigKeyBase&) = delete;
   ConfigKeyBase(ConfigKeyBase&&) = delete;
-  virtual ConfigKeyBase& operator=(ConfigKeyBase&&) = delete;
+  ConfigKeyBase& operator=(ConfigKeyBase&&) = delete;
 
   [[nodiscard]] virtual QJsonValue ToJsonValue() const = 0;
   virtual bool FromJsonValue(const QJsonValue& json_value) = 0;
-  [[nodiscard]] virtual const QString& Category() const = 0;
-  [[nodiscard]] virtual const QString& FieldName() const = 0;
-  [[nodiscard]] virtual const QString& Id() const = 0;
-  [[nodiscard]] virtual const QString& DisplayName() const = 0;
-  [[nodiscard]] virtual const QString& Description() const = 0;
 
-  [[nodiscard]] static std::unordered_map<QString, ConfigKeyBase*>&
-  GetRegistry() {
-    return config_registry_;
+  [[nodiscard]] const char* Category() const noexcept { return category_; }
+  [[nodiscard]] const char* FieldName() const noexcept { return field_name_; }
+  [[nodiscard]] const char* DisplayName() const noexcept {
+    return display_name_;
+  }
+  [[nodiscard]] const char* Description() const noexcept {
+    return description_;
+  }
+
+  [[nodiscard]] QString Id() const {
+    return QLatin1StringView{category_} + "." + QLatin1StringView{field_name_};
+  }
+
+  // ---- Registry (intrusive linked list) ------------------------------------
+
+  [[nodiscard]] static ConfigKeyBase* First() noexcept { return head_; }
+  [[nodiscard]] ConfigKeyBase* Next() const noexcept { return next_; }
+
+  [[nodiscard]] static ConfigKeyBase* Find(const QString& id) noexcept {
+    for (ConfigKeyBase* p = head_; p != nullptr; p = p->next_) {
+      const QLatin1StringView cat{p->category_};
+      const QLatin1StringView field{p->field_name_};
+      if (id.size() == cat.size() + 1 + field.size() &&
+          id.startsWith(cat) && id[cat.size()] == QLatin1Char('.') &&
+          id.endsWith(field)) {
+        return p;
+      }
+    }
+    return nullptr;
   }
 
  private:
-  inline static auto config_registry_ =
-      std::unordered_map<QString, ConfigKeyBase*>();
-
- protected:
-  QString registered_id_;
+  inline static ConfigKeyBase* head_ = nullptr;
+  ConfigKeyBase* next_{head_};
+  const char* category_;
+  const char* field_name_;
+  const char* display_name_;
+  const char* description_;
 };
+
+// ---- Serialization helpers ------------------------------------------------
 
 template <typename T>
 struct ConfigKeySerializer {
@@ -75,24 +115,20 @@ struct ConfigKeySerializer<QKeySequence> {
   }
 };
 
+// ---- Typed config key -----------------------------------------------------
+
 template <typename T>
 class ConfigKey : public ConfigKeyBase {
-  using Validator = std::function<bool(const T&)>;
+  // nullptr means "no validation".
+  using Validator = bool (*)(const T&);
 
  public:
-  ConfigKey(QString category, QString field_name, T&& default_value,
-            QString display_name, QString description,
-            std::optional<Validator> validator)
-      : ConfigKeyBase(category, field_name),
-        category_(std::move(category)),
-        field_name_(std::move(field_name)),
+  ConfigKey(const char* category, const char* field_name, T default_value,
+            const char* display_name, const char* description,
+            Validator validator) noexcept
+      : ConfigKeyBase(category, field_name, display_name, description),
         value_(std::move(default_value)),
-        display_name_(std::move(display_name)),
-        description_(std::move(description)) {
-    if (validator.has_value() && *validator) {
-      validator_.swap(validator);
-    }
-  }
+        validator_(validator) {}
 
   ~ConfigKey() override = default;
   ConfigKey(const ConfigKey&) = delete;
@@ -109,22 +145,6 @@ class ConfigKey : public ConfigKeyBase {
     return SetValue(std::move(candidate));
   }
 
-  [[nodiscard]] const QString& Category() const override { return category_; }
-
-  [[nodiscard]] const QString& FieldName() const override {
-    return field_name_;
-  }
-
-  [[nodiscard]] const QString& Id() const override { return registered_id_; }
-
-  [[nodiscard]] const QString& DisplayName() const override {
-    return display_name_;
-  }
-
-  [[nodiscard]] const QString& Description() const override {
-    return description_;
-  }
-
   [[nodiscard]] T Value() const { return value_; }
 
   bool SetValue(T value) {
@@ -136,16 +156,12 @@ class ConfigKey : public ConfigKeyBase {
   }
 
   [[nodiscard]] bool Validate(const T& val) const {
-    return !validator_.has_value() || (*validator_)(val);
+    return validator_ == nullptr || validator_(val);
   }
 
  private:
-  QString category_;
-  QString field_name_;
   T value_;
-  QString display_name_;
-  QString description_;
-  std::optional<Validator> validator_;
+  Validator validator_;
 };
 
 }  // namespace qde::gui::config
