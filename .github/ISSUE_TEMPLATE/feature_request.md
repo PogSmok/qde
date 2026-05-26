@@ -6,6 +6,8 @@ labels: enhancement
 assignees: ''
 ---
 
+- [ ] **I have searched existing issues and this feature has not been requested before**
+
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
