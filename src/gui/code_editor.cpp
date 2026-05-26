@@ -79,7 +79,7 @@ void CodeEditor::UpdateLineNumberArea(const QRect& rect, int dy) {
 
 void CodeEditor::resizeEvent(QResizeEvent* event) {
   QPlainTextEdit::resizeEvent(event);
-  QRect cr = contentsRect();
+  QRect const cr = contentsRect();
   lineNumberArea_->setGeometry(
       {cr.left(), cr.top(), LineNumberAreaWidth(), cr.height()});
 }

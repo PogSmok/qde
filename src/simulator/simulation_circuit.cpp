@@ -71,7 +71,8 @@ SimulationCircuit::SimulationCircuit(const Circuit& circuit) {
 
     std::optional<std::pair<std::size_t, std::uint8_t>> cond;
     if (op.condition) {
-      const auto& [bit_ref, expected] = *op.condition;
+      const auto& [bit_ref, expected] =
+          op.condition.value();  // NOLINT(bugprone-unchecked-optional-access)
       cond = {bit_offsets[bit_ref.reg] + bit_ref.bit, expected};
     }
 

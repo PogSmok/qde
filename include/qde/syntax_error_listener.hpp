@@ -13,6 +13,12 @@ namespace qde {
 
 class SyntaxErrorListener : public antlr4::BaseErrorListener {
  public:
+  [[nodiscard]] const std::vector<SyntaxError>& Errors() const {
+    return errors_;
+  }
+  [[nodiscard]] bool HasErrors() const { return !errors_.empty(); }
+
+ private:
   void syntaxError(antlr4::Recognizer* /*recognizer*/,
                    antlr4::Token* /*offendingSymbol*/, std::size_t line,
                    std::size_t column, const std::string& msg,
@@ -20,12 +26,6 @@ class SyntaxErrorListener : public antlr4::BaseErrorListener {
     errors_.push_back({line, column, msg});
   }
 
-  [[nodiscard]] const std::vector<SyntaxError>& Errors() const {
-    return errors_;
-  }
-  [[nodiscard]] bool HasErrors() const { return !errors_.empty(); }
-
- private:
   std::vector<SyntaxError> errors_;
 };
 

@@ -6,11 +6,11 @@ using namespace qde::gui::config;
 TEST(ConfigKey, KeyInitialization) {
   ConfigKey<int> g("test", "testField", 4, "Display Name", "Description",
                    [](const int& v) { return v >= 1 && v <= 16; });
-  EXPECT_EQ(g.Category(), "test");
-  EXPECT_EQ(g.FieldName(), "testField");
+  EXPECT_STREQ(g.Category(), "test");
+  EXPECT_STREQ(g.FieldName(), "testField");
   EXPECT_EQ(g.Id(), "test.testField");
-  EXPECT_EQ(g.DisplayName(), "Display Name");
-  EXPECT_EQ(g.Description(), "Description");
+  EXPECT_STREQ(g.DisplayName(), "Display Name");
+  EXPECT_STREQ(g.Description(), "Description");
   EXPECT_EQ(g.Value(), 4);
 }
 

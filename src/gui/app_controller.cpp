@@ -25,8 +25,8 @@ AppController::AppController(QuantumCircuitView* circuit_view,
 void AppController::OnTextChanged() { debounceTimer_.start(); }
 
 void AppController::ParseNow() {
-  auto result = parser_->Parse(textEditor_->PlainText().toStdString(),
-                               qde::BackendConfig{});
+  auto result = qde::Parser::Parse(textEditor_->PlainText().toStdString(),
+                                   qde::BackendConfig{});
   if (result.IsOk()) {
     circuit_ = result.GetCircuit();
     textEditor_->ClearErrors();

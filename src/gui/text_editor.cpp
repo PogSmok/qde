@@ -78,8 +78,8 @@ void TextEditor::ToggleComment() {
 
   cursor.beginEditBlock();
 
-  int start = cursor.selectionStart();
-  int end = cursor.selectionEnd();
+  int const start = cursor.selectionStart();
+  int const end = cursor.selectionEnd();
 
   QTextBlock start_block = editor_->document()->findBlock(start);
   QTextBlock end_block = editor_->document()->findBlock(end);
@@ -94,7 +94,7 @@ void TextEditor::ToggleComment() {
   bool all_commented = true;
   for (QTextBlock block = start_block;
        block.isValid() && block != end_block.next(); block = block.next()) {
-    QString text = block.text().trimmed();
+    QString const text = block.text().trimmed();
     if (!text.isEmpty() && !text.startsWith("//")) {
       all_commented = false;
       break;
@@ -106,10 +106,10 @@ void TextEditor::ToggleComment() {
     cursor.setPosition(block.position());
     cursor.movePosition(QTextCursor::StartOfBlock);
 
-    QString text = block.text();
+    QString const text = block.text();
     if (all_commented) {
       // Remove "//" (and potentially one trailing space)
-      int comment_pos = text.indexOf("//");
+      int const comment_pos = text.indexOf("//");
       if (comment_pos != -1) {
         cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor,
                             comment_pos);
@@ -133,8 +133,8 @@ void TextEditor::IndentBlock() {
   QTextCursor cursor = editor_->textCursor();
   cursor.beginEditBlock();
 
-  int start = cursor.selectionStart();
-  int end = cursor.selectionEnd();
+  int const start = cursor.selectionStart();
+  int const end = cursor.selectionEnd();
 
   QTextBlock start_block = editor_->document()->findBlock(start);
   QTextBlock end_block = editor_->document()->findBlock(end);
@@ -161,8 +161,8 @@ void TextEditor::OutdentBlock() {
   QTextCursor cursor = editor_->textCursor();
   cursor.beginEditBlock();
 
-  int start = cursor.selectionStart();
-  int end = cursor.selectionEnd();
+  int const start = cursor.selectionStart();
+  int const end = cursor.selectionEnd();
 
   QTextBlock start_block = editor_->document()->findBlock(start);
   QTextBlock end_block = editor_->document()->findBlock(end);
@@ -208,8 +208,8 @@ void TextEditor::OutdentBlock() {
 
 void TextEditor::MoveBlockUp() {
   QTextCursor cursor = editor_->textCursor();
-  int start = cursor.selectionStart();
-  int end = cursor.selectionEnd();
+  int const start = cursor.selectionStart();
+  int const end = cursor.selectionEnd();
 
   QTextBlock start_block = editor_->document()->findBlock(start);
   QTextBlock end_block = editor_->document()->findBlock(end);
@@ -251,8 +251,8 @@ void TextEditor::MoveBlockUp() {
 
 void TextEditor::MoveBlockDown() {
   QTextCursor cursor = editor_->textCursor();
-  int start = cursor.selectionStart();
-  int end = cursor.selectionEnd();
+  int const start = cursor.selectionStart();
+  int const end = cursor.selectionEnd();
 
   QTextBlock start_block = editor_->document()->findBlock(start);
   QTextBlock end_block = editor_->document()->findBlock(end);

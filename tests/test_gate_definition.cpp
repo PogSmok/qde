@@ -96,7 +96,7 @@ TEST(GateDefinition, ParametricGateEvaluatesCorrectly) {
 // ---- matrix() param validation --------------------------------------------
 
 TEST(GateDefinition, MatrixWrongParamCountThrows) {
-  GateDefinition g("rx", 1, 1, [](const std::vector<double>& p) {
+  GateDefinition g("rx", 1, 1, [](const std::vector<double>& /*p*/) {
     return std::vector<C>(4);
   });
   EXPECT_THROW(g.Matrix({}), std::invalid_argument);

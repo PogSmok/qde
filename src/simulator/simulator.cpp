@@ -34,7 +34,7 @@ std::size_t EmbedIndex(std::size_t gate_idx, std::size_t non_gate_idx,
   std::size_t non_gate_pos = 0;
   for (std::size_t qubit_idx = 0; qubit_idx < total_qubits; qubit_idx++) {
     bool is_gate = false;
-    for (std::size_t gate_qubit_idx : gate_qubits) {
+    for (const std::size_t gate_qubit_idx : gate_qubits) {
       if (qubit_idx == gate_qubit_idx) {
         is_gate = true;
         break;
@@ -245,7 +245,7 @@ std::vector<double> ComputeEigenvalues(const DensityMatrix& rho,
   for (std::size_t i = 0; i < dim; ++i) {
     vals[i] = h[(i * dim) + i].real();
   }
-  std::sort(vals.begin(), vals.end(), std::greater<double>());
+  std::sort(vals.begin(), vals.end(), std::greater<>());
   return vals;
 }
 

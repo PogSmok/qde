@@ -1,5 +1,6 @@
 if(DEFINED ANTLR4_JAR_LOCATION)
-    set(ANTLR4_COMMAND java -jar ${ANTLR4_JAR_LOCATION})
+    find_package(Java COMPONENTS Runtime REQUIRED)
+    set(ANTLR4_COMMAND "${Java_JAVA_EXECUTABLE}" -jar "${ANTLR4_JAR_LOCATION}")
 else()
     find_program(ANTLR4_EXECUTABLE antlr4 REQUIRED
         DOC "ANTLR4 tool for generating parser sources"

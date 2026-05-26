@@ -159,7 +159,7 @@ void MainWindow::NewFile() {
 }
 
 void MainWindow::OpenFile() {
-  QString path = QFileDialog::getOpenFileName(
+  QString const path = QFileDialog::getOpenFileName(
       this, "Open QASM File", {}, "QASM Files (*.qasm *.qasm2);;All Files (*)");
   if (path.isEmpty()) {
     return;
@@ -174,10 +174,10 @@ void MainWindow::SaveFile() {
 }
 
 void MainWindow::SaveFileAs() {
-  QString path = QFileDialog::getSaveFileName(
+  QString const path = QFileDialog::getSaveFileName(
       this, "Save As", {}, "QASM Files (*.qasm);;All Files (*)");
   if (!path.isEmpty()) {
-    bool is_ok = editor_->SaveFileAs(path);
+    bool const is_ok = editor_->SaveFileAs(path);
     if (is_ok) {
       UpdateTitle();
     }
@@ -197,7 +197,7 @@ void MainWindow::OnParseFail(const QStringList& errors) const {
       QString("color: %1; padding: 0 6px;").arg(theme::kErrorText));
 }
 
-void MainWindow::OnModifiedChanged(bool modified) { UpdateTitle(); }
+void MainWindow::OnModifiedChanged(bool /*modified*/) { UpdateTitle(); }
 
 void MainWindow::UpdateTitle() {
   QString title = "QDE";
