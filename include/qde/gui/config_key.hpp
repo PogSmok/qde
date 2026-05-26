@@ -12,8 +12,7 @@ namespace qde::gui::config {
 class ConfigKeyBase {
  public:
   ConfigKeyBase(const char* category, const char* field_name,
-                const char* display_name,
-                const char* description) noexcept
+                const char* display_name, const char* description) noexcept
       : category_(category),
         field_name_(field_name),
         display_name_(display_name),
@@ -64,9 +63,8 @@ class ConfigKeyBase {
     for (ConfigKeyBase* p = head_; p != nullptr; p = p->next_) {
       const QLatin1StringView cat{p->category_};
       const QLatin1StringView field{p->field_name_};
-      if (id.size() == cat.size() + 1 + field.size() &&
-          id.startsWith(cat) && id[cat.size()] == QLatin1Char('.') &&
-          id.endsWith(field)) {
+      if (id.size() == cat.size() + 1 + field.size() && id.startsWith(cat) &&
+          id[cat.size()] == QLatin1Char('.') && id.endsWith(field)) {
         return p;
       }
     }

@@ -1353,7 +1353,11 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     kBitRegister,
     kVariable
   };
-  enum class RedeclaredKind : uint8_t { kQubitRegister, kBitRegister, kVariable };
+  enum class RedeclaredKind : uint8_t {
+    kQubitRegister,
+    kBitRegister,
+    kVariable
+  };
   enum class RedefinedKind : uint8_t { kGate, kSubroutine };
 
   // ---- circuit state ------------------------------------------------------

@@ -28,7 +28,7 @@ class ParseResult {
     assert(IsOk() &&
            "ParseResult::GetCircuit() called on a failed result, "
            "check IsOk() before accessing the circuit");
-    return circuit_.value();  // NOLINT(bugprone-unchecked-optional-access)
+    return *circuit_;  // NOLINT(bugprone-unchecked-optional-access)
   }
 
   [[nodiscard]] const std::vector<SyntaxError>& Errors() const {

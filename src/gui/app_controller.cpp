@@ -26,7 +26,7 @@ void AppController::OnTextChanged() { debounceTimer_.start(); }
 
 void AppController::ParseNow() {
   auto result = qde::Parser::Parse(textEditor_->PlainText().toStdString(),
-                               qde::BackendConfig{});
+                                   qde::BackendConfig{});
   if (result.IsOk()) {
     circuit_ = result.GetCircuit();
     textEditor_->ClearErrors();
