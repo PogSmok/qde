@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software in your research or project, please cite it as below."
+authors:
+  - given-names: "Łukasz"
+    family-names: "Prus"
+    email: "lukaszprus.job@gmail.com"
+  - given-names: "Szymon"
+    family-names: "Oleśkiewicz"
+    email: "sz.oleskiewicz@gmail.com"
+title: "QDE: Quantum Development Environment"
+abstract: "An open-source Integrated Development Environment (IDE) built with Qt6 and C++17 for quantum computing workflows and OpenQASM development."
+repository-code: "https://github.com/PogSmok/qde"
+license: GPL-3.0-only
+keywords:
+  - quantum-computing
+  - ide
+  - openqasm
+  - qt6
+  - antlr4
+  - qiskit
