@@ -1,5 +1,20 @@
 # QDE: Quantum Development Environment
 
+[![CI](https://github.com/PogSmok/qde/actions/workflows/ci.yml/badge.svg)](https://github.com/PogSmok/qde/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/PogSmok/qde/actions/workflows/codeql.yml/badge.svg)](https://github.com/PogSmok/qde/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/PogSmok/qde/branch/develop/graph/badge.svg)](https://codecov.io/gh/PogSmok/qde)
+
+[![GitHub issues](https://img.shields.io/github/issues/PogSmok/qde)](https://github.com/PogSmok/qde/issues)
+[![GitHub prs](https://img.shields.io/github/issues-pr/PogSmok/qde)](https://github.com/PogSmok/qde/pulls)
+[![GitHub forks](https://img.shields.io/github/forks/PogSmok/qde)](https://github.com/PogSmok/qde/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/PogSmok/qde)](https://github.com/PogSmok/qde/stargazers)
+
+![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg?style=flat&logo=c%2B%2B)
+![Qt6](https://img.shields.io/badge/Qt-6.x-41CD52.svg?style=flat&logo=qt)
+![CMake](https://img.shields.io/badge/CMake-3.21%2B-064F8C.svg?style=flat&logo=cmake)
+![ANTLR4](https://img.shields.io/badge/ANTLR-4.13.2-red.svg?style=flat)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 QDE (Quantum Development Environment) is an open-source, lightweight Integrated Development Environment (IDE) tailored
 for quantum computing workflows. Built with C++17 and Qt6, it features an advanced OpenQASM parser and lexer to deliver
 a robust environment for writing, analyzing, and simulating quantum circuits.
