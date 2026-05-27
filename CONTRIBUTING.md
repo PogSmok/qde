@@ -14,8 +14,7 @@ unacceptable behavior privately to the project maintainers.
 
 ### Security Vulnerabilities
 
-**Do not report security vulnerabilities via public GitHub issues.** Please refer to our [**Security Policy
-**](SECURITY.md) to report vulnerabilities privately.
+**Do not report security vulnerabilities via public GitHub issues.** Please refer to our [**Security Policy**](SECURITY.md) to report vulnerabilities privately.
 
 ### Issue-First Workflow
 
