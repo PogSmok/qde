@@ -4,10 +4,6 @@
 [![CodeQL](https://github.com/PogSmok/qde/actions/workflows/codeql.yml/badge.svg)](https://github.com/PogSmok/qde/actions/workflows/codeql.yml)
 [![codecov](https://codecov.io/gh/PogSmok/qde/branch/develop/graph/badge.svg)](https://codecov.io/gh/PogSmok/qde)
 
-[![GitHub issues](https://img.shields.io/github/issues/PogSmok/qde)](https://github.com/PogSmok/qde/issues)
-[![GitHub prs](https://img.shields.io/github/issues-pr/PogSmok/qde)](https://github.com/PogSmok/qde/pulls)
-[![GitHub forks](https://img.shields.io/github/forks/PogSmok/qde)](https://github.com/PogSmok/qde/network/members)
-[![GitHub stars](https://img.shields.io/github/stars/PogSmok/qde)](https://github.com/PogSmok/qde/stargazers)
 
 ![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg?style=flat&logo=c%2B%2B)
 ![Qt6](https://img.shields.io/badge/Qt-6.x-41CD52.svg?style=flat&logo=qt)
