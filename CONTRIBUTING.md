@@ -104,7 +104,16 @@ To build the OpenQASM parser and lexer, you need the complete ANTLR Java binarie
 To configure your local environment paths without affecting other developers, copy the following template into a file
 named `CMakeUserPresets.json` at the root of your project directory (this file is ignored by Git):
 
-```json
+
+> **Platform Note on CMake Generators:**
+>
+> The selection of your build system generator depends completely on your chosen toolchain and OS. On Linux and macOS,
+> the generator typically maps to `"Unix Makefiles"` or `"Ninja"`. On Windows using MSVC, it defaults to IDE formats such
+> as `"Visual Studio 17 2022"`. Ensure the `"generator"` value matches your specific toolchain environment.
+
+#### Option A: Windows (MinGW toolchain)
+
+```JSON
 {
   "version": 3,
   "cmakeMinimumRequired": {
@@ -124,6 +133,52 @@ named `CMakeUserPresets.json` at the root of your project directory (this file i
         "CMAKE_CXX_COMPILER": "C:/path/to/your/compiler/g++.exe",
         "CMAKE_PREFIX_PATH": "C:/path/to/your/Qt/6.x.x/mingw_64",
         "ANTLR4_JAR_LOCATION": "C:/path/to/your/antlr-4.13.2-complete.jar"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "local",
+      "configurePreset": "local",
+      "jobs": 2
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "local",
+      "configurePreset": "local",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "jobs": 2
+      }
+    }
+  ]
+}
+```
+
+#### Option B: Cross-Platform (Linux, macOS, or Windows MSVC using Ninja/Makefiles)
+
+```json
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "local",
+      "inherits": "base",
+      "generator": "Ninja",
+      "environment": {
+        "ANTLR4_TOOLS_ANTLR_VERSION": "4.13.2"
+      },
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "/path/to/your/Qt/6.x.x/gcc_64",
+        "ANTLR4_JAR_LOCATION": "/path/to/your/antlr-4.13.2-complete.jar"
       }
     }
   ],
@@ -206,7 +261,7 @@ git config commit.template .gitmessage
   enforces [Google C++ Styleguide](https://google.github.io/styleguide/cppguide.html)).
 * Test your changes locally to ensure they do not break existing functionality.
 * If your code adds new functionality remember to write appropriate
-  tests ([GTests](https://google.github.io/googletest/)).
+  tests ([GTest](https://google.github.io/googletest/)).
 
 ---
 

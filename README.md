@@ -62,6 +62,14 @@ QDE utilizes ANTLR 4.13.2 to compile OpenQASM grammars.
 Create a file named `CMakeUserPresets.json` at the root directory of the project. This file handles your unique local
 paths and is ignored by Git. Use the following baseline format adjusted to your system pathing:
 
+> **Platform Note on CMake Generators:**
+>
+> The selection of your build system generator depends completely on your chosen toolchain and OS. On Linux and macOS,
+> the generator typically maps to `"Unix Makefiles"` or `"Ninja"`. On Windows using MSVC, it defaults to IDE formats such
+> as `"Visual Studio 17 2022"`. Ensure the `"generator"` value matches your specific toolchain environment.
+
+#### Option A: Windows (MinGW toolchain)
+
 ```JSON
 {
   "version": 3,
@@ -82,6 +90,52 @@ paths and is ignored by Git. Use the following baseline format adjusted to your 
         "CMAKE_CXX_COMPILER": "C:/path/to/your/compiler/g++.exe",
         "CMAKE_PREFIX_PATH": "C:/path/to/your/Qt/6.x.x/mingw_64",
         "ANTLR4_JAR_LOCATION": "C:/path/to/your/antlr-4.13.2-complete.jar"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "local",
+      "configurePreset": "local",
+      "jobs": 2
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "local",
+      "configurePreset": "local",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "jobs": 2
+      }
+    }
+  ]
+}
+```
+
+#### Option B: Cross-Platform (Linux, macOS, or Windows MSVC using Ninja/Makefiles)
+
+```json
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "local",
+      "inherits": "base",
+      "generator": "Ninja",
+      "environment": {
+        "ANTLR4_TOOLS_ANTLR_VERSION": "4.13.2"
+      },
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "/path/to/your/Qt/6.x.x/gcc_64",
+        "ANTLR4_JAR_LOCATION": "/path/to/your/antlr-4.13.2-complete.jar"
       }
     }
   ],
