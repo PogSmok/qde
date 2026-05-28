@@ -189,10 +189,8 @@ Contributions are what make the open-source community an amazing place to learn,
 
 * **Review the guidelines**: Please read our [**CONTRIBUTING.md**](CONTRIBUTING.md) for detailed information regarding
   our Gitflow branching structure, code formatting requirements, and issue-first workflows.
-* **Code of Conduct**: We ask all contributors to follow the behavioral rules defined in our [**CODE_OF_CONDUCT.md
-  **](CODE_OF_CONDUCT.md).
-* **Security**: If you find a security vulnerability, do not open a public issue. Refer to [**SECURITY.md
-  **](SECURITY.md) to report it privately.
+* **Code of Conduct**: We ask all contributors to follow the behavioral rules defined in our [**CODE_OF_CONDUCT.md**](CODE_OF_CONDUCT.md).
+* **Security**: If you find a security vulnerability, do not open a public issue. Refer to [**SECURITY.md**](SECURITY.md) to report it privately.
 
 ## License
 
