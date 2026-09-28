@@ -16,9 +16,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # -------------------------
-# Ensure exceptions are enabled (required by ANTLR runtime)
+# Global compiler options (also applied to fetched dependencies)
 # -------------------------
 add_compile_options(
+    # Exceptions are required by the ANTLR runtime.
     # MSVC and clang-cl (MSVC-compatible frontend)
     $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
 
@@ -27,6 +28,9 @@ add_compile_options(
 
     # GCC
     $<$<CXX_COMPILER_ID:GNU>:-fexceptions>
+
+    # Sources are UTF-8
+    $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
 )
 
 # -------------------------
@@ -46,8 +50,7 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.17.0
-    GIT_SHALLOW TRUE
+    GIT_TAG 52eb8108c5bdec04579160ae17225d66034bd723 # v1.17.0
 )
 
 # -------------------------
@@ -59,6 +62,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     antlr4_runtime
     URL https://www.antlr.org/download/antlr4-cpp-runtime-4.13.2-source.zip
+    URL_HASH SHA256=0ed13668906e86dbc0dcddf30fdee68c10203dea4e83852b4edb810821bee3c4
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
@@ -106,6 +110,13 @@ foreach(_antlr_target antlr4_static antlr4_shared)
       )
     endif()
 endforeach()
+
+function(qde_enable_warnings target)
+    target_compile_options(${target} PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/W4>
+        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
+    )
+endfunction()
 
 add_subdirectory(grammar)
 add_subdirectory(src)

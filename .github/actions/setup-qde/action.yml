@@ -1,0 +1,71 @@
+name: Set up QDE build environment
+description: >
+  Installs Qt, Java and the ANTLR tool JAR (checksum-verified), restores the
+  FetchContent and build caches, and installs libomp on macOS.
+
+inputs:
+  build-dir:
+    description: CMake binary directory of the preset being built (cache path).
+    required: true
+  cache-build:
+    description: >
+      Restore the build directory from cache. Disable for jobs that must see
+      every translation unit compiled (e.g. CodeQL).
+    required: false
+    default: 'true'
+
+outputs:
+  antlr-jar:
+    description: Absolute path of the downloaded ANTLR tool JAR.
+    value: ${{ steps.antlr.outputs.jar }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.10.*'
+        cache: true
+
+    - name: Cache FetchContent dependencies
+      uses: actions/cache@v6
+      with:
+        path: _deps
+        key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
+
+    - name: Cache build
+      if: inputs.cache-build == 'true'
+      uses: actions/cache@v6
+      with:
+        path: ${{ inputs.build-dir }}
+        key: ${{ runner.os }}-${{ inputs.build-dir }}-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
+        restore-keys: ${{ runner.os }}-${{ inputs.build-dir }}-
+
+    - name: Set up Java
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: '21'
+
+    - name: Download and verify ANTLR4 tool JAR
+      id: antlr
+      shell: bash
+      env:
+        ANTLR_SHA256: eae2dfa119a64327444672aff63e9ec35a20180dc5b8090b7a6ab85125df4d76
+      run: |
+        # Work relative to the workspace: Windows paths contain backslashes,
+        # which checksum files treat as escape characters.
+        cd "${GITHUB_WORKSPACE}"
+        curl -fsSL -o antlr4.jar https://www.antlr.org/download/antlr-4.13.2-complete.jar
+        if command -v sha256sum >/dev/null; then
+          echo "${ANTLR_SHA256}  antlr4.jar" | sha256sum -c -
+        else
+          echo "${ANTLR_SHA256}  antlr4.jar" | shasum -a 256 -c -
+        fi
+        echo "jar=${GITHUB_WORKSPACE}/antlr4.jar" >> "$GITHUB_OUTPUT"
+
+    - name: Install libomp (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: brew install libomp
