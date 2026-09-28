@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
   QApplication const app(argc, argv);
   QApplication::setApplicationDisplayName("Quantum Development Environment");
 
-  auto& cfg = qde::gui::config::ConfigManager::Instance();
+  // auto& cfg = qde::gui::config::ConfigManager::Instance();
   qde::gui::config::ConfigManager::Load();
   qde::gui::config::ConfigManager::Save();
 
