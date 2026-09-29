@@ -454,8 +454,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
       const QubitReference qubit = ResolveQubit(meas->gateOperand(), ctx);
       const BitReference target = ResolveBit(ctx->indexedIdentifier(), ctx);
-      operations_.push_back(
-          {OperationType::kMeasure, nullptr, {}, {qubit}, {target}});
+      operations_.push_back({OperationType::kMeasure,
+                             nullptr,
+                             {},
+                             {qubit},
+                             {target},
+                             std::nullopt});
       return visitChildren(ctx);
     }
 
@@ -594,8 +598,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
         qubits.push_back(ResolveQubit(op, ctx));
       }
     }
-    operations_.push_back(
-        {OperationType::kBarrier, nullptr, {}, std::move(qubits), {}});
+    operations_.push_back({OperationType::kBarrier,
+                           nullptr,
+                           {},
+                           std::move(qubits),
+                           {},
+                           std::nullopt});
     return visitChildren(ctx);
   }
 
@@ -828,8 +836,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                  ctx);
         return visitChildren(ctx);
       }
-      operations_.push_back(
-          {OperationType::kGate, gate, {}, std::move(qubits), {}});
+      operations_.push_back({OperationType::kGate,
+                             gate,
+                             {},
+                             std::move(qubits),
+                             {},
+                             std::nullopt});
       return visitChildren(ctx);
     }
 
@@ -886,7 +898,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                  params,
                  {{static_cast<std::uint8_t>(it->second.index),
                    static_cast<std::uint8_t>(q)}},
-                 {}});
+                 {},
+                 std::nullopt});
           }
           return visitChildren(ctx);
         }
@@ -928,8 +941,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
               qubits.push_back({static_cast<std::uint8_t>(r->index),
                                 static_cast<std::uint8_t>(q)});
             }
-            operations_.push_back(
-                {OperationType::kGate, gate, params, std::move(qubits), {}});
+            operations_.push_back({OperationType::kGate,
+                                   gate,
+                                   params,
+                                   std::move(qubits),
+                                   {},
+                                   std::nullopt});
           }
           return visitChildren(ctx);
         }
@@ -950,8 +967,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
           ctx);
       return visitChildren(ctx);
     }
-    operations_.push_back(
-        {OperationType::kGate, gate, std::move(params), std::move(qubits), {}});
+    operations_.push_back({OperationType::kGate,
+                           gate,
+                           std::move(params),
+                           std::move(qubits),
+                           {},
+                           std::nullopt});
     return visitChildren(ctx);
   }
 
@@ -1222,7 +1243,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                {{static_cast<std::uint8_t>(q_it->second.index),
                  static_cast<std::uint8_t>(i)}},
                {{static_cast<std::uint8_t>(c_it->second.index),
-                 static_cast<std::uint8_t>(i)}}});
+                 static_cast<std::uint8_t>(i)}},
+               std::nullopt});
         }
         return visitChildren(ctx);
       }
@@ -1233,8 +1255,12 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
     if (bit_target != nullptr) {
       targets.push_back(ResolveBit(bit_target, ctx));
     }
-    operations_.push_back(
-        {OperationType::kMeasure, nullptr, {}, {qubit}, std::move(targets)});
+    operations_.push_back({OperationType::kMeasure,
+                           nullptr,
+                           {},
+                           {qubit},
+                           std::move(targets),
+                           std::nullopt});
     return visitChildren(ctx);
   }
 
@@ -1298,7 +1324,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
                                  {},
                                  {{static_cast<std::uint8_t>(it->second.index),
                                    static_cast<std::uint8_t>(q)}},
-                                 {}});
+                                 {},
+                                 std::nullopt});
         }
         return visitChildren(ctx);
       }
@@ -1306,7 +1333,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       return visitChildren(ctx);
     }
     const QubitReference qubit = ResolveQubit(ctx->gateOperand(), ctx);
-    operations_.push_back({OperationType::kReset, nullptr, {}, {qubit}, {}});
+    operations_.push_back(
+        {OperationType::kReset, nullptr, {}, {qubit}, {}, std::nullopt});
     return visitChildren(ctx);
   }
 
@@ -2009,9 +2037,8 @@ class CircuitBuilder : public qasm3ParserBaseVisitor {
       }
 
       // DURATIONOF LPAREN scope RPAREN
-    } else if (auto* e =
-                   dynamic_cast<qasm3Parser::DurationofExpressionContext*>(
-                       expr)) {
+    } else if (dynamic_cast<qasm3Parser::DurationofExpressionContext*>(expr) !=
+               nullptr) {
       // TODO fallback to 0.0
 
       // Identifier LPAREN expressionList? RPAREN

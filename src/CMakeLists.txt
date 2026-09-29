@@ -1,11 +1,11 @@
-# QDE Library
-set(LIB_SOURCES
+# -------------------------
+# QDE core library: parser and circuit model
+# -------------------------
+add_library(qde_lib STATIC
     gate_registry.cpp
     parser.cpp
     qubit_allocator.cpp
 )
-
-add_library(qde_lib STATIC ${LIB_SOURCES})
 
 target_include_directories(qde_lib
     PUBLIC
@@ -17,75 +17,70 @@ target_link_libraries(qde_lib
         qasm3_parser
 )
 
-# QDE GUI Library
-set(LIB_GUI_SOURCES
-    gui/main_window.cpp
-    gui/app_controller.cpp
-    gui/quantum_circuit_view.cpp
-        gui/simulation_results_view.cpp
-        gui/view_helpers.cpp
-    gui/text_editor.cpp
-    gui/code_editor.cpp
-    gui/syntax_highlighter.cpp
-    gui/text_document.cpp
-        gui/config_manager.cpp
-    # explicitly list Q_OBJECT headers:
-    ${PROJECT_SOURCE_DIR}/include/qde/gui/app_controller.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/gui/main_window.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/gui/quantum_circuit_view.hpp
-        ${PROJECT_SOURCE_DIR}/include/qde/gui/simulation_results_view.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/gui/text_editor.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/gui/code_editor.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/gui/text_document.hpp
-    ${PROJECT_SOURCE_DIR}/include/qde/gui/syntax_highlighter.hpp
-        ${PROJECT_SOURCE_DIR}/include/qde/gui/config_manager.hpp
-)
+qde_enable_warnings(qde_lib)
 
-add_library(qde_gui STATIC ${LIB_GUI_SOURCES})
-set_target_properties(qde_gui PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC ON)
+# -------------------------
+# QDE simulation library
+# -------------------------
+find_package(OpenMP REQUIRED)
 
-target_include_directories(qde_gui
-    PUBLIC
-        ${PROJECT_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}/include/gui
-)
-
-target_link_libraries(qde_gui
-    PUBLIC
-        qde_lib
-        qde_sim
-        Qt6::Gui
-        Qt6::Core
-        Qt6::Widgets
-)
-
-# QDE Simulation Library
-set(LIB_SIM_SOURCES
+add_library(qde_sim STATIC
     simulator/simulation_circuit.cpp
     simulator/simulator.cpp
 )
 
-add_library(qde_sim STATIC ${LIB_SIM_SOURCES})
-
-find_package(OpenMP REQUIRED)
+target_link_libraries(qde_sim
+    PUBLIC
+        qde_lib
+    PRIVATE
+        OpenMP::OpenMP_CXX
+)
 
 # /openmp:llvm upgrades MSVC from OpenMP 2.0 to 3.1, enabling collapse clause.
 if(MSVC)
     target_compile_options(qde_sim PRIVATE /openmp:llvm)
 endif()
 
-target_include_directories(qde_lib
+qde_enable_warnings(qde_sim)
+
+# -------------------------
+# QDE GUI library
+# -------------------------
+add_library(qde_gui STATIC
+    gui/app_controller.cpp
+    gui/code_editor.cpp
+    gui/config_manager.cpp
+    gui/main_window.cpp
+    gui/quantum_circuit_view.cpp
+    gui/syntax_highlighter.cpp
+    gui/text_document.cpp
+    gui/text_editor.cpp
+    # Q_OBJECT headers live outside this directory, list explicitly
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/app_controller.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/code_editor.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/config_manager.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/main_window.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/quantum_circuit_view.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/syntax_highlighter.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/text_document.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/text_editor.hpp
+)
+
+set_target_properties(qde_gui PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC ON)
+
+target_link_libraries(qde_gui
     PUBLIC
-        ${PROJECT_SOURCE_DIR}/include
-)
-
-target_link_libraries(qde_sim
-    PRIVATE
         qde_lib
-        OpenMP::OpenMP_CXX
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
 )
 
+qde_enable_warnings(qde_gui)
 
+# -------------------------
+# QDE application
+# -------------------------
 qt_add_executable(qde main.cpp)
 
 target_link_libraries(qde
@@ -95,31 +90,27 @@ target_link_libraries(qde
         qde_sim
 )
 
-if (WIN32)
-    # Use windeployqt tool to create self-contained windows application binary
-    if (NOT WINDEPLOYQT_EXECUTABLE)
-        message(FATAL_ERROR "windeployqt not found.\nThe tool was not found in"
-                "the Qt installation directory linked to this project."
-                "\nEnsure your CMAKE_PREFIX_PATH points to a valid Qt installation"
-                "and that the 'bin' directory contains windeployqt.exe.")
-    endif ()
+qde_enable_warnings(qde)
 
-    get_target_property(_qmake_executable Qt::qmake IMPORTED_LOCATION)
+if(WIN32)
+    # Use windeployqt to copy the Qt runtime next to qde.exe, producing a
+    # self-contained Windows application directory.
+    get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
     get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
 
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND "${WINDEPLOYQT_EXECUTABLE}"
-            --no-compiler-runtime
-            --verbose 0
-            "$<TARGET_FILE:${PROJECT_NAME}>"
-            COMMENT "Deploying Qt dependencies..."
-    )
-elseif (APPLE)
-    # macdeployqt logic could go here for macOS users
-    message(STATUS "macOS detected: windeployqt skipped.")
+    if(NOT WINDEPLOYQT_EXECUTABLE)
+        message(FATAL_ERROR "windeployqt not found.\n"
+                "The tool was not found in the Qt installation linked to this "
+                "project. Ensure CMAKE_PREFIX_PATH points to a valid Qt "
+                "installation whose 'bin' directory contains windeployqt.exe.")
+    endif()
 
-else ()
-    # Linux typically uses RPATH or AppImage tools
-    message(STATUS "Linux/Unix detected: windeployqt skipped.")
-endif ()
+    add_custom_command(TARGET qde POST_BUILD
+        COMMAND "${WINDEPLOYQT_EXECUTABLE}"
+                --no-compiler-runtime
+                --verbose 0
+                "$<TARGET_FILE:qde>"
+        COMMENT "Deploying Qt dependencies..."
+    )
+endif()

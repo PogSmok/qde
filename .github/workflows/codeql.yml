@@ -24,11 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+      - name: Set up build environment
+        id: setup
+        uses: ./.github/actions/setup-qde
         with:
-          version: '6.8.*'
-          cache: true
+          build-dir: build
+          # CodeQL only analyses code it sees being compiled
+          cache-build: 'false'
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -37,18 +39,8 @@ jobs:
           queries: security-and-quality
           config-file: .github/codeql-config.yml
 
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Download ANTLR4 tool JAR
-        shell: bash
-        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
-
       - name: Configure
-        run: cmake --preset default -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
+        run: cmake --preset default -DANTLR4_JAR_LOCATION="${{ steps.setup.outputs.antlr-jar }}"
 
       - name: Build
         run: cmake --build --preset default

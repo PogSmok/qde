@@ -32,4 +32,5 @@ ignore:
   - "tests/**"
   - "build/**"
   - "build-*/**"
+  - "_deps/**"
   - "docs/**"
