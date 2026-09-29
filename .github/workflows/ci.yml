@@ -20,47 +20,26 @@ env:
 
 jobs:
   build-and-test:
-    name: Build & Test (${{ matrix.os }})
+    name: ${{ matrix.preset == 'release' && 'Release Build' || 'Build & Test' }} (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
+        preset: [ default, release ]
+        include:
+          - preset: default
+            build-dir: build
+          - preset: release
+            build-dir: build-rel
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+      - name: Set up build environment
+        id: setup
+        uses: ./.github/actions/setup-qde
         with:
-          version: '6.10.*'
-          cache: true
-
-      - name: Cache FetchContent dependencies
-        uses: actions/cache@v6
-        with:
-          path: _deps
-          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
-
-      - name: Cache build
-        uses: actions/cache@v6
-        with:
-          path: build
-          key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
-          restore-keys: ${{ runner.os }}-cmake-
-
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Download ANTLR4 tool JAR
-        shell: bash
-        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
-
-      - name: Install libomp (macOS)
-        if: runner.os == 'macOS'
-        run: brew install libomp
+          build-dir: ${{ matrix.build-dir }}
 
       - name: Configure
         shell: bash
@@ -69,75 +48,15 @@ jobs:
           if [ "$RUNNER_OS" = "macOS" ]; then
             EXTRA="-DOpenMP_ROOT=$(brew --prefix libomp)"
           fi
-          cmake --preset default -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar" $EXTRA
+          cmake --preset ${{ matrix.preset }} -DANTLR4_JAR_LOCATION="${{ steps.setup.outputs.antlr-jar }}" $EXTRA
 
       - name: Build
         shell: bash
-        run: cmake --build --preset default
+        run: cmake --build --preset ${{ matrix.preset }}
 
       - name: Test
         shell: bash
-        run: ctest --preset default
-
-  release:
-    name: Release Build (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.10.*'
-          cache: true
-
-      - name: Cache FetchContent dependencies
-        uses: actions/cache@v6
-        with:
-          path: _deps
-          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
-
-      - name: Cache build
-        uses: actions/cache@v6
-        with:
-          path: build-rel
-          key: ${{ runner.os }}-cmake-rel-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
-          restore-keys: ${{ runner.os }}-cmake-rel-
-
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Download ANTLR4 tool JAR
-        shell: bash
-        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
-
-      - name: Install libomp (macOS)
-        if: runner.os == 'macOS'
-        run: brew install libomp
-
-      - name: Configure
-        shell: bash
-        run: |
-          EXTRA=""
-          if [ "$RUNNER_OS" = "macOS" ]; then
-            EXTRA="-DOpenMP_ROOT=$(brew --prefix libomp)"
-          fi
-          cmake --preset release -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar" $EXTRA
-
-      - name: Build
-        shell: bash
-        run: cmake --build --preset release
-
-      - name: Test
-        shell: bash
-        run: ctest --preset release
+        run: ctest --preset ${{ matrix.preset }}
 
   sanitizers:
     name: Sanitizers
@@ -145,37 +64,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+      - name: Set up build environment
+        id: setup
+        uses: ./.github/actions/setup-qde
         with:
-          version: '6.10.*'
-          cache: true
-
-      - name: Cache FetchContent dependencies
-        uses: actions/cache@v6
-        with:
-          path: _deps
-          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
-
-      - name: Cache build
-        uses: actions/cache@v6
-        with:
-          path: build-san
-          key: ${{ runner.os }}-cmake-san-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
-          restore-keys: ${{ runner.os }}-cmake-san-
-
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Download ANTLR4 tool JAR
-        shell: bash
-        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
+          build-dir: build-san
 
       - name: Configure
-        run: cmake --preset sanitizers -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
+        run: cmake --preset sanitizers -DANTLR4_JAR_LOCATION="${{ steps.setup.outputs.antlr-jar }}"
 
       - name: Build
         run: cmake --build --preset sanitizers
@@ -189,51 +85,25 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.10.*'
-          cache: true
-
-      - name: Cache FetchContent dependencies
-        uses: actions/cache@v6
-        with:
-          path: _deps
-          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
-
-      - name: Cache build
-        uses: actions/cache@v6
-        with:
-          path: build-analysis
-          key: ${{ runner.os }}-cmake-analysis-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
-          restore-keys: ${{ runner.os }}-cmake-analysis-
-
       - name: Install clang-tidy
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 22
-          sudo apt-get install -y clang-tidy-22
-          sudo ln -sf /usr/bin/clang-tidy-22 /usr/local/bin/clang-tidy
-
-      - name: Set up Java
-        uses: actions/setup-java@v6
+        uses: ./.github/actions/install-llvm-tools
         with:
-          distribution: temurin
-          java-version: '21'
+          packages: clang-tidy-22
 
-      - name: Download ANTLR4 tool JAR
-        shell: bash
-        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
+      - name: Set up build environment
+        id: setup
+        uses: ./.github/actions/setup-qde
+        with:
+          build-dir: build-analysis
 
       - name: Configure
-        run: cmake --preset analysis -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
+        run: cmake --preset analysis -DANTLR4_JAR_LOCATION="${{ steps.setup.outputs.antlr-jar }}"
 
       - name: Build
         run: cmake --build --preset analysis
 
       - name: Run clang-tidy
-        run: find src tests -type f -name "*.cpp" | xargs -r clang-tidy -p build-analysis
+        run: find src tests -type f -name "*.cpp" | xargs -r clang-tidy-22 -p build-analysis
 
   format:
     name: clang-format
@@ -242,11 +112,9 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Install clang-format
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 22
-          sudo apt-get install -y clang-format-22
+        uses: ./.github/actions/install-llvm-tools
+        with:
+          packages: clang-format-22
 
       - name: Check formatting
         run: |
@@ -259,40 +127,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.10.*'
-          cache: true
-
-      - name: Cache FetchContent dependencies
-        uses: actions/cache@v6
-        with:
-          path: _deps
-          key: ${{ runner.os }}-fetchcontent-${{ hashFiles('CMakeLists.txt') }}
-
-      - name: Cache build
-        uses: actions/cache@v6
-        with:
-          path: build-cov
-          key: ${{ runner.os }}-cmake-cov-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'src/CMakeLists.txt', 'grammar/CMakeLists.txt', 'tests/CMakeLists.txt') }}
-          restore-keys: ${{ runner.os }}-cmake-cov-
-
       - name: Install lcov
         run: sudo apt-get install -y lcov
 
-      - name: Set up Java
-        uses: actions/setup-java@v6
+      - name: Set up build environment
+        id: setup
+        uses: ./.github/actions/setup-qde
         with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Download ANTLR4 tool JAR
-        shell: bash
-        run: curl -fsSL -o "${{ github.workspace }}/antlr4.jar" https://www.antlr.org/download/antlr-4.13.2-complete.jar
+          build-dir: build-cov
 
       - name: Configure
-        run: cmake --preset coverage -DANTLR4_JAR_LOCATION="${{ github.workspace }}/antlr4.jar"
+        run: cmake --preset coverage -DANTLR4_JAR_LOCATION="${{ steps.setup.outputs.antlr-jar }}"
 
       - name: Build
         run: cmake --build --preset coverage
@@ -303,7 +148,9 @@ jobs:
       - name: Generate coverage report
         run: |
           lcov --capture --directory build-cov --output-file coverage.info --gcov-tool gcov --ignore-errors mismatch
-          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/googletest/*' --output-file coverage.info --ignore-errors mismatch
+          # Keep only QDE's own sources: drop system headers, tests, fetched
+          # dependencies (ANTLR runtime, GoogleTest) and generated code.
+          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/_deps/*' '*/build-cov/*' --output-file coverage.info --ignore-errors mismatch
           genhtml coverage.info --output-directory coverage-html
 
       - name: Upload HTML report as artifact

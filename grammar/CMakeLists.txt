@@ -43,7 +43,13 @@ add_custom_command(
 add_library(qasm3_parser STATIC ${ANTLR_SOURCES})
 target_link_libraries(qasm3_parser PUBLIC antlr4_static)
 
-target_include_directories(qasm3_parser PUBLIC  ${ANTLR_GEN_DIR})
+# SYSTEM: warnings from generated headers must not leak into QDE's code
+target_include_directories(qasm3_parser SYSTEM PUBLIC ${ANTLR_GEN_DIR})
 target_include_directories(qasm3_parser PRIVATE ${antlr4_runtime_SOURCE_DIR}/runtime/src)
 
+# Generated code is not ours to lint or warn about
 set_target_properties(qasm3_parser PROPERTIES CXX_CLANG_TIDY "")
+target_compile_options(qasm3_parser PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/w>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>
+)
