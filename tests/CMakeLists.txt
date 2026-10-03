@@ -51,6 +51,7 @@ qt_add_executable(qde_gui_tests
     gui/test_config_manager.cpp
     gui/test_main_window.cpp
     gui/test_quantum_circuit_view.cpp
+    gui/test_simulation_results_view.cpp
     gui/test_syntax_highlighter.cpp
     gui/test_text_document.cpp
     gui/test_text_editor.cpp
