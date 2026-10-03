@@ -1,17 +1,16 @@
 #ifndef GUI_SIMULATION_RESULTS_VIEW_HPP_
 #define GUI_SIMULATION_RESULTS_VIEW_HPP_
 
+#include <cstdint>
 #include <optional>
 
+#include <QComboBox>
+#include <QPaintEvent>
 #include <QPointer>
 #include <QSize>
 #include <QWidget>
 
 #include "qde/simulator/simulation_state.hpp"
-
-class QComboBox;
-class QPaintEvent;
-class QResizeEvent;
 
 namespace qde::gui {
 
@@ -22,7 +21,7 @@ namespace qde::gui {
 class SimulationResultsView : public QWidget {
   Q_OBJECT
  public:
-  enum class Mode { kProbabilities, kStatevector };
+  enum class Mode : std::uint8_t { kProbabilities, kStatevector };
 
   explicit SimulationResultsView(QWidget* parent = nullptr);
 
@@ -37,15 +36,13 @@ class SimulationResultsView : public QWidget {
 
  protected:
   void paintEvent(QPaintEvent* event) override;
-  void resizeEvent(QResizeEvent* event) override;
 
  private:
   // Sets the minimum width to the histogram's required width so that an
   // enclosing QScrollArea scrolls instead of clipping bars.
   void FitToContent();
-  void PaintHistogram(QPaintEvent* event);
 
-  QPointer<QComboBox> modeSelector_;
+  QPointer<QComboBox> mode_selector_;
   Mode mode_{Mode::kProbabilities};
   std::optional<qde::SimulationState> state_;
 };

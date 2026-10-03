@@ -3,11 +3,12 @@
 
 #include <optional>
 
+#include <QPaintEvent>
 #include <QSize>
 #include <QWidget>
 
 #include "qde/circuit.hpp"
-#include "theme.hpp"
+#include "qde/gui/theme.hpp"
 
 namespace qde::gui {
 

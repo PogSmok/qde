@@ -24,6 +24,7 @@ inline constexpr QColor kHighlightBackground(86, 156, 214);
 // Stylesheet colors
 inline constexpr auto kCircuitViewBackground = "#19191f";
 inline constexpr auto kSplitterHandleBackground = "#3a3a3a";
+inline constexpr auto kControlBorder = "#3a3a3a";
 inline constexpr auto kMenuBackground = "#2d2d2d";
 inline constexpr auto kMenuText = "#ddd";
 inline constexpr auto kMenuSelectedBackground = "#094771";
@@ -99,7 +100,6 @@ inline constexpr int kHistDefaultHeight = 160;
 inline constexpr int kHistMargin = 16;
 inline constexpr int kHistAxisBottomPad = 28;  // room for basis labels
 inline constexpr int kHistAxisLeftPad = 36;    // room for percentage labels
-inline constexpr int kHistTitlePad = 24;
 inline constexpr int kHistBarWidth = 28;
 inline constexpr int kHistBarGap = 8;
 inline constexpr int kHistMaxStates = 64;  // <= 6 qubits
@@ -107,6 +107,7 @@ inline constexpr int kHistTitleFontSize = 10;
 inline constexpr int kHistLabelFontSize = 8;
 inline constexpr int kHistTickCount = 4;  // 25/50/75/100 % gridlines
 inline constexpr int kHistSelectorHeight = 24;
+inline constexpr int kHistAxisLabelHeight = 24;
 inline constexpr int kHistSelectorWidth = 150;
 inline constexpr int kHistSelectorTop = 4;
 inline constexpr double kHistPhaseSaturation = 0.65;

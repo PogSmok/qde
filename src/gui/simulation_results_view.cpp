@@ -8,9 +8,9 @@
 #include <QComboBox>
 #include <QFont>
 #include <QPainter>
+#include <QPalette>
 #include <QPen>
 #include <QRect>
-#include <QResizeEvent>
 #include <QString>
 
 #include "qde/gui/theme.hpp"
@@ -56,27 +56,26 @@ QColor PhaseColor(double phase) {
 }  // namespace
 
 SimulationResultsView::SimulationResultsView(QWidget* parent)
-    : QWidget{parent}, modeSelector_(new QComboBox(this)) {
+    : QWidget{parent}, mode_selector_(new QComboBox(this)) {
   QPalette pal = palette();
   pal.setColor(QPalette::Window, theme::kHistBackground);
   setAutoFillBackground(true);
   setPalette(pal);
 
-  modeSelector_->addItem("Probabilities");
-  modeSelector_->addItem("Statevector");
-  modeSelector_->setStyleSheet(
+  mode_selector_->addItem("Probabilities");
+  mode_selector_->addItem("Statevector");
+  mode_selector_->setStyleSheet(
       QString("QComboBox { background: %1; color: %2; border: 1px solid %3;"
               " padding: 1px 6px; }"
               "QComboBox QAbstractItemView { background: %1; color: %2;"
               " selection-background-color: %4; }")
-          .arg(theme::kMenuBackground, theme::kMenuText,
-               theme::kSplitterHandleBackground,
+          .arg(theme::kMenuBackground, theme::kMenuText, theme::kControlBorder,
                theme::kMenuSelectedBackground));
-  modeSelector_->setGeometry(theme::kHistMargin, theme::kHistSelectorTop,
-                             theme::kHistSelectorWidth,
-                             theme::kHistSelectorHeight);
+  mode_selector_->setGeometry(theme::kHistMargin, theme::kHistSelectorTop,
+                              theme::kHistSelectorWidth,
+                              theme::kHistSelectorHeight);
 
-  connect(modeSelector_, QOverload<int>::of(&QComboBox::currentIndexChanged),
+  connect(mode_selector_, QOverload<int>::of(&QComboBox::currentIndexChanged),
           this, [this](int index) {
             mode_ = index == 1 ? Mode::kStatevector : Mode::kProbabilities;
             update();
@@ -102,8 +101,8 @@ void SimulationResultsView::FitToContent() {
 
 void SimulationResultsView::SetMode(const Mode mode) {
   mode_ = mode;
-  if (modeSelector_) {
-    modeSelector_->setCurrentIndex(mode == Mode::kStatevector ? 1 : 0);
+  if (mode_selector_) {
+    mode_selector_->setCurrentIndex(mode == Mode::kStatevector ? 1 : 0);
   }
   update();
 }
@@ -124,20 +123,7 @@ QSize SimulationResultsView::sizeHint() const {
   return {std::max(width, theme::kHistDefaultWidth), theme::kHistDefaultHeight};
 }
 
-void SimulationResultsView::resizeEvent(QResizeEvent* event) {
-  QWidget::resizeEvent(event);
-  if (modeSelector_) {
-    modeSelector_->setGeometry(theme::kHistMargin, theme::kHistSelectorTop,
-                               theme::kHistSelectorWidth,
-                               theme::kHistSelectorHeight);
-  }
-}
-
-void SimulationResultsView::paintEvent(QPaintEvent* event) {
-  PaintHistogram(event);
-}
-
-void SimulationResultsView::PaintHistogram(QPaintEvent* /*event*/) {
+void SimulationResultsView::paintEvent(QPaintEvent* /*event*/) {
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
 
@@ -197,9 +183,10 @@ void SimulationResultsView::PaintHistogram(QPaintEvent* /*event*/) {
         statevector ? QString::number(frac, 'g', 2)
                     : QString::number(static_cast<int>(frac * 100)) + "%";
     painter.setPen(theme::kHistLabelColor);
-    painter.drawText(QRect(0, y - (theme::kHistSelectorHeight / 2),
-                           theme::kHistAxisLeftPad, theme::kHistSelectorHeight),
-                     Qt::AlignRight | Qt::AlignVCenter, text);
+    painter.drawText(
+        QRect(0, y - (theme::kHistAxisLabelHeight / 2), theme::kHistAxisLeftPad,
+              theme::kHistAxisLabelHeight),
+        Qt::AlignRight | Qt::AlignVCenter, text);
   }
 
   // ---- axes ----------------------------------------------------------

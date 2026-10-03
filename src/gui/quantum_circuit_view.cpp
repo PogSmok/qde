@@ -1,7 +1,9 @@
 #include "qde/gui/quantum_circuit_view.hpp"
 
+#include <algorithm>
+#include <array>
 #include <string>
-#include <unordered_map>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -10,7 +12,9 @@
 #include <QFont>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPalette>
 #include <QPen>
+#include <QPolygonF>
 #include <QRect>
 #include <QSize>
 
@@ -74,18 +78,28 @@ int FlatBitIndex(const Circuit& c, BitReference ref) {
 // ---- Gate color lookup -----------------------------------------------------
 
 QColor GateColor(const std::string& name) {
-  static const std::unordered_map<std::string, QColor> kMap = {
-      {"h", theme::kGateH},         {"x", theme::kGateX},
-      {"y", theme::kGateY},         {"z", theme::kGateZ},
-      {"s", theme::kGateS},         {"sdg", theme::kGateS},
-      {"t", theme::kGateT},         {"tdg", theme::kGateT},
-      {"rx", theme::kGateRotation}, {"ry", theme::kGateRotation},
-      {"rz", theme::kGateRotation}, {"u", theme::kGateRotation},
-      {"u1", theme::kGateRotation}, {"u2", theme::kGateRotation},
-      {"u3", theme::kGateRotation}, {"p", theme::kGateRotation},
-  };
-  const auto it = kMap.find(name);
-  return it != kMap.end() ? it->second : theme::kGateDefault;
+  constexpr std::array<std::pair<std::string_view, QColor>, 16> gate_colors{{
+      {"h", theme::kGateH},
+      {"x", theme::kGateX},
+      {"y", theme::kGateY},
+      {"z", theme::kGateZ},
+      {"s", theme::kGateS},
+      {"sdg", theme::kGateS},
+      {"t", theme::kGateT},
+      {"tdg", theme::kGateT},
+      {"rx", theme::kGateRotation},
+      {"ry", theme::kGateRotation},
+      {"rz", theme::kGateRotation},
+      {"u", theme::kGateRotation},
+      {"u1", theme::kGateRotation},
+      {"u2", theme::kGateRotation},
+      {"u3", theme::kGateRotation},
+      {"p", theme::kGateRotation},
+  }};
+  const auto it =
+      std::find_if(gate_colors.begin(), gate_colors.end(),
+                   [&name](const auto& entry) { return entry.first == name; });
+  return it != gate_colors.end() ? it->second : theme::kGateDefault;
 }
 
 // ---- Gate label (name + optional first param) ------------------------------
@@ -124,14 +138,13 @@ void DrawGateBox(QPainter& p, const int cx, const int cy, const QString& label,
   // label
   p.setPen(theme::kGateLabelText);
 
-  // check if the label is long (has params) and use a smaller font
   if (label.length() > theme::kLongGateLabelThreshold) {
+    p.save();
     QFont f = p.font();
     f.setPointSizeF(f.pointSizeF() * theme::kLongGateLabelFontScale);
     p.setFont(f);
     p.drawText(box, Qt::AlignCenter, label);
-    f.setPointSizeF(f.pointSizeF() / theme::kLongGateLabelFontScale);
-    p.setFont(f);
+    p.restore();
   } else {
     p.drawText(box, Qt::AlignCenter, label);
   }
@@ -228,7 +241,7 @@ void DrawMeasureBox(QPainter& p, const int cx, const int cy) {
                 theme::kPenWidth));
   p.drawRoundedRect(box, theme::kCornerRadius, theme::kCornerRadius);
 
-  // D-shaped arc (bottom half of ellipse inside the box)
+  // D-shaped arc (top half of ellipse inside the box)
   const int mx = cx;
   const int my = cy + (theme::kGateSize / 8);
   constexpr int arc_w = (theme::kGateSize / 2) - theme::kMeasureArcInset;
