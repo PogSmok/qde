@@ -1,6 +1,5 @@
 #include "qde/gui/quantum_circuit_view.hpp"
 
-#include <cmath>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -16,6 +15,7 @@
 
 #include "qde/circuit.hpp"
 #include "qde/gui/theme.hpp"
+#include "qde/gui/view_helpers.hpp"
 #include "qde/operation.hpp"
 
 namespace qde::gui {
@@ -105,38 +105,7 @@ QString GateLabel(const Operation& op) {
   if (op.gate_params.empty()) {
     return name;
   }
-
-  double const p = op.gate_params[0];
-  // express as a fraction of pi when close to a clean multiple
-  double const frac = p / M_PI;
-  if (double const rounded = std::round(frac * 4.0) / 4.0;
-      std::abs(frac - rounded) < 1e-6 && rounded != 0.0) {
-    int num = static_cast<int>(std::round(rounded * 4));
-    int den = 4;
-    // simplify
-    auto gcd = [](int a, int b) -> int {
-      a = std::abs(a);
-      b = std::abs(b);
-      while (b) {
-        a %= b;
-        std::swap(a, b);
-      }
-      return a;
-    };
-    int const g = gcd(std::abs(num), den);
-    num /= g;
-    den /= g;
-    QString pstr;
-    if (den == 1) {
-      pstr = (num == 1 ? "π" : (num == -1 ? "-π" : QString::number(num) + "π"));
-    } else {
-      pstr = QString::number(num) + "π/" + QString::number(den);
-    }
-    name += "(" + pstr + ")";
-  } else {
-    name += QString("(%1)").arg(p, 0, 'g', 3);
-  }
-  return name;
+  return name + "(" + FormatAngle(op.gate_params[0]) + ")";
 }
 
 // ---- Drawing primitives ----------------------------------------------------
@@ -324,7 +293,7 @@ void DrawBarrierColumn(QPainter& p, const int cx, const int top_y,
 }
 
 void DrawResetBox(QPainter& p, const int cx, const int cy) {
-  DrawGateBox(p, cx, cy, "|0\u27E9", theme::kGateDefault);
+  DrawGateBox(p, cx, cy, KetLabel(0, 1), theme::kGateDefault);
 }
 
 }  // namespace

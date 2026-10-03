@@ -23,6 +23,7 @@ set(LIB_GUI_SOURCES
     gui/app_controller.cpp
     gui/quantum_circuit_view.cpp
         gui/simulation_results_view.cpp
+        gui/view_helpers.cpp
     gui/text_editor.cpp
     gui/code_editor.cpp
     gui/syntax_highlighter.cpp

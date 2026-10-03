@@ -14,25 +14,16 @@
 #include <QString>
 
 #include "qde/gui/theme.hpp"
+#include "qde/gui/view_helpers.hpp"
 
 namespace qde::gui {
 
 namespace {
 
+constexpr double kPi = 3.141592653589793238462643383;
+
 int BarCount(const qde::SimulationState& state) {
   return static_cast<int>(state.basis_probabilities.size());
-}
-
-// Binary ket label for basis state `index`, big-endian over `qubit_count` bits.
-QString KetLabel(const std::size_t index, const std::size_t qubit_count) {
-  QString bits;
-  for (std::size_t b = qubit_count; b-- > 0;) {
-    bits += ((index >> b) & 1U) != 0U ? '1' : '0';
-  }
-  if (bits.isEmpty()) {
-    bits = "0";
-  }
-  return QString::fromUtf8("|") + bits + QString::fromUtf8("\u27E9");
 }
 
 // Index of the basis state with the largest probability; used as the phase
@@ -56,7 +47,7 @@ double AmplitudePhase(const qde::SimulationState& state, const std::size_t i,
 }
 
 QColor PhaseColor(double phase) {
-  double hue = (phase + M_PI) / (2.0 * M_PI);  // map [-pi, pi] -> [0, 1]
+  double hue = (phase + kPi) / (2.0 * kPi);  // map [-pi, pi] -> [0, 1]
   hue = std::clamp(hue, 0.0, 1.0);
   return QColor::fromHsvF(hue, theme::kHistPhaseSaturation,
                           theme::kHistPhaseValue);
@@ -76,7 +67,7 @@ SimulationResultsView::SimulationResultsView(QWidget* parent)
   modeSelector_->setStyleSheet(
       QString("QComboBox { background: %1; color: %2; border: 1px solid %3;"
               " padding: 1px 6px; }"
-              "QComboBox QAbstractItemView { background %1; color: %2;"
+              "QComboBox QAbstractItemView { background: %1; color: %2;"
               " selection-background-color: %4; }")
           .arg(theme::kMenuBackground, theme::kMenuText,
                theme::kSplitterHandleBackground,
