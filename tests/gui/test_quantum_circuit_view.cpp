@@ -1,7 +1,11 @@
 #include <gtest/gtest.h>
 
+#include <cstdint>
 #include <utility>
 #include <vector>
+
+#include <QImage>
+#include <QWidget>
 
 #include "qde/backend_config.hpp"
 #include "qde/circuit.hpp"
@@ -39,6 +43,16 @@ Operation HadamardOn(GateRegistry& reg, std::uint8_t qubit) {
 
 Operation PauliXOn(GateRegistry& reg, std::uint8_t qubit) {
   return {OperationType::kGate, reg.Find("x"), {}, {{0, qubit}}, {}};
+}
+
+constexpr double kPi = 3.141592653589793238462643383;
+
+QImage RenderWidget(QWidget* widget) {
+  widget->resize(widget->sizeHint());
+  QImage image(widget->size(), QImage::Format_ARGB32);
+  image.fill(Qt::black);
+  widget->render(&image);
+  return image;
 }
 
 }  // namespace
@@ -154,6 +168,54 @@ TEST_F(QuantumCircuitViewTest, RenderParsedCircuit) {
   EXPECT_EQ(view_->sizeHint(),
             ExpectedSizeHint(/*wire_count=*/2, /*op_count=*/2));
   EXPECT_EQ(view_->size(), view_->sizeHint());
+}
+
+TEST_F(QuantumCircuitViewTest, RenderAllOperationTypesProducesImage) {
+  const Circuit circuit = MakeCircuit(
+      {{"q", 2}, {"r", 2}}, {{"c", 2}},
+      {
+          {OperationType::kGate, registry_.Find("rx"), {kPi / 2}, {{0, 0}}, {}},
+          {OperationType::kGate,
+           registry_.Find("cx"),
+           {},
+           {{0, 0}, {0, 1}},
+           {}},
+          {OperationType::kGate,
+           registry_.Find("cz"),
+           {},
+           {{0, 1}, {1, 0}},
+           {}},
+          {OperationType::kGate,
+           registry_.Find("swap"),
+           {},
+           {{1, 0}, {1, 1}},
+           {}},
+          {OperationType::kGate,
+           registry_.Find("ccx"),
+           {},
+           {{0, 0}, {0, 1}, {1, 0}},
+           {}},
+          {OperationType::kGate,
+           registry_.Find("cswap"),
+           {},
+           {{0, 0}, {0, 1}, {1, 1}},
+           {}},
+          {OperationType::kMeasure, nullptr, {}, {{0, 0}}, {{0, 0}}},
+          {OperationType::kReset, nullptr, {}, {{0, 1}}, {}},
+          {OperationType::kBarrier, nullptr, {}, {{1, 0}}, {}},
+      });
+
+  view_->RenderCircuit(circuit);
+  const QImage image = RenderWidget(view_);
+
+  EXPECT_FALSE(image.isNull());
+  EXPECT_EQ(image.size(), view_->size());
+}
+
+TEST_F(QuantumCircuitViewTest, RenderPlaceholderProducesImage) {
+  const QImage image = RenderWidget(view_);
+
+  EXPECT_FALSE(image.isNull());
 }
 
 TEST_F(QuantumCircuitViewTest, ClearCircuitResetsPlaceholderSizeHint) {

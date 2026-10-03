@@ -4,8 +4,11 @@
 #include <utility>
 #include <vector>
 
+#include <QComboBox>
+#include <QImage>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QWidget>
 
 #include "qde/gui/simulation_results_view.hpp"
 #include "qde/gui/theme.hpp"
@@ -20,7 +23,20 @@ qde::SimulationState MakeState(std::size_t qubit_count,
   qde::SimulationState state;
   state.qubit_count = qubit_count;
   state.basis_probabilities = std::move(probabilities);
+  const std::size_t dim = state.basis_probabilities.size();
+  state.density_matrix.assign(dim * dim, {0.0, 0.0});
+  for (std::size_t i = 0; i < dim; ++i) {
+    state.density_matrix[(i * dim) + i] = {state.basis_probabilities[i], 0.0};
+  }
   return state;
+}
+
+QImage RenderWidget(QWidget* widget) {
+  widget->resize(widget->sizeHint());
+  QImage image(widget->size(), QImage::Format_ARGB32);
+  image.fill(Qt::black);
+  widget->render(&image);
+  return image;
 }
 
 }  // namespace
@@ -89,11 +105,51 @@ TEST(SimulationResultsViewScrollTest, WideHistogramScrollsInsideScrollArea) {
 }
 
 TEST_F(SimulationResultsViewTest, TooManyStatesFallsBackToDefaultSize) {
-  view_->ShowState(MakeState(
-      /*qubit_count=*/8, std::vector<double>(theme::kHistMaxStates + 1, 0.0)));
+  view_->ShowState(MakeState(/*qubit_count=*/7, std::vector<double>(128, 0.0)));
 
   EXPECT_EQ(view_->sizeHint(),
             QSize(theme::kHistDefaultWidth, theme::kHistDefaultHeight));
+}
+
+TEST_F(SimulationResultsViewTest, ComboAndModeStayInSync) {
+  auto* combo = view_->findChild<QComboBox*>();
+  ASSERT_NE(combo, nullptr);
+
+  combo->setCurrentIndex(1);
+  EXPECT_EQ(view_->GetMode(), SimulationResultsView::Mode::kStatevector);
+
+  view_->SetMode(SimulationResultsView::Mode::kProbabilities);
+  EXPECT_EQ(combo->currentIndex(), 0);
+}
+
+TEST_F(SimulationResultsViewTest, RenderProbabilitiesProducesImage) {
+  view_->ShowState(MakeState(/*qubit_count=*/2, {0.5, 0.0, 0.0, 0.5}));
+  const QImage image = RenderWidget(view_);
+
+  EXPECT_FALSE(image.isNull());
+}
+
+TEST_F(SimulationResultsViewTest, RenderStatevectorProducesImage) {
+  view_->ShowState(MakeState(/*qubit_count=*/1, {0.5, 0.5}));
+  view_->SetMode(SimulationResultsView::Mode::kStatevector);
+  const QImage image = RenderWidget(view_);
+
+  EXPECT_FALSE(image.isNull());
+}
+
+TEST_F(SimulationResultsViewTest, RenderTooManyStatesProducesImage) {
+  view_->ShowState(MakeState(/*qubit_count=*/7, std::vector<double>(128, 0.0)));
+  const QImage image = RenderWidget(view_);
+
+  EXPECT_FALSE(image.isNull());
+}
+
+TEST_F(SimulationResultsViewTest, RenderClearedProducesImage) {
+  view_->ShowState(MakeState(/*qubit_count=*/1, {1.0, 0.0}));
+  view_->ClearState();
+  const QImage image = RenderWidget(view_);
+
+  EXPECT_FALSE(image.isNull());
 }
 
 TEST_F(SimulationResultsViewTest, DefaultModeIsProbabilities) {
