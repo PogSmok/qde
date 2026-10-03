@@ -63,6 +63,7 @@ set_target_properties(qde_gui_tests PROPERTIES AUTOMOC ON)
 target_link_libraries(qde_gui_tests
     PRIVATE
         qde_gui
+        qde_sim
         Qt6::Test
         Qt6::Gui
         Qt6::Widgets
