@@ -3,10 +3,12 @@
 
 #include <QLabel>
 #include <QMainWindow>
+#include <QScrollArea>
 #include <QSplitter>
 
 #include "qde/gui/app_controller.hpp"
 #include "qde/gui/quantum_circuit_view.hpp"
+#include "qde/gui/simulation_results_view.hpp"
 #include "qde/gui/text_editor.hpp"
 
 namespace qde::gui {
@@ -43,8 +45,12 @@ class MainWindow : public QMainWindow {
 
   QPointer<TextEditor> editor_;
   QPointer<QuantumCircuitView> circuitView_;
+  QPointer<QScrollArea> circuitScroll_;
+  QPointer<SimulationResultsView> simResultsView_;
+  QPointer<QScrollArea> simResultsScroll_;
   QPointer<AppController> controller_;
   QPointer<QSplitter> splitter_;
+  QPointer<QSplitter> bottomSplitter_;
   QPointer<QLabel> statusLabel_;
 };
 

@@ -51,16 +51,19 @@ qt_add_executable(qde_gui_tests
     gui/test_config_manager.cpp
     gui/test_main_window.cpp
     gui/test_quantum_circuit_view.cpp
+    gui/test_simulation_results_view.cpp
     gui/test_syntax_highlighter.cpp
     gui/test_text_document.cpp
     gui/test_text_editor.cpp
     gui/test_token_patterns.cpp
+    gui/test_view_helpers.cpp
 )
 set_target_properties(qde_gui_tests PROPERTIES AUTOMOC ON)
 
 target_link_libraries(qde_gui_tests
     PRIVATE
         qde_gui
+        qde_sim
         Qt6::Test
         Qt6::Gui
         Qt6::Widgets

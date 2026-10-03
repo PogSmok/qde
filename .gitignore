@@ -58,6 +58,7 @@ default.profraw
 
 # IDE
 .claude/
+.cursor/
 .vscode/
 .idea/
 *.swp
