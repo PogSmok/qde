@@ -1,8 +1,11 @@
 #include "qde/gui/view_helpers.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <numeric>
+#include <utility>
+#include <vector>
 
 #include <QChar>
 #include <QLatin1Char>
@@ -54,6 +57,21 @@ QString KetLabel(const std::size_t index, const std::size_t qubit_count) {
     bits = QStringLiteral("0");
   }
   return QLatin1Char('|') + bits + QChar(kKetClose);
+}
+
+std::vector<std::pair<int, int>> ContiguousRuns(std::vector<int> rows) {
+  std::sort(rows.begin(), rows.end());
+  rows.erase(std::unique(rows.begin(), rows.end()), rows.end());
+
+  std::vector<std::pair<int, int>> runs;
+  for (const int row : rows) {
+    if (!runs.empty() && runs.back().second + 1 == row) {
+      runs.back().second = row;
+    } else {
+      runs.emplace_back(row, row);
+    }
+  }
+  return runs;
 }
 
 }  // namespace qde::gui

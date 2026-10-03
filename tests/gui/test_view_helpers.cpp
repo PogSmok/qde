@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <utility>
+#include <vector>
+
 #include <QChar>
 #include <QString>
 
@@ -46,6 +49,15 @@ TEST(KetLabelTest, MostSignificantQubitFirst) {
 
 TEST(KetLabelTest, ZeroQubitsShowsZero) {
   EXPECT_EQ(KetLabel(0, 0), "|0" + KetCloseText());
+}
+
+TEST(ContiguousRunsTest, GroupsSortsAndDeduplicates) {
+  const std::vector<std::pair<int, int>> expected = {{0, 2}, {4, 4}};
+  EXPECT_EQ(ContiguousRuns({2, 0, 1, 4, 1}), expected);
+}
+
+TEST(ContiguousRunsTest, EmptyInputGivesNoRuns) {
+  EXPECT_TRUE(ContiguousRuns({}).empty());
 }
 
 }  // namespace qde::gui

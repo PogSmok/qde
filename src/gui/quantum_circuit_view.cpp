@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <QBrush>
@@ -68,14 +69,6 @@ int FlatBitIndex(const Circuit& c, BitReference ref) {
     idx += static_cast<int>(regs[r].size);
   }
   return qubit_total + idx + ref.bit;
-}
-
-int TotalQubitCount(const Circuit& c) {
-  int n = 0;
-  for (const auto& [name, size] : c.QubitRegisters()) {
-    n += static_cast<int>(size);
-  }
-  return n;
 }
 
 // ---- Gate color lookup -----------------------------------------------------
@@ -379,7 +372,6 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
   const Circuit& c = *circuit_;
   const auto wires = FlattenWires(c);
   const int num_wires = static_cast<int>(wires.size());
-  const int num_qubits = TotalQubitCount(c);
   const int total_width = sizeHint().width();
 
   // ---- wire labels ---------------------------------------------------
@@ -426,12 +418,14 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
 
     switch (op.type) {
       case OperationType::kBarrier: {
-        if (num_qubits == 0) {
-          break;
+        std::vector<int> rows;
+        rows.reserve(op.qubits.size());
+        for (const auto& qr : op.qubits) {
+          rows.push_back(FlatQubitIndex(c, qr));
         }
-        const int top_y = WireY(0);
-        const int bottom_y = WireY(num_qubits - 1);
-        DrawBarrierColumn(painter, cx, top_y, bottom_y);
+        for (const auto& [first, last] : ContiguousRuns(std::move(rows))) {
+          DrawBarrierColumn(painter, cx, WireY(first), WireY(last));
+        }
         break;
       }
 
