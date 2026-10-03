@@ -9,6 +9,7 @@
 #include "qde/gui/quantum_circuit_view.hpp"
 #include "qde/gui/text_editor.hpp"
 #include "qde/parser.hpp"
+#include "qde/simulator/simulation_state.hpp"
 
 namespace qde::gui {
 
@@ -21,6 +22,9 @@ class AppController : public QObject {
   [[nodiscard]] const qde::Circuit* GetCircuit() const {
     return circuit_.has_value() ? &circuit_.value() : nullptr;
   }
+  [[nodiscard]] const qde::SimulationState* GetSimulationState() const {
+    return simulationState_.has_value() ? &simulationState_.value() : nullptr;
+  }
 
   void OnTextChanged();
   void ParseNow();
@@ -28,12 +32,17 @@ class AppController : public QObject {
  signals:
   void ParseSuccess();
   void ParseError(const QStringList& errors);
+  void SimulationComplete(const qde::SimulationState& state);
+  void SimulationFailed(const QString& message);
 
  private:
+  void RunSimulation();
+
   QPointer<QuantumCircuitView> circuitView_;
   QPointer<TextEditor> textEditor_;
   std::unique_ptr<qde::Parser> parser_;
   std::optional<qde::Circuit> circuit_;
+  std::optional<qde::SimulationState> simulationState_;
   QTimer debounceTimer_;
 };
 

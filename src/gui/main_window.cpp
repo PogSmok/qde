@@ -15,8 +15,11 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow{parent},
       editor_(new TextEditor(this)),
       circuitView_(new QuantumCircuitView(this)),
+      circuitScroll_(new QScrollArea(this)),
+      simResultsView_(new SimulationResultsView(this)),
       controller_(new AppController(circuitView_, editor_, this)),
-      splitter_(new QSplitter(Qt::Vertical, this)) {
+      splitter_(new QSplitter(Qt::Vertical, this)),
+      bottomSplitter_(new QSplitter(Qt::Horizontal, this)) {
   setWindowTitle("QDE");
   resize(1280, 800);
 
@@ -30,8 +33,23 @@ MainWindow::MainWindow(QWidget* parent)
   p.setColor(QPalette::Highlight, theme::kHighlightBackground);
   setPalette(p);
 
+  circuitScroll_->setWidget(circuitView_);
+  circuitScroll_->setWidgetResizable(false);
+  circuitScroll_->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+  circuitScroll_->setStyleSheet(
+      QString("QScrollArea { background: %1; border: none; }"
+              "QScrollArea > QWidget > QWidget { background: %1; }")
+          .arg(theme::kCircuitViewBackground));
+  // #19191f
+  bottomSplitter_->addWidget(circuitScroll_);
+  bottomSplitter_->addWidget(simResultsView_);
+  bottomSplitter_->setSizes({700, 360});
+  bottomSplitter_->setStyleSheet(
+      QString("QSplitter::handle { background: %1; width: 4px; }")
+          .arg(theme::kSplitterHandleBackground));
+
   splitter_->addWidget(editor_);
-  splitter_->addWidget(circuitView_);
+  splitter_->addWidget(bottomSplitter_);
   splitter_->setSizes({400, 360});
   splitter_->setStyleSheet(
       QString("QSplitter::handle { background: %1; height: 4px; }")
@@ -51,6 +69,12 @@ MainWindow::MainWindow(QWidget* parent)
           &MainWindow::OnParseSuccess);
   connect(controller_, &AppController::ParseError, this,
           &MainWindow::OnParseFail);
+  connect(controller_, &AppController::SimulationComplete, simResultsView_,
+          &SimulationResultsView::ShowState);
+  connect(controller_, &AppController::ParseError, simResultsView_,
+          [this](const QStringList&) { simResultsView_->ClearState(); });
+  connect(controller_, &AppController::SimulationFailed, simResultsView_,
+          [this](const QString&) { simResultsView_->ClearState(); });
 }
 
 void MainWindow::SetupMenuBar() {

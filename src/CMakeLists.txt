@@ -22,6 +22,7 @@ set(LIB_GUI_SOURCES
     gui/main_window.cpp
     gui/app_controller.cpp
     gui/quantum_circuit_view.cpp
+        gui/simulation_results_view.cpp
     gui/text_editor.cpp
     gui/code_editor.cpp
     gui/syntax_highlighter.cpp
@@ -31,6 +32,7 @@ set(LIB_GUI_SOURCES
     ${PROJECT_SOURCE_DIR}/include/qde/gui/app_controller.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/main_window.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/quantum_circuit_view.hpp
+        ${PROJECT_SOURCE_DIR}/include/qde/gui/simulation_results_view.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/text_editor.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/code_editor.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/text_document.hpp
@@ -50,6 +52,7 @@ target_include_directories(qde_gui
 target_link_libraries(qde_gui
     PUBLIC
         qde_lib
+        qde_sim
         Qt6::Gui
         Qt6::Core
         Qt6::Widgets
