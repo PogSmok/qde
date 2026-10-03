@@ -130,6 +130,20 @@ TEST_F(QuantumCircuitViewTest, SetMarginsAffectsSizeHint) {
                              /*margin_right=*/40));
 }
 
+TEST_F(QuantumCircuitViewTest, SetMarginsAfterRenderResizesWidget) {
+  const Circuit circuit =
+      MakeCircuit({{"q", 1}}, {}, {HadamardOn(registry_, 0)});
+
+  view_->RenderCircuit(circuit);
+  view_->SetMargins(20, 20, 30, 40);
+
+  EXPECT_EQ(view_->size(),
+            ExpectedSizeHint(/*wire_count=*/1, /*op_count=*/1,
+                             /*margin_up=*/20, /*margin_down=*/20,
+                             /*margin_left=*/30,
+                             /*margin_right=*/40));
+}
+
 TEST_F(QuantumCircuitViewTest, RenderParsedCircuit) {
   const auto result = Parser::Parse(
       "OPENQASM 3.0;\nqreg q[2];\nh q[0];\nx q[1];", BackendConfig{});

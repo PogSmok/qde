@@ -306,6 +306,8 @@ void QuantumCircuitView::SetMargins(const int up, const int down,
   margin_down_ = down;
   margin_left_ = left;
   margin_right_ = right;
+  resize(sizeHint());
+  update();
 }
 
 void QuantumCircuitView::RenderCircuit(const Circuit& circuit) {
