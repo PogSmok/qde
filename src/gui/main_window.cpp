@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget* parent)
       circuitView_(new QuantumCircuitView(this)),
       circuitScroll_(new QScrollArea(this)),
       simResultsView_(new SimulationResultsView(this)),
+      simResultsScroll_(new QScrollArea(this)),
       controller_(new AppController(circuitView_, editor_, this)),
       splitter_(new QSplitter(Qt::Vertical, this)),
       bottomSplitter_(new QSplitter(Qt::Horizontal, this)) {
@@ -41,8 +42,15 @@ MainWindow::MainWindow(QWidget* parent)
               "QScrollArea > QWidget > QWidget { background: %1; }")
           .arg(theme::kCircuitViewBackground));
   // #19191f
+  simResultsScroll_->setWidget(simResultsView_);
+  simResultsScroll_->setWidgetResizable(true);
+  simResultsScroll_->setStyleSheet(
+      QString("QScrollArea { background: %1; border: none; }"
+              "QScrollArea > QWidget > QWidget { background: %1; }")
+          .arg(theme::kHistBackground.name()));
+
   bottomSplitter_->addWidget(circuitScroll_);
-  bottomSplitter_->addWidget(simResultsView_);
+  bottomSplitter_->addWidget(simResultsScroll_);
   bottomSplitter_->setSizes({700, 360});
   bottomSplitter_->setStyleSheet(
       QString("QSplitter::handle { background: %1; width: 4px; }")

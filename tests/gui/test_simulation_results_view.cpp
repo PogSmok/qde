@@ -4,6 +4,9 @@
 #include <utility>
 #include <vector>
 
+#include <QScrollArea>
+#include <QScrollBar>
+
 #include "qde/gui/simulation_results_view.hpp"
 #include "qde/gui/theme.hpp"
 #include "qde/simulator/simulation_state.hpp"
@@ -35,10 +38,11 @@ TEST_F(SimulationResultsViewTest, SizeHintDefault) {
             QSize(theme::kHistDefaultWidth, theme::kHistDefaultHeight));
 }
 
-TEST_F(SimulationResultsViewTest, ShowStateResizesWidget) {
+TEST_F(SimulationResultsViewTest, ShowStateSetsMinimumWidth) {
   view_->ShowState(MakeState(/*qubit_count=*/2, {0.5, 0.0, 0.0, 0.5}));
 
-  EXPECT_EQ(view_->size(), view_->sizeHint());
+  EXPECT_EQ(view_->minimumWidth(), view_->sizeHint().width());
+  EXPECT_EQ(view_->width(), view_->sizeHint().width());
 }
 
 TEST_F(SimulationResultsViewTest, ShowStateWidthScalesWithStateCount) {
@@ -58,19 +62,35 @@ TEST_F(SimulationResultsViewTest, ClearStateRestoresDefault) {
 
   EXPECT_EQ(view_->sizeHint(),
             QSize(theme::kHistDefaultWidth, theme::kHistDefaultHeight));
-  EXPECT_EQ(view_->size(), view_->sizeHint());
+  EXPECT_EQ(view_->minimumWidth(), theme::kHistDefaultWidth);
+  EXPECT_EQ(view_->width(), theme::kHistDefaultWidth);
 }
 
 TEST_F(SimulationResultsViewTest, ShowStateWithZeroQubits) {
   view_->ShowState(MakeState(/*qubit_count=*/0, {1.0}));
 
-  EXPECT_EQ(view_->size(), view_->sizeHint());
+  EXPECT_EQ(view_->minimumWidth(), view_->sizeHint().width());
+}
+
+TEST(SimulationResultsViewScrollTest, WideHistogramScrollsInsideScrollArea) {
+  QScrollArea area;
+  area.setWidgetResizable(true);
+  auto* view = new SimulationResultsView();
+  area.setWidget(view);
+  area.resize(theme::kHistDefaultWidth, theme::kHistDefaultHeight * 2);
+  area.show();
+
+  view->ShowState(MakeState(
+      /*qubit_count=*/6,
+      std::vector<double>(theme::kHistMaxStates, 1.0 / theme::kHistMaxStates)));
+
+  EXPECT_GE(view->width(), view->sizeHint().width());
+  EXPECT_GT(area.horizontalScrollBar()->maximum(), 0);
 }
 
 TEST_F(SimulationResultsViewTest, TooManyStatesFallsBackToDefaultSize) {
   view_->ShowState(MakeState(
-      /*qubit_count=*/8,
-      std::vector<double>(theme::kHistMaxStates + 1, 0.0)));
+      /*qubit_count=*/8, std::vector<double>(theme::kHistMaxStates + 1, 0.0)));
 
   EXPECT_EQ(view_->sizeHint(),
             QSize(theme::kHistDefaultWidth, theme::kHistDefaultHeight));

@@ -40,6 +40,9 @@ class SimulationResultsView : public QWidget {
   void resizeEvent(QResizeEvent* event) override;
 
  private:
+  // Sets the minimum width to the histogram's required width so that an
+  // enclosing QScrollArea scrolls instead of clipping bars.
+  void FitToContent();
   void PaintHistogram(QPaintEvent* event);
 
   QPointer<QComboBox> modeSelector_;

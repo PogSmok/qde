@@ -47,6 +47,7 @@ class MainWindow : public QMainWindow {
   QPointer<QuantumCircuitView> circuitView_;
   QPointer<QScrollArea> circuitScroll_;
   QPointer<SimulationResultsView> simResultsView_;
+  QPointer<QScrollArea> simResultsScroll_;
   QPointer<AppController> controller_;
   QPointer<QSplitter> splitter_;
   QPointer<QSplitter> bottomSplitter_;

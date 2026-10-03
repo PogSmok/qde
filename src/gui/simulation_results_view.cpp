@@ -85,13 +85,18 @@ SimulationResultsView::SimulationResultsView(QWidget* parent)
 
 void SimulationResultsView::ShowState(const qde::SimulationState& state) {
   state_ = state;
-  resize(sizeHint());
-  update();
+  FitToContent();
 }
 
 void SimulationResultsView::ClearState() {
   state_.reset();
-  resize(sizeHint());
+  FitToContent();
+}
+
+void SimulationResultsView::FitToContent() {
+  const QSize hint = sizeHint();
+  setMinimumWidth(hint.width());
+  resize(hint.width(), std::max(height(), hint.height()));
   update();
 }
 
