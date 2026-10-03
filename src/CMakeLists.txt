@@ -56,6 +56,7 @@ add_library(qde_gui STATIC
     gui/syntax_highlighter.cpp
     gui/text_document.cpp
     gui/text_editor.cpp
+    gui/view_helpers.cpp
     # Q_OBJECT headers live outside this directory, list explicitly
     ${PROJECT_SOURCE_DIR}/include/qde/gui/app_controller.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/code_editor.hpp

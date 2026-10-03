@@ -56,6 +56,7 @@ qt_add_executable(qde_gui_tests
     gui/test_text_document.cpp
     gui/test_text_editor.cpp
     gui/test_token_patterns.cpp
+    gui/test_view_helpers.cpp
 )
 set_target_properties(qde_gui_tests PROPERTIES AUTOMOC ON)
 
