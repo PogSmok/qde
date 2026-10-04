@@ -302,6 +302,50 @@ void DrawResetBox(QPainter& p, const int cx, const int cy) {
   DrawGateBox(p, cx, cy, KetLabel(0, 1), theme::kGateDefault);
 }
 
+template <typename WireYFn>
+void DrawGateOperation(QPainter& painter, const int cx, const Circuit& c,
+                       const Operation& op, WireYFn wire_y) {
+  if (!op.gate) {
+    return;
+  }
+  const std::string& name = op.gate->Name();
+
+  if (const int nq = static_cast<int>(op.qubits.size()); nq == 1) {
+    const int wy = wire_y(FlatQubitIndex(c, op.qubits[0]));
+    DrawGateBox(painter, cx, wy, GateLabel(op), GateColor(name));
+
+  } else if (nq == 2) {
+    const int y0 = wire_y(FlatQubitIndex(c, op.qubits[0]));
+    const int y1 = wire_y(FlatQubitIndex(c, op.qubits[1]));
+    if (name == "cx" || name == "cnot") {
+      DrawCNOT(painter, cx, y0, y1);
+    } else if (name == "cz") {
+      DrawCZ(painter, cx, y0, y1);
+    } else if (name == "swap") {
+      DrawSWAP(painter, cx, y0, y1);
+    } else {
+      // generic 2-qubit box
+      DrawGenericMultiGate(painter, cx, {y0, y1},
+                           QString::fromStdString(name).toUpper());
+    }
+
+  } else if (nq == 3 && (name == "ccx" || name == "toffoli")) {
+    const int y0 = wire_y(FlatQubitIndex(c, op.qubits[0]));
+    const int y1 = wire_y(FlatQubitIndex(c, op.qubits[1]));
+    const int y2 = wire_y(FlatQubitIndex(c, op.qubits[2]));
+    DrawCCX(painter, cx, y0, y1, y2);
+
+  } else {
+    std::vector<int> ys;
+    ys.reserve(nq);
+    for (const auto& qr : op.qubits) {
+      ys.push_back(wire_y(FlatQubitIndex(c, qr)));
+    }
+    DrawGenericMultiGate(painter, cx, ys,
+                         QString::fromStdString(name).toUpper());
+  }
+}
+
 }  // namespace
 
 // ---- QuantumCircuitView implementation -------------------------------------
@@ -466,48 +510,11 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
         break;
       }
 
-      case OperationType::kGate: {
-        if (!op.gate) {
-          break;
-        }
-        const std::string& name = op.gate->Name();
-
-        if (const int nq = static_cast<int>(op.qubits.size()); nq == 1) {
-          const int wy = WireY(FlatQubitIndex(c, op.qubits[0]));
-          DrawGateBox(painter, cx, wy, GateLabel(op), GateColor(name));
-
-        } else if (nq == 2) {
-          const int y0 = WireY(FlatQubitIndex(c, op.qubits[0]));
-          const int y1 = WireY(FlatQubitIndex(c, op.qubits[1]));
-          if (name == "cx" || name == "cnot") {
-            DrawCNOT(painter, cx, y0, y1);
-          } else if (name == "cz") {
-            DrawCZ(painter, cx, y0, y1);
-          } else if (name == "swap") {
-            DrawSWAP(painter, cx, y0, y1);
-          } else {
-            // generic 2-qubit box
-            DrawGenericMultiGate(painter, cx, {y0, y1},
-                                 QString::fromStdString(name).toUpper());
-          }
-
-        } else if (nq == 3 && (name == "ccx" || name == "toffoli")) {
-          const int y0 = WireY(FlatQubitIndex(c, op.qubits[0]));
-          const int y1 = WireY(FlatQubitIndex(c, op.qubits[1]));
-          const int y2 = WireY(FlatQubitIndex(c, op.qubits[2]));
-          DrawCCX(painter, cx, y0, y1, y2);
-
-        } else {
-          std::vector<int> ys;
-          ys.reserve(nq);
-          for (const auto& qr : op.qubits) {
-            ys.push_back(WireY(FlatQubitIndex(c, qr)));
-          }
-          DrawGenericMultiGate(painter, cx, ys,
-                               QString::fromStdString(name).toUpper());
-        }
+      case OperationType::kGate:
+        DrawGateOperation(painter, cx, c, op, [this](const int flat_index) {
+          return WireY(flat_index);
+        });
         break;
-      }
     }
   }
 }
