@@ -14,16 +14,35 @@ namespace qde::gui {
 namespace {
 
 qde::Circuit StripMeasurements(const qde::Circuit& circuit) {
-  std::vector<qde::Operation> ops;
-  ops.reserve(circuit.Operations().size());
-  for (const auto& op : circuit.Operations()) {
+  const auto& src = circuit.Operations();
+  std::set<std::pair<std::uint8_t, std::uint8_t>> used_later;
+  std::vector<qde::Operation> kept;
+  kept.reserve(src.size());
+
+  for (auto it = src.rbegin(); it != src.rend(); ++it) {
+    const auto& op = *it;
+
     if (op.type == qde::OperationType::kMeasure) {
-      continue;
+      const bool terminal =
+          std::none_of(op.qubits.begin(), op.qubits.end(), [&](const auto& q) {
+            return used_later.count({q.reg, q.qubit}) > 0;
+          });
+      if (terminal) {
+        continue;
+      }
     }
-    ops.push_back(op);
+
+    if (op.type != qde::OperationType::kBarrier) {
+      for (const auto& q : op.qubits) {
+        used_later.insert({q.reg, q.qubit});
+      }
+    }
+    kept.push_back(op);
   }
+
+  std::reverse(kept.begin(), kept.end());
   return qde::Circuit{circuit.GetRegistry(), circuit.QubitRegisters(),
-                      circuit.BitRegisters(), std::move(ops)};
+                      circuit.BitRegisters(), std::move(kept)};
 }
 
 }  // namespace
