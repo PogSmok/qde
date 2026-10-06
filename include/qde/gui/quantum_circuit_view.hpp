@@ -34,7 +34,11 @@ class QuantumCircuitView : public QWidget {
  private:
   int WireY(int flat_index) const;
   int ColX(int col) const;
-  int TotalWires() const;
+  int TotalWires() const { return num_wires_; }
+  int QubitRow(const QubitReference& r) const {
+    return qubit_rows_[r.reg][r.qubit];
+  }
+  int BitRow(const BitReference& r) const { return bit_rows_[r.reg][r.bit]; }
 
   int margin_up_ = theme::kDefaultMargin;
   int margin_down_ = theme::kDefaultMargin;
@@ -43,7 +47,8 @@ class QuantumCircuitView : public QWidget {
   int max_wire_label_width_ = theme::kLabelWidth;
   int num_wires_ = 0;
   int padding_width_ = 0;
-  std::vector<std::vector<int>> wireNextCell_;
+  std::vector<std::vector<int>> qubit_rows_, bit_rows_;  // -1 = hidden
+  int hidden_wires_ = 0;
   std::vector<WireInfo> wires_;
   std::optional<Circuit> circuit_;
 };

@@ -28,49 +28,6 @@ namespace qde::gui {
 
 namespace {
 
-// ---- Wire helpers ----------------------------------------------------------
-
-std::vector<WireInfo> FlattenWires(const Circuit& c) {
-  std::vector<WireInfo> wires;
-  for (const auto& [name, size] : c.QubitRegisters()) {
-    for (std::size_t i = 0; i < size; ++i) {
-      wires.push_back(
-          {QString::fromStdString(name) + "[" + QString::number(i) + "]",
-           false});
-    }
-  }
-  for (const auto& [name, size] : c.BitRegisters()) {
-    for (std::size_t i = 0; i < size; ++i) {
-      wires.push_back(
-          {QString::fromStdString(name) + "[" + QString::number(i) + "]",
-           true});
-    }
-  }
-  return wires;
-}
-
-int FlatQubitIndex(const Circuit& c, QubitReference ref) {
-  int idx = 0;
-  const auto& regs = c.QubitRegisters();
-  for (std::size_t r = 0; r < ref.reg; ++r) {
-    idx += static_cast<int>(regs[r].size);
-  }
-  return idx + ref.qubit;
-}
-
-int FlatBitIndex(const Circuit& c, BitReference ref) {
-  int qubit_total = 0;
-  for (const auto& [name, size] : c.QubitRegisters()) {
-    qubit_total += static_cast<int>(size);
-  }
-  int idx = 0;
-  const auto& regs = c.BitRegisters();
-  for (std::size_t r = 0; r < ref.reg; ++r) {
-    idx += static_cast<int>(regs[r].size);
-  }
-  return qubit_total + idx + ref.bit;
-}
-
 // ---- Gate color lookup -----------------------------------------------------
 
 QColor GateColor(const std::string& name) {
@@ -296,20 +253,20 @@ void DrawResetBox(QPainter& p, const int cx, const int cy) {
   DrawGateBox(p, cx, cy, KetLabel(0, 1), theme::kGateDefault);
 }
 
-template <typename WireYFn>
-void DrawGateOperation(QPainter& painter, const int cx, const Circuit& c,
-                       const Operation& op, WireYFn wire_y) {
+template <typename WireYFn, typename RowFn>
+void DrawGateOperation(QPainter& painter, const int cx, const Operation& op,
+                       WireYFn wire_y, RowFn row) {
   if (!op.gate) {
     return;
   }
   const std::string& name = op.gate->Name();
   if (const int nq = static_cast<int>(op.qubits.size()); nq == 1) {
-    const int wy = wire_y(FlatQubitIndex(c, op.qubits[0]));
+    const int wy = wire_y(row(op.qubits[0]));
     DrawGateBox(painter, cx, wy, GateLabel(op), GateColor(name));
 
   } else if (nq == 2) {
-    const int y0 = wire_y(FlatQubitIndex(c, op.qubits[0]));
-    const int y1 = wire_y(FlatQubitIndex(c, op.qubits[1]));
+    const int y0 = wire_y(row(op.qubits[0]));
+    const int y1 = wire_y(row(op.qubits[1]));
     if (name == "cx") {
       DrawCNOT(painter, cx, y0, y1);
     } else if (name == "cz") {
@@ -322,16 +279,16 @@ void DrawGateOperation(QPainter& painter, const int cx, const Circuit& c,
     }
 
   } else if (nq == 3 && name == "ccx") {
-    const int y0 = wire_y(FlatQubitIndex(c, op.qubits[0]));
-    const int y1 = wire_y(FlatQubitIndex(c, op.qubits[1]));
-    const int y2 = wire_y(FlatQubitIndex(c, op.qubits[2]));
+    const int y0 = wire_y(row(op.qubits[0]));
+    const int y1 = wire_y(row(op.qubits[1]));
+    const int y2 = wire_y(row(op.qubits[2]));
     DrawCCX(painter, cx, y0, y1, y2);
 
   } else {
     std::vector<int> ys;
     ys.reserve(nq);
-    for (const auto& qr : op.qubits) {
-      ys.push_back(wire_y(FlatQubitIndex(c, qr)));
+    for (const auto& [_, qubit] : op.qubits) {
+      ys.push_back(wire_y(row(op.qubits[qubit])));
     }
     DrawGenericMultiGate(painter, cx, ys, GateLabel(op));
   }
@@ -360,7 +317,32 @@ void QuantumCircuitView::SetMargins(const int up, const int down,
 
 void QuantumCircuitView::RenderCircuit(const Circuit& circuit) {
   circuit_ = circuit;
-  wires_ = FlattenWires(circuit);
+  wires_.clear();
+  qubit_rows_.clear();
+  bit_rows_.clear();
+  hidden_wires_ = 0;
+
+  const auto build = [&](const auto& regs, const bool classical, auto& rows,
+                         const int limit) {
+    int shown = 0;
+    for (const auto& [name, size] : regs) {
+      auto& r = rows.emplace_back(size, -1);
+      for (std::size_t i = 0; i < size; ++i) {
+        if (shown >= limit) {
+          ++hidden_wires_;
+          continue;
+        }
+        r[i] = static_cast<int>(wires_.size());
+        wires_.push_back(
+            {QString::fromStdString(name) + "[" + QString::number(i) + "]",
+             classical});
+        ++shown;
+      }
+    }
+  };
+  build(circuit.QubitRegisters(), false, qubit_rows_,
+        theme::kMaxDisplayedQubits);
+  build(circuit.BitRegisters(), true, bit_rows_, theme::kMaxDisplayedBits);
   num_wires_ = static_cast<int>(wires_.size());
 
   max_wire_label_width_ = theme::kLabelWidth;
@@ -372,15 +354,6 @@ void QuantumCircuitView::RenderCircuit(const Circuit& circuit) {
     max_wire_label_width_ = std::max(label_width, max_wire_label_width_);
   }
 
-  const auto register_n =
-      circuit.QubitRegisters().size() + circuit.BitRegisters().size();
-  wireNextCell_ = std::vector<std::vector<int>>(register_n);
-  for (const auto& [_, size] : circuit.QubitRegisters()) {
-    wireNextCell_.emplace_back(size);
-  }
-  for (const auto& [_, size] : circuit.BitRegisters()) {
-    wireNextCell_.emplace_back(size);
-  }
   resize(sizeHint());  // tells QScrollArea to update its scrollable extent
   update();
 }
@@ -388,12 +361,12 @@ void QuantumCircuitView::RenderCircuit(const Circuit& circuit) {
 void QuantumCircuitView::ClearCircuit() {
   circuit_.reset();
   wires_.clear();
+  qubit_rows_.clear();
+  bit_rows_.clear();
+  hidden_wires_ = 0;
   num_wires_ = 0;
   max_wire_label_width_ = theme::kLabelWidth;
-  for (std::vector<int> reg : wireNextCell_) {
-    reg.clear();
-  }
-  wireNextCell_.clear();
+
   resize(sizeHint());
   update();
 }
@@ -408,20 +381,6 @@ int QuantumCircuitView::ColX(const int col) const {
          (theme::kCellWidth / 2);
 }
 
-int QuantumCircuitView::TotalWires() const {
-  if (!circuit_) {
-    return 0;
-  }
-  int n = 0;
-  for (const auto& [name, size] : circuit_->QubitRegisters()) {
-    n += static_cast<int>(size);
-  }
-  for (const auto& [name, size] : circuit_->BitRegisters()) {
-    n += static_cast<int>(size);
-  }
-  return n;
-}
-
 QSize QuantumCircuitView::sizeHint() const {
   if (!circuit_) {
     return {theme::kDefaultWidth, theme::kDefaultHeight};
@@ -429,7 +388,8 @@ QSize QuantumCircuitView::sizeHint() const {
   const int cols = static_cast<int>(circuit_->Operations().size());
   const int w = max_wire_label_width_ + margin_left_ + margin_right_ +
                 ((cols + 1) * theme::kCellWidth);
-  const int h = margin_up_ + margin_down_ + (TotalWires() * theme::kCellHeight);
+  const int h =
+      margin_up_ + margin_down_ + ((TotalWires() + 1) * theme::kCellHeight);
   return {w, h};
 }
 
@@ -485,35 +445,26 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
   }
 
   // ---- operations ----------------------------------------------------
-  wireNextCell_.clear();
-  wireNextCell_.reserve(c.QubitRegisters().size() + c.BitRegisters().size());
-  for (const auto& reg : c.QubitRegisters()) {
-    wireNextCell_.emplace_back(reg.size, 0);  // one counter per wire, all 0
-  }
-  for (const auto& reg : c.BitRegisters()) {
-    wireNextCell_.emplace_back(reg.size, 0);  // one counter per wire, all 0
-  }
-  const auto& ops = c.Operations();
-  for (const Operation& op : ops) {
+  std::vector<int> next_col(num_wires_, 0);
+
+  for (const Operation& op : c.Operations()) {
+    const bool hidden =
+        std::any_of(op.qubits.begin(), op.qubits.end(),
+                    [this](const auto& q) { return QubitRow(q) < 0; });
+    if (hidden) continue;
+
     int col = 0;
-    for (const auto& [reg, qubit] : op.qubits) {
-      col = std::max(col, wireNextCell_[reg][qubit]);
-    }
-    for (const auto& [reg, qubit] : op.qubits) {
-      wireNextCell_[reg][qubit] = col + 1;
-    }
+    for (const auto& q : op.qubits) col = std::max(col, next_col[QubitRow(q)]);
+    for (const auto& q : op.qubits) next_col[QubitRow(q)] = col + 1;
     const int cx = ColX(col);
 
     switch (op.type) {
       case OperationType::kBarrier: {
         std::vector<int> rows;
         rows.reserve(op.qubits.size());
-        for (const auto& qr : op.qubits) {
-          rows.push_back(FlatQubitIndex(c, qr));
-        }
-        for (const auto& [first, last] : ContiguousRuns(std::move(rows))) {
+        for (const auto& q : op.qubits) rows.push_back(QubitRow(q));
+        for (const auto& [first, last] : ContiguousRuns(std::move(rows)))
           DrawBarrierColumn(painter, cx, WireY(first), WireY(last));
-        }
         break;
       }
 
@@ -521,8 +472,7 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
         if (op.qubits.empty()) {
           break;
         }
-        const int wy = WireY(FlatQubitIndex(c, op.qubits[0]));
-        DrawResetBox(painter, cx, wy);
+        DrawResetBox(painter, cx, WireY(QubitRow(op.qubits[0])));
         break;
       }
 
@@ -530,21 +480,27 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
         if (op.qubits.empty()) {
           break;
         }
-        const int qy = WireY(FlatQubitIndex(c, op.qubits[0]));
+        const int qy = WireY(QubitRow(op.qubits[0]));
         DrawMeasureBox(painter, cx, qy);
         if (!op.measure_target.empty()) {
-          const int by = WireY(FlatBitIndex(c, op.measure_target[0]));
-          DrawMeasureArrow(painter, cx, qy, by);
+          const int br = BitRow(op.measure_target[0]);
+          if (br >= 0) DrawMeasureArrow(painter, cx, qy, WireY(br));
         }
         break;
       }
 
       case OperationType::kGate:
-        DrawGateOperation(painter, cx, c, op, [this](const int flat_index) {
-          return WireY(flat_index);
-        });
+        DrawGateOperation(
+            painter, cx, op, [this](int i) { return WireY(i); },
+            [this](QubitReference q) { return QubitRow(q); });
         break;
     }
+  }
+  if (hidden_wires_ > 0) {
+    painter.setPen(theme::kPlaceholderText);
+    painter.drawText(
+        QPoint(padding_width_, WireY(num_wires_ - 1) + theme::kCellHeight),
+        QString("+%1 wires hidden").arg(hidden_wires_));
   }
 }
 

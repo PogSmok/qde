@@ -5,6 +5,10 @@
 
 namespace qde::gui::theme {
 
+// Capped qubits/bits
+inline constexpr int kMaxDisplayedQubits = 16;
+inline constexpr int kMaxDisplayedBits = 16;
+
 // Editor colors
 inline constexpr QColor kEditorBackground(30, 30, 30);
 inline constexpr QColor kEditorText(211, 211, 211);
@@ -102,7 +106,8 @@ inline constexpr int kHistAxisBottomPad = 28;  // room for basis labels
 inline constexpr int kHistAxisLeftPad = 36;    // room for percentage labels
 inline constexpr int kHistBarWidth = 28;
 inline constexpr int kHistBarGap = 8;
-inline constexpr int kHistMaxStates = 64;  // <= 6 qubits
+inline constexpr int kMaxSimQubits = 6;
+inline constexpr int kHistMaxStates = 1 << kMaxSimQubits;  // <= 6 qubits
 inline constexpr int kHistTitleFontSize = 10;
 inline constexpr int kHistLabelFontSize = 8;
 inline constexpr int kHistTickCount = 4;  // 25/50/75/100 % gridlines
