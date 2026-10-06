@@ -256,11 +256,11 @@ void SimulationResultsView::paintEvent(QPaintEvent* /*event*/) {
     painter.fillRect(QRect(x, y, bar_width, bar_height), color);
 
     painter.setPen(theme::kHistLabelColor);
-    painter.drawText(QRect(x - (theme::kHistBarGap / 2), plot_bottom + 2,
-              bar_width + theme::kHistBarGap,
-                           theme::kHistAxisBottomPad - 2),
-                     Qt::AlignHCenter | Qt::AlignTop,
-                     KetLabel(static_cast<std::size_t>(i), state.qubit_count));
+    painter.drawText(
+        QRect(x - (theme::kHistBarGap / 2), plot_bottom + 2,
+              bar_width + theme::kHistBarGap, theme::kHistAxisBottomPad - 2),
+        Qt::AlignHCenter | Qt::AlignTop,
+        KetLabel(static_cast<std::size_t>(i), state.qubit_count));
   }
 }
 
