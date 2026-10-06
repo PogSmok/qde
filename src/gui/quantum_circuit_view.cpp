@@ -19,6 +19,7 @@
 #include <QSize>
 
 #include "qde/circuit.hpp"
+#include "qde/gui/config.hpp"
 #include "qde/gui/theme.hpp"
 #include "qde/gui/view_helpers.hpp"
 #include "qde/operation.hpp"
@@ -28,11 +29,6 @@ namespace qde::gui {
 namespace {
 
 // ---- Wire helpers ----------------------------------------------------------
-
-struct WireInfo {
-  QString label;
-  bool classical{false};
-};
 
 std::vector<WireInfo> FlattenWires(const Circuit& c) {
   std::vector<WireInfo> wires;
@@ -90,7 +86,7 @@ QColor GateColor(const std::string& name) {
       {"rx", theme::kGateRotation},
       {"ry", theme::kGateRotation},
       {"rz", theme::kGateRotation},
-      {"u", theme::kGateRotation},
+      {"U", theme::kGateRotation},
       {"u1", theme::kGateRotation},
       {"u2", theme::kGateRotation},
       {"u3", theme::kGateRotation},
@@ -102,7 +98,7 @@ QColor GateColor(const std::string& name) {
   return it != gate_colors.end() ? it->second : theme::kGateDefault;
 }
 
-// ---- Gate label (name + optional first param) ------------------------------
+// ---- Gate label (name + parameters) ------------------------------
 
 QString GateLabel(const Operation& op) {
   if (!op.gate) {
@@ -112,7 +108,11 @@ QString GateLabel(const Operation& op) {
   if (op.gate_params.empty()) {
     return name;
   }
-  return name + "(" + FormatAngle(op.gate_params[0]) + ")";
+  QString params = FormatAngle(op.gate_params[0]);
+  for (int i = 1; i < static_cast<int>(op.gate_params.size()); i++) {
+    params += ", " + FormatAngle(op.gate_params[i]);
+  }
+  return name + "\n(" + params + ")";
 }
 
 // ---- Drawing primitives ----------------------------------------------------
@@ -212,17 +212,11 @@ void DrawGenericMultiGate(QPainter& p, const int cx,
   if (wire_ys.empty()) {
     return;
   }
-  const int min_y = *std::min_element(wire_ys.begin(), wire_ys.end());
-  const int max_y = *std::max_element(wire_ys.begin(), wire_ys.end());
-  const int height = max_y - min_y + theme::kGateSize;
-  const QRect box(cx - (theme::kGateSize / 2), min_y - (theme::kGateSize / 2),
-                  theme::kGateSize, height);
-  p.setBrush(theme::kGateDefault);
-  p.setPen(QPen(theme::kGateDefault.lighter(theme::kGateBorderLighter),
-                theme::kPenWidth));
-  p.drawRoundedRect(box, theme::kCornerRadius, theme::kCornerRadius);
-  p.setPen(theme::kGateLabelText);
-  p.drawText(box, Qt::AlignCenter | Qt::TextWordWrap, label);
+  DrawVerticalConnector(p, cx, wire_ys[0], wire_ys[wire_ys.size() - 1]);
+  DrawGateBox(p, cx, wire_ys[0], label, theme::kGateDefault);
+  for (int i = 1; i < static_cast<int>(wire_ys.size()); i++) {
+    DrawControlDot(p, cx, wire_ys[i]);
+  }
 }
 
 void DrawMeasureBox(QPainter& p, const int cx, const int cy) {
@@ -309,7 +303,6 @@ void DrawGateOperation(QPainter& painter, const int cx, const Circuit& c,
     return;
   }
   const std::string& name = op.gate->Name();
-
   if (const int nq = static_cast<int>(op.qubits.size()); nq == 1) {
     const int wy = wire_y(FlatQubitIndex(c, op.qubits[0]));
     DrawGateBox(painter, cx, wy, GateLabel(op), GateColor(name));
@@ -317,7 +310,7 @@ void DrawGateOperation(QPainter& painter, const int cx, const Circuit& c,
   } else if (nq == 2) {
     const int y0 = wire_y(FlatQubitIndex(c, op.qubits[0]));
     const int y1 = wire_y(FlatQubitIndex(c, op.qubits[1]));
-    if (name == "cx" || name == "cnot") {
+    if (name == "cx") {
       DrawCNOT(painter, cx, y0, y1);
     } else if (name == "cz") {
       DrawCZ(painter, cx, y0, y1);
@@ -325,11 +318,10 @@ void DrawGateOperation(QPainter& painter, const int cx, const Circuit& c,
       DrawSWAP(painter, cx, y0, y1);
     } else {
       // generic 2-qubit box
-      DrawGenericMultiGate(painter, cx, {y0, y1},
-                           QString::fromStdString(name).toUpper());
+      DrawGenericMultiGate(painter, cx, {y0, y1}, GateLabel(op));
     }
 
-  } else if (nq == 3 && (name == "ccx" || name == "toffoli")) {
+  } else if (nq == 3 && name == "ccx") {
     const int y0 = wire_y(FlatQubitIndex(c, op.qubits[0]));
     const int y1 = wire_y(FlatQubitIndex(c, op.qubits[1]));
     const int y2 = wire_y(FlatQubitIndex(c, op.qubits[2]));
@@ -341,8 +333,7 @@ void DrawGateOperation(QPainter& painter, const int cx, const Circuit& c,
     for (const auto& qr : op.qubits) {
       ys.push_back(wire_y(FlatQubitIndex(c, qr)));
     }
-    DrawGenericMultiGate(painter, cx, ys,
-                         QString::fromStdString(name).toUpper());
+    DrawGenericMultiGate(painter, cx, ys, GateLabel(op));
   }
 }
 
@@ -369,12 +360,40 @@ void QuantumCircuitView::SetMargins(const int up, const int down,
 
 void QuantumCircuitView::RenderCircuit(const Circuit& circuit) {
   circuit_ = circuit;
+  wires_ = FlattenWires(circuit);
+  num_wires_ = static_cast<int>(wires_.size());
+
+  max_wire_label_width_ = theme::kLabelWidth;
+  const QFont f(theme::kWireLabelFontFamily, theme::kWireLabelFontSize);
+  const QFontMetrics fm(f);
+  padding_width_ = fm.horizontalAdvance(" ") * theme::kLabelPadding;
+  for (const auto& [label, _] : wires_) {
+    const auto label_width = fm.horizontalAdvance(label) + (2 * padding_width_);
+    max_wire_label_width_ = std::max(label_width, max_wire_label_width_);
+  }
+
+  const auto register_n =
+      circuit.QubitRegisters().size() + circuit.BitRegisters().size();
+  wireNextCell_ = std::vector<std::vector<int>>(register_n);
+  for (const auto& [_, size] : circuit.QubitRegisters()) {
+    wireNextCell_.emplace_back(size);
+  }
+  for (const auto& [_, size] : circuit.BitRegisters()) {
+    wireNextCell_.emplace_back(size);
+  }
   resize(sizeHint());  // tells QScrollArea to update its scrollable extent
   update();
 }
 
 void QuantumCircuitView::ClearCircuit() {
   circuit_.reset();
+  wires_.clear();
+  num_wires_ = 0;
+  max_wire_label_width_ = theme::kLabelWidth;
+  for (std::vector<int> reg : wireNextCell_) {
+    reg.clear();
+  }
+  wireNextCell_.clear();
   resize(sizeHint());
   update();
 }
@@ -385,7 +404,7 @@ int QuantumCircuitView::WireY(const int flat_index) const {
 }
 
 int QuantumCircuitView::ColX(const int col) const {
-  return theme::kLabelWidth + margin_left_ + (col * theme::kCellWidth) +
+  return max_wire_label_width_ + margin_left_ + (col * theme::kCellWidth) +
          (theme::kCellWidth / 2);
 }
 
@@ -408,7 +427,7 @@ QSize QuantumCircuitView::sizeHint() const {
     return {theme::kDefaultWidth, theme::kDefaultHeight};
   }
   const int cols = static_cast<int>(circuit_->Operations().size());
-  const int w = theme::kLabelWidth + margin_left_ + margin_right_ +
+  const int w = max_wire_label_width_ + margin_left_ + margin_right_ +
                 ((cols + 1) * theme::kCellWidth);
   const int h = margin_up_ + margin_down_ + (TotalWires() * theme::kCellHeight);
   return {w, h};
@@ -429,37 +448,33 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
   }
 
   const Circuit& c = *circuit_;
-  const auto wires = FlattenWires(c);
-  const int num_wires = static_cast<int>(wires.size());
   const int total_width = sizeHint().width();
 
   // ---- wire labels ---------------------------------------------------
   {
-    QFont f = painter.font();
-    f.setFamily(theme::kWireLabelFontFamily);
-    f.setPointSize(theme::kWireLabelFontSize);
+    const QFont f(theme::kWireLabelFontFamily, theme::kWireLabelFontSize);
     painter.setFont(f);
 
-    for (int i = 0; i < num_wires; ++i) {
+    for (int i = 0; i < num_wires_; ++i) {
       const int y = WireY(i);
       const QColor col =
-          wires[i].classical ? theme::kClassWireColor : theme::kWireColor;
+          wires_[i].classical ? theme::kClassWireColor : theme::kWireColor;
       painter.setPen(col);
-      const QRect label_rect(theme::kLabelPadding, y - (theme::kCellHeight / 2),
-                             theme::kLabelWidth - (theme::kLabelPadding * 2),
+      const QRect label_rect(padding_width_, y - (theme::kCellHeight / 2),
+                             max_wire_label_width_ - (2 * padding_width_),
                              theme::kCellHeight);
       painter.drawText(label_rect, Qt::AlignVCenter | Qt::AlignRight,
-                       wires[i].label);
+                       wires_[i].label);
     }
   }
 
   // ---- wires ---------------------------------------------------------
-  for (int i = 0; i < num_wires; ++i) {
+  for (int i = 0; i < num_wires_; ++i) {
     const int y = WireY(i);
-    constexpr int x0 = theme::kLabelWidth;
+    const int x0 = max_wire_label_width_;
     const int x1 = total_width - margin_right_;
 
-    if (!wires[i].classical) {
+    if (!wires_[i].classical) {
       painter.setPen(QPen(theme::kWireColor, theme::kPenWidth));
       painter.drawLine(x0, y, x1, y);
     } else {
@@ -470,9 +485,23 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
   }
 
   // ---- operations ----------------------------------------------------
+  wireNextCell_.clear();
+  wireNextCell_.reserve(c.QubitRegisters().size() + c.BitRegisters().size());
+  for (const auto& reg : c.QubitRegisters()) {
+    wireNextCell_.emplace_back(reg.size, 0);  // one counter per wire, all 0
+  }
+  for (const auto& reg : c.BitRegisters()) {
+    wireNextCell_.emplace_back(reg.size, 0);  // one counter per wire, all 0
+  }
   const auto& ops = c.Operations();
-  for (int col = 0; col < static_cast<int>(ops.size()); ++col) {
-    const Operation& op = ops[col];
+  for (const Operation& op : ops) {
+    int col = 0;
+    for (const auto& [reg, qubit] : op.qubits) {
+      col = std::max(col, wireNextCell_[reg][qubit]);
+    }
+    for (const auto& [reg, qubit] : op.qubits) {
+      wireNextCell_[reg][qubit] = col + 1;
+    }
     const int cx = ColX(col);
 
     switch (op.type) {

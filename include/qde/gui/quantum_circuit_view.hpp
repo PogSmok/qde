@@ -12,6 +12,11 @@
 
 namespace qde::gui {
 
+struct WireInfo {
+  QString label;
+  bool classical{false};
+};
+
 class QuantumCircuitView : public QWidget {
   Q_OBJECT
  public:
@@ -35,6 +40,11 @@ class QuantumCircuitView : public QWidget {
   int margin_down_ = theme::kDefaultMargin;
   int margin_left_ = theme::kDefaultMargin;
   int margin_right_ = theme::kDefaultMargin;
+  int max_wire_label_width_ = theme::kLabelWidth;
+  int num_wires_ = 0;
+  int padding_width_ = 0;
+  std::vector<std::vector<int>> wireNextCell_;
+  std::vector<WireInfo> wires_;
   std::optional<Circuit> circuit_;
 };
 
