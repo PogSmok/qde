@@ -26,7 +26,8 @@ QSize ExpectedSizeHint(int wire_count, int op_count,
                        int margin_right = theme::kDefaultMargin) {
   const int width = theme::kLabelWidth + margin_left + margin_right +
                     (op_count + 1) * theme::kCellWidth;
-  const int height = margin_up + margin_down + wire_count * theme::kCellHeight;
+  const int height =
+      margin_up + margin_down + (wire_count + 1) * theme::kCellHeight;
   return {width, height};
 }
 
