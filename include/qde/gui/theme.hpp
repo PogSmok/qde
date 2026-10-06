@@ -77,6 +77,7 @@ inline constexpr double kPenWidth = 1.5;
 inline constexpr int kPlaceholderFontSize = 10;
 inline constexpr int kWireLabelFontSize = 9;
 inline constexpr auto kWireLabelFontFamily = "Consolas, Monospace";
+inline constexpr auto kMessageLabelFontFamily = "Consolas, Monospace";
 
 // Circuit view colors
 inline constexpr QColor kCircuitBackground{25, 25, 35};
@@ -125,6 +126,7 @@ inline constexpr QColor kHistAxisColor{120, 120, 130};
 inline constexpr QColor kHistGridColor{60, 60, 70};
 inline constexpr QColor kHistLabelColor{180, 180, 180};
 inline constexpr QColor kHistPlaceholderText{120, 120, 120};
+inline constexpr QColor kHistErrorText{220, 20, 10};
 
 }  // namespace qde::gui::theme
 

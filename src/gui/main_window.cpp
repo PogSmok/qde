@@ -83,6 +83,8 @@ MainWindow::MainWindow(QWidget* parent)
           [this](const QStringList&) { simResultsView_->ClearState(); });
   connect(controller_, &AppController::SimulationFailed, simResultsView_,
           [this](const QString&) { simResultsView_->ClearState(); });
+  connect(controller_, &AppController::SimulationFailed, simResultsView_,
+          &SimulationResultsView::ShowError);
 }
 
 void MainWindow::SetupMenuBar() {

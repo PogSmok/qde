@@ -78,6 +78,18 @@ void AppController::RunSimulation() {
   }
 
   try {
+    int simulated_qubits = 0;
+    for (const auto& [_, qubits] : circuit_->QubitRegisters()) {
+      simulated_qubits += qubits;
+    }
+    if (simulated_qubits > theme::kMaxSimQubits) {
+      emit SimulationFailed(
+          QString(
+              "Cannot simulate: circuit exceeds the maximum qubit count of %1")
+              .arg(theme::kMaxSimQubits));
+      return;
+    }
+
     const qde::SimulationCircuit sim_circuit{StripMeasurements(*circuit_)};
     simulationState_ = qde::Simulator::RunFinal(sim_circuit);
     emit SimulationComplete(*simulationState_);

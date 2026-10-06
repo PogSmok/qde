@@ -26,13 +26,13 @@ class SimulationResultsView : public QWidget {
   explicit SimulationResultsView(QWidget* parent = nullptr);
 
   void ShowState(const qde::SimulationState& state);
-
   void ClearState();
-
   [[nodiscard]] Mode GetMode() const { return mode_; }
   void SetMode(Mode mode);
-
   QSize sizeHint() const override;
+
+ public slots:
+  void ShowError(const QString& message);
 
  protected:
   void paintEvent(QPaintEvent* event) override;
@@ -41,10 +41,12 @@ class SimulationResultsView : public QWidget {
   // Sets the minimum width to the histogram's required width so that an
   // enclosing QScrollArea scrolls instead of clipping bars.
   void FitToContent();
+  int BarWidth() const;
 
   QPointer<QComboBox> mode_selector_;
   Mode mode_{Mode::kProbabilities};
   std::optional<qde::SimulationState> state_;
+  std::optional<QString> error_;
 };
 
 }  // namespace qde::gui
