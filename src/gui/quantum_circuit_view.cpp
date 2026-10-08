@@ -27,32 +27,61 @@
 namespace qde::gui {
 
 namespace {
+// ---- Standard Gates ----------------------------------------------
+struct GateViewDef {
+  const char* name;
+  const int nq;
+  const int control_qubits;
+  const QColor color;
+};
+
+constexpr std::array<GateViewDef, 33> kStandardGates = {
+    GateViewDef{"p", 1, 0, theme::kGateP},
+    GateViewDef{"x", 1, 0, theme::kGateX},
+    GateViewDef{"y", 1, 0, theme::kGateY},
+    GateViewDef{"z", 1, 0, theme::kGateZ},
+    GateViewDef{"h", 1, 0, theme::kGateH},
+    GateViewDef{"s", 1, 0, theme::kGateS},
+    GateViewDef{"sdg", 1, 0, theme::kGateSDG},
+    GateViewDef{"t", 1, 0, theme::kGateT},
+    GateViewDef{"tdg", 1, 0, theme::kGateTDG},
+    GateViewDef{"sx", 1, 0, theme::kGateSX},
+    GateViewDef{"rx", 1, 0, theme::kGateRX},
+    GateViewDef{"ry", 1, 0, theme::kGateRY},
+    GateViewDef{"rz", 1, 0, theme::kGateRZ},
+    GateViewDef{"cx", 2, 1, theme::kGateCX},
+    GateViewDef{"cy", 2, 1, theme::kGateCY},
+    GateViewDef{"cz", 2, 1, theme::kGateCZ},
+    GateViewDef{"cp", 2, 1, theme::kGateCP},
+    GateViewDef{"crx", 2, 1, theme::kGateCRX},
+    GateViewDef{"cry", 2, 1, theme::kGateCRY},
+    GateViewDef{"crz", 2, 1, theme::kGateCRZ},
+    GateViewDef{"ch", 2, 1, theme::kGateCH},
+    GateViewDef{"swap", 2, 0, theme::kGateSwap},
+    GateViewDef{"ccx", 3, 2, theme::kGateCCX},
+    GateViewDef{"cswap", 3, 1, theme::kGateCSwap},
+    GateViewDef{"cu", 2, 1, theme::kGateCU},
+    GateViewDef{"U", 1, 0, theme::kGateU},
+    GateViewDef{"CX", 2, 1, theme::kGateCX},
+    GateViewDef{"phase", 1, 0, theme::kGatePhase},
+    GateViewDef{"cphase", 2, 1, theme::kGateCPhase},
+    GateViewDef{"id", 1, 0, theme::kGateID},
+    GateViewDef{"u1", 1, 0, theme::kGateU1},
+    GateViewDef{"u2", 1, 0, theme::kGateU2},
+    GateViewDef{"u3", 1, 0, theme::kGateU3}};
 
 // ---- Gate color lookup -----------------------------------------------------
 
-QColor GateColor(const std::string& name) {
-  constexpr std::array<std::pair<std::string_view, QColor>, 16> gate_colors{{
-      {"h", theme::kGateH},
-      {"x", theme::kGateX},
-      {"y", theme::kGateY},
-      {"z", theme::kGateZ},
-      {"s", theme::kGateS},
-      {"sdg", theme::kGateS},
-      {"t", theme::kGateT},
-      {"tdg", theme::kGateT},
-      {"rx", theme::kGateRotation},
-      {"ry", theme::kGateRotation},
-      {"rz", theme::kGateRotation},
-      {"U", theme::kGateRotation},
-      {"u1", theme::kGateRotation},
-      {"u2", theme::kGateRotation},
-      {"u3", theme::kGateRotation},
-      {"p", theme::kGateRotation},
-  }};
-  const auto it =
-      std::find_if(gate_colors.begin(), gate_colors.end(),
-                   [&name](const auto& entry) { return entry.first == name; });
-  return it != gate_colors.end() ? it->second : theme::kGateDefault;
+const std::unordered_map<std::string_view, const GateViewDef*>& GateIndex() {
+  static const auto kIndex = [] {
+    std::unordered_map<std::string_view, const GateViewDef*> m;
+    m.reserve(kStandardGates.size() * 2);
+    for (const GateViewDef& g : kStandardGates) {
+      m.emplace(g.name, &g);
+    }
+    return m;
+  }();
+  return kIndex;
 }
 
 // ---- Gate label (name + parameters) ------------------------------
@@ -107,22 +136,24 @@ void DrawGateBox(QPainter& p, const int cx, const int cy, const QString& label,
   }
 }
 
-void DrawControlDot(QPainter& p, const int cx, const int cy) {
-  p.setBrush(theme::kGateLabelText);
+void DrawControlDot(QPainter& p, const int cx, const int cy,
+                    const QColor& color) {
+  p.setBrush(color);
   p.setPen(Qt::NoPen);
   p.drawEllipse(QPoint(cx, cy), theme::kDotRadius, theme::kDotRadius);
 }
 
-void DrawTargetCircle(QPainter& p, const int cx, const int cy) {
+void DrawTargetCircle(QPainter& p, const int cx, const int cy,
+                      const QColor& color) {
   p.setBrush(Qt::NoBrush);
-  p.setPen(QPen(theme::kGateLabelText, 2));
+  p.setPen(QPen(color, 2));
   p.drawEllipse(QPoint(cx, cy), theme::kTargetRadius, theme::kTargetRadius);
   p.drawLine(cx, cy - theme::kTargetRadius, cx, cy + theme::kTargetRadius);
   p.drawLine(cx - theme::kTargetRadius, cy, cx + theme::kTargetRadius, cy);
 }
 
-void DrawXMark(QPainter& p, const int cx, const int cy) {
-  p.setPen(QPen(theme::kGateLabelText, 2));
+void DrawXMark(QPainter& p, const int cx, const int cy, const QColor& color) {
+  p.setPen(QPen(color, 2));
   p.drawLine(cx - theme::kXMarkArm, cy - theme::kXMarkArm,
              cx + theme::kXMarkArm, cy + theme::kXMarkArm);
   p.drawLine(cx + theme::kXMarkArm, cy - theme::kXMarkArm,
@@ -130,49 +161,54 @@ void DrawXMark(QPainter& p, const int cx, const int cy) {
 }
 
 void DrawVerticalConnector(QPainter& p, const int cx, const int y0,
-                           const int y1) {
-  p.setPen(QPen(theme::kGateLabelText, 2));
+                           const int y1, const QColor& color) {
+  p.setPen(QPen(color, 2));
   p.drawLine(cx, y0, cx, y1);
 }
 
-void DrawCNOT(QPainter& p, const int cx, const int ctrl_y, const int tgt_y) {
-  DrawVerticalConnector(p, cx, ctrl_y, tgt_y);
-  DrawControlDot(p, cx, ctrl_y);
-  DrawTargetCircle(p, cx, tgt_y);
+// Special gates
+
+void DrawCNOT(QPainter& p, const int cx, const int ctrl_y, const int tgt_y,
+              const QColor& color) {
+  DrawVerticalConnector(p, cx, ctrl_y, tgt_y, color);
+  DrawControlDot(p, cx, ctrl_y, color);
+  DrawTargetCircle(p, cx, tgt_y, color);
 }
 
-void DrawCZ(QPainter& p, const int cx, const int y0, const int y1) {
-  DrawVerticalConnector(p, cx, y0, y1);
-  DrawControlDot(p, cx, y0);
-  DrawControlDot(p, cx, y1);
-}
-
-void DrawSWAP(QPainter& p, const int cx, const int y0, const int y1) {
-  DrawVerticalConnector(p, cx, y0, y1);
-  DrawXMark(p, cx, y0);
-  DrawXMark(p, cx, y1);
+void DrawCZ(QPainter& p, const int cx, const int y0, const int y1,
+            const QColor& color) {
+  DrawVerticalConnector(p, cx, y0, y1, color);
+  DrawControlDot(p, cx, y0, color);
+  DrawControlDot(p, cx, y1, color);
 }
 
 void DrawCCX(QPainter& p, const int cx, const int ctrl0_y, const int ctrl1_y,
-             const int tgt_y) {
+             const int tgt_y, const QColor& color) {
   const int min_y = std::min({ctrl0_y, ctrl1_y, tgt_y});
   const int max_y = std::max({ctrl0_y, ctrl1_y, tgt_y});
-  DrawVerticalConnector(p, cx, min_y, max_y);
-  DrawControlDot(p, cx, ctrl0_y);
-  DrawControlDot(p, cx, ctrl1_y);
-  DrawTargetCircle(p, cx, tgt_y);
+  DrawVerticalConnector(p, cx, min_y, max_y, color);
+  DrawControlDot(p, cx, ctrl0_y, color);
+  DrawControlDot(p, cx, ctrl1_y, color);
+  DrawTargetCircle(p, cx, tgt_y, color);
 }
 
-void DrawGenericMultiGate(QPainter& p, const int cx,
-                          const std::vector<int>& wire_ys,
-                          const QString& label) {
+void DrawSWAP(QPainter& p, const int cx, const std::vector<int>& wire_ys,
+              const int control_qubits, const QColor& color) {
   if (wire_ys.empty()) {
     return;
   }
-  DrawVerticalConnector(p, cx, wire_ys[0], wire_ys[wire_ys.size() - 1]);
-  DrawGateBox(p, cx, wire_ys[0], label, theme::kGateDefault);
-  for (int i = 1; i < static_cast<int>(wire_ys.size()); i++) {
-    DrawControlDot(p, cx, wire_ys[i]);
+  auto max_y = -1;
+  auto min_y = INT_MAX;
+  for (const auto y : wire_ys) {
+    min_y = std::min(min_y, y);
+    max_y = std::max(max_y, y);
+  }
+  DrawVerticalConnector(p, cx, max_y, min_y, color);
+  for (int i = 0; i < control_qubits; i++) {
+    DrawControlDot(p, cx, wire_ys[i], color);
+  }
+  for (int i = control_qubits; i < static_cast<int>(wire_ys.size()); i++) {
+    DrawXMark(p, cx, wire_ys[i], color);
   }
 }
 
@@ -187,8 +223,8 @@ void DrawMeasureBox(QPainter& p, const int cx, const int cy) {
                    theme::kGateShadowOffset, theme::kGateShadowOffset),
       theme::kCornerRadius, theme::kCornerRadius);
 
-  p.setBrush(theme::kGateMeas);
-  p.setPen(QPen(theme::kGateMeas.lighter(theme::kGateBorderLighter),
+  p.setBrush(theme::kGateMeasurement);
+  p.setPen(QPen(theme::kGateMeasurement.lighter(theme::kGateBorderLighter),
                 theme::kPenWidth));
   p.drawRoundedRect(box, theme::kCornerRadius, theme::kCornerRadius);
 
@@ -233,24 +269,45 @@ void DrawMeasureArrow(QPainter& p, const int cx, const int from_y,
   p.drawPolygon(tip);
 }
 
-void DrawBarrierColumn(QPainter& p, const int cx, const int top_y,
-                       const int bottom_y) {
+void DrawBarrierColumn(QPainter& p, const int cx, const int top_y) {
   // semi-transparent stripe
   p.setPen(Qt::NoPen);
   p.setBrush(theme::kBarrierFill);
   p.drawRect(cx - theme::kBarrierHalfWidth, top_y - (theme::kCellHeight / 2),
-             theme::kBarrierHalfWidth * 2,
-             bottom_y - top_y + theme::kCellHeight);
+             theme::kBarrierHalfWidth * 2, theme::kCellHeight);
 
   // dashed line
   p.setBrush(Qt::NoBrush);
   p.setPen(QPen(theme::kBarrierLine, theme::kPenWidth, Qt::DashLine));
   p.drawLine(cx, top_y - (theme::kCellHeight / 2), cx,
-             bottom_y + (theme::kCellHeight / 2));
+             top_y + (theme::kCellHeight / 2));
 }
 
 void DrawResetBox(QPainter& p, const int cx, const int cy) {
   DrawGateBox(p, cx, cy, KetLabel(0, 1), theme::kGateDefault);
+}
+
+void DrawMultiGate(QPainter& p, const int cx, const std::vector<int>& wire_ys,
+                   const int control_qubits, const QString& label,
+                   const QColor& color) {
+  if (wire_ys.empty()) {
+    return;
+  }
+  auto max_y = -1;
+  auto min_y = INT_MAX;
+  for (const auto y : wire_ys) {
+    max_y = std::max(max_y, y);
+    min_y = std::min(min_y, y);
+  }
+  DrawVerticalConnector(p, cx, min_y, max_y, color);
+  for (int i = 0; i < control_qubits; i++) {
+    DrawControlDot(p, cx, wire_ys[i], color);
+  }
+  DrawGateBox(p, cx, wire_ys[control_qubits], label, color);
+  auto label_i = 2;  // for user made multi target gates labels
+  for (int i = control_qubits + 1; i < static_cast<int>(wire_ys.size()); i++) {
+    DrawGateBox(p, cx, wire_ys[i], QString("#%1").arg(label_i++), color);
+  }
 }
 
 template <typename WireYFn, typename RowFn>
@@ -259,38 +316,42 @@ void DrawGateOperation(QPainter& painter, const int cx, const Operation& op,
   if (!op.gate) {
     return;
   }
+  const int nq = op.qubits.size();
   const std::string& name = op.gate->Name();
-  if (const int nq = static_cast<int>(op.qubits.size()); nq == 1) {
-    const int wy = wire_y(row(op.qubits[0]));
-    DrawGateBox(painter, cx, wy, GateLabel(op), GateColor(name));
-
-  } else if (nq == 2) {
-    const int y0 = wire_y(row(op.qubits[0]));
-    const int y1 = wire_y(row(op.qubits[1]));
-    if (name == "cx") {
-      DrawCNOT(painter, cx, y0, y1);
-    } else if (name == "cz") {
-      DrawCZ(painter, cx, y0, y1);
-    } else if (name == "swap") {
-      DrawSWAP(painter, cx, y0, y1);
-    } else {
-      // generic 2-qubit box
-      DrawGenericMultiGate(painter, cx, {y0, y1}, GateLabel(op));
-    }
-
-  } else if (nq == 3 && name == "ccx") {
-    const int y0 = wire_y(row(op.qubits[0]));
-    const int y1 = wire_y(row(op.qubits[1]));
-    const int y2 = wire_y(row(op.qubits[2]));
-    DrawCCX(painter, cx, y0, y1, y2);
-
+  const auto& index = GateIndex();
+  QColor color;
+  int control_qubits = 0;
+  auto it = index.find(name);
+  if (it == index.end()) {
+    color = theme::kGateDefault;
+    control_qubits = 0;
   } else {
-    std::vector<int> ys;
-    ys.reserve(nq);
-    for (const auto& [_, qubit] : op.qubits) {
-      ys.push_back(wire_y(row(op.qubits[qubit])));
-    }
-    DrawGenericMultiGate(painter, cx, ys, GateLabel(op));
+    const auto& gate_definition = *it->second;
+    control_qubits = gate_definition.control_qubits;
+    color = gate_definition.color;
+  }
+
+  if (nq == 1) {
+    DrawGateBox(painter, cx, wire_y(row(op.qubits[0])), GateLabel(op), color);
+    return;
+  }
+
+  std::vector<int> ys;
+  ys.reserve(nq);
+  for (const auto& qubit : op.qubits) {
+    ys.push_back(wire_y(row(qubit)));
+  }
+
+  if (name == "swap" || name == "cswap") {
+    DrawSWAP(painter, cx, ys, control_qubits, color);
+  } else if (name == "CX" || name == "cx") {
+    DrawCNOT(painter, cx, ys[0], ys[1], color);
+  } else if (name == "cz") {
+    DrawCZ(painter, cx, ys[0], ys[1], color);
+  } else if (name == "ccx") {
+    DrawCCX(painter, cx, ys[0], ys[1], ys[2], color);
+  } else {
+    DrawMultiGate(painter, cx, ys, control_qubits, GateLabel(op), color);
   }
 }
 
@@ -353,6 +414,12 @@ void QuantumCircuitView::RenderCircuit(const Circuit& circuit) {
     const auto label_width = fm.horizontalAdvance(label) + (2 * padding_width_);
     max_wire_label_width_ = std::max(label_width, max_wire_label_width_);
   }
+  last_qubit_row_ = 0;
+  for (const auto& reg : qubit_rows_) {
+    for (int const r : reg) {
+      last_qubit_row_ = std::max(last_qubit_row_, r);
+    }
+  }
 
   resize(sizeHint());  // tells QScrollArea to update its scrollable extent
   update();
@@ -363,6 +430,7 @@ void QuantumCircuitView::ClearCircuit() {
   wires_.clear();
   qubit_rows_.clear();
   bit_rows_.clear();
+  last_qubit_row_ = 0;
   hidden_wires_ = 0;
   num_wires_ = 0;
   max_wire_label_width_ = theme::kLabelWidth;
@@ -446,45 +514,101 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
 
   // ---- operations ----------------------------------------------------
   std::vector<int> next_col(num_wires_, 0);
+  std::set<std::pair<int, int>> occupied;
 
   for (const Operation& op : c.Operations()) {
     const bool hidden =
         std::any_of(op.qubits.begin(), op.qubits.end(),
                     [this](const auto& q) { return QubitRow(q) < 0; });
-    if (hidden) continue;
+    if (hidden) {
+      continue;
+    }
+
+    // ---- ASAP layout ----
+    if (op.qubits.empty()) {
+      return;
+    }
+
+    std::vector<int> rows;
+    rows.reserve(op.qubits.size());
+    for (const auto& q : op.qubits) {
+      rows.push_back(QubitRow(q));
+    }
+
+    int br = -1;
+    if (op.type == OperationType::kMeasure && !op.measure_target.empty()) {
+      br = BitRow(op.measure_target[0]);
+    }
+
+    std::vector<int> deps = rows;  // wires whose ordering matters
+    std::vector<int> cells;        // grid cells this op occupies
+
+    switch (op.type) {
+      case OperationType::kBarrier:
+        cells = rows;
+        break;
+      case OperationType::kMeasure: {
+        deps = {rows[0]};
+        int lo = rows[0];
+        int hi = rows[0];
+        if (br >= 0) {
+          deps.push_back(br);
+          lo = std::min(lo, br);
+          hi = std::max(hi, br);
+        }
+        for (int r = lo; r <= hi; ++r) {
+          cells.push_back(r);
+        }
+        break;
+      }
+      default: {  // gate, reset
+        const auto [lo, hi] = std::minmax_element(rows.begin(), rows.end());
+        for (int r = *lo; r <= *hi; ++r) {
+          cells.push_back(r);
+        }
+        break;
+      }
+    }
 
     int col = 0;
-    for (const auto& q : op.qubits) col = std::max(col, next_col[QubitRow(q)]);
-    for (const auto& q : op.qubits) next_col[QubitRow(q)] = col + 1;
+    for (int const r : deps) {
+      col = std::max(col, next_col[r]);
+    }
+
+    auto free_at = [&](int c) {
+      return std::all_of(cells.begin(), cells.end(), [&](int const r) {
+        return occupied.count({c, r}) == 0;
+      });
+    };
+    while (!free_at(col)) {
+      ++col;
+    }
+
+    for (int const r : cells) {
+      occupied.insert({col, r});
+    }
+    for (int const r : deps) {
+      next_col[r] = col + 1;
+    }
+
     const int cx = ColX(col);
 
     switch (op.type) {
-      case OperationType::kBarrier: {
-        std::vector<int> rows;
-        rows.reserve(op.qubits.size());
-        for (const auto& q : op.qubits) rows.push_back(QubitRow(q));
-        for (const auto& [first, last] : ContiguousRuns(std::move(rows)))
-          DrawBarrierColumn(painter, cx, WireY(first), WireY(last));
-        break;
-      }
-
-      case OperationType::kReset: {
-        if (op.qubits.empty()) {
-          break;
+      case OperationType::kBarrier:
+        for (int const r : rows) {
+          DrawBarrierColumn(painter, cx, WireY(r));
         }
-        DrawResetBox(painter, cx, WireY(QubitRow(op.qubits[0])));
         break;
-      }
+
+      case OperationType::kReset:
+        DrawResetBox(painter, cx, WireY(rows[0]));
+        break;
 
       case OperationType::kMeasure: {
-        if (op.qubits.empty()) {
-          break;
-        }
-        const int qy = WireY(QubitRow(op.qubits[0]));
+        const int qy = WireY(rows[0]);
         DrawMeasureBox(painter, cx, qy);
-        if (!op.measure_target.empty()) {
-          const int br = BitRow(op.measure_target[0]);
-          if (br >= 0) DrawMeasureArrow(painter, cx, qy, WireY(br));
+        if (br >= 0) {
+          DrawMeasureArrow(painter, cx, qy, WireY(br));
         }
         break;
       }

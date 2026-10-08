@@ -47,6 +47,7 @@ class QuantumCircuitView : public QWidget {
   int max_wire_label_width_ = theme::kLabelWidth;
   int num_wires_ = 0;
   int padding_width_ = 0;
+  int last_qubit_row_ = 0;
   std::vector<std::vector<int>> qubit_rows_, bit_rows_;  // -1 = hidden
   int hidden_wires_ = 0;
   std::vector<WireInfo> wires_;

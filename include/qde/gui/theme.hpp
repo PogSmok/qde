@@ -81,23 +81,65 @@ inline constexpr auto kMessageLabelFontFamily = "Consolas, Monospace";
 
 // Circuit view colors
 inline constexpr QColor kCircuitBackground{25, 25, 35};
-inline constexpr QColor kGateH{0, 188, 212};
-inline constexpr QColor kGateX{255, 112, 67};
-inline constexpr QColor kGateY{102, 187, 106};
-inline constexpr QColor kGateZ{66, 165, 245};
-inline constexpr QColor kGateRotation{171, 71, 188};
-inline constexpr QColor kGateS{255, 213, 79};
-inline constexpr QColor kGateT{255, 193, 7};
-inline constexpr QColor kGateMeas{255, 202, 40};
-inline constexpr QColor kGateDefault{80, 80, 90};
-inline constexpr QColor kWireColor{180, 180, 180};
 inline constexpr QColor kClassWireColor{120, 120, 120};
-inline constexpr QColor kGateShadow{0, 0, 0, 60};
+inline constexpr QColor kWireColor{180, 180, 180};
 inline constexpr QColor kPlaceholderText{120, 120, 120};
 inline constexpr QColor kBarrierFill{180, 180, 180, 30};
 inline constexpr QColor kBarrierLine{180, 180, 180, 160};
+inline constexpr QColor kGateShadow{0, 0, 0, 60};
+inline constexpr QColor kGateMeasurement{255, 202, 40};
+inline constexpr QColor kGateDefault{80, 80, 90};
 inline const QColor kGateLabelText = Qt::white;
 inline const QColor kMeasureArcColor = Qt::black;
+// Standard gates colors
+// Pauli: X red, Y green, Z blue. Controlled variants reuse the target gate's
+// color.
+inline constexpr QColor kGateX{198, 70, 70};
+inline constexpr QColor kGateY{62, 150, 84};
+inline constexpr QColor kGateZ{66, 106, 196};
+inline constexpr QColor kGateCX{198, 70, 70};
+inline constexpr QColor kGateCY{62, 150, 84};
+inline constexpr QColor kGateCZ{66, 106, 196};
+inline constexpr QColor kGateCCX{198, 70, 70};
+
+// Hadamard: purple
+inline constexpr QColor kGateH{142, 88, 186};
+inline constexpr QColor kGateCH{142, 88, 186};
+
+// sqrt(X): orange
+inline constexpr QColor kGateSX{190, 108, 52};
+
+// Phase family: teal/cyan shades
+inline constexpr QColor kGateP{38, 150, 140};
+inline constexpr QColor kGatePhase{38, 150, 140};
+inline constexpr QColor kGateCP{38, 150, 140};
+inline constexpr QColor kGateCPhase{38, 150, 140};
+inline constexpr QColor kGateU1{38, 150, 140};
+inline constexpr QColor kGateS{30, 130, 120};
+inline constexpr QColor kGateSDG{22, 105, 98};
+inline constexpr QColor kGateT{25, 118, 150};
+inline constexpr QColor kGateTDG{20, 92, 118};
+
+// Rotations: muted versions of the matching Pauli color
+inline constexpr QColor kGateRX{160, 62, 62};
+inline constexpr QColor kGateRY{54, 125, 72};
+inline constexpr QColor kGateRZ{56, 88, 166};
+inline constexpr QColor kGateCRX{160, 62, 62};
+inline constexpr QColor kGateCRY{54, 125, 72};
+inline constexpr QColor kGateCRZ{56, 88, 166};
+
+// Swap family: pink
+inline constexpr QColor kGateSwap{200, 88, 146};
+inline constexpr QColor kGateCSwap{200, 88, 146};
+
+// Generic unitaries: indigo, darker with more parameters
+inline constexpr QColor kGateU{112, 102, 204};
+inline constexpr QColor kGateCU{112, 102, 204};
+inline constexpr QColor kGateU2{98, 90, 180};
+inline constexpr QColor kGateU3{84, 78, 156};
+
+// Identity: neutral gray, slightly lighter than kGateDefault
+inline constexpr QColor kGateID{100, 100, 110};
 
 // Simulation results (probabilities histogram) layout
 inline constexpr int kHistDefaultWidth = 320;
