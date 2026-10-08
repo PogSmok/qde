@@ -1,7 +1,6 @@
 #include "qde/gui/quantum_circuit_view.hpp"
 
 #include <algorithm>
-#include <array>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -29,59 +28,54 @@ namespace qde::gui {
 namespace {
 // ---- Standard Gates ----------------------------------------------
 struct GateViewDef {
-  const char* name;
-  const int nq;
   const int control_qubits;
   const QColor color;
 };
 
-constexpr std::array<GateViewDef, 33> kStandardGates = {
-    GateViewDef{"p", 1, 0, theme::kGateP},
-    GateViewDef{"x", 1, 0, theme::kGateX},
-    GateViewDef{"y", 1, 0, theme::kGateY},
-    GateViewDef{"z", 1, 0, theme::kGateZ},
-    GateViewDef{"h", 1, 0, theme::kGateH},
-    GateViewDef{"s", 1, 0, theme::kGateS},
-    GateViewDef{"sdg", 1, 0, theme::kGateSDG},
-    GateViewDef{"t", 1, 0, theme::kGateT},
-    GateViewDef{"tdg", 1, 0, theme::kGateTDG},
-    GateViewDef{"sx", 1, 0, theme::kGateSX},
-    GateViewDef{"rx", 1, 0, theme::kGateRX},
-    GateViewDef{"ry", 1, 0, theme::kGateRY},
-    GateViewDef{"rz", 1, 0, theme::kGateRZ},
-    GateViewDef{"cx", 2, 1, theme::kGateCX},
-    GateViewDef{"cy", 2, 1, theme::kGateCY},
-    GateViewDef{"cz", 2, 1, theme::kGateCZ},
-    GateViewDef{"cp", 2, 1, theme::kGateCP},
-    GateViewDef{"crx", 2, 1, theme::kGateCRX},
-    GateViewDef{"cry", 2, 1, theme::kGateCRY},
-    GateViewDef{"crz", 2, 1, theme::kGateCRZ},
-    GateViewDef{"ch", 2, 1, theme::kGateCH},
-    GateViewDef{"swap", 2, 0, theme::kGateSwap},
-    GateViewDef{"ccx", 3, 2, theme::kGateCCX},
-    GateViewDef{"cswap", 3, 1, theme::kGateCSwap},
-    GateViewDef{"cu", 2, 1, theme::kGateCU},
-    GateViewDef{"U", 1, 0, theme::kGateU},
-    GateViewDef{"CX", 2, 1, theme::kGateCX},
-    GateViewDef{"phase", 1, 0, theme::kGatePhase},
-    GateViewDef{"cphase", 2, 1, theme::kGateCPhase},
-    GateViewDef{"id", 1, 0, theme::kGateID},
-    GateViewDef{"u1", 1, 0, theme::kGateU1},
-    GateViewDef{"u2", 1, 0, theme::kGateU2},
-    GateViewDef{"u3", 1, 0, theme::kGateU3}};
+const std::unordered_map<std::string_view, GateViewDef> kStandardGates = {
+    {"p", GateViewDef{0, theme::kGateP}},
+    {"x", GateViewDef{0, theme::kGateX}},
+    {"y", GateViewDef{0, theme::kGateY}},
+    {"z", GateViewDef{0, theme::kGateZ}},
+    {"h", GateViewDef{0, theme::kGateH}},
+    {"s", GateViewDef{0, theme::kGateS}},
+    {"sdg", GateViewDef{0, theme::kGateSDG}},
+    {"t", GateViewDef{0, theme::kGateT}},
+    {"tdg", GateViewDef{0, theme::kGateTDG}},
+    {"sx", GateViewDef{0, theme::kGateSX}},
+    {"rx", GateViewDef{0, theme::kGateRX}},
+    {"ry", GateViewDef{0, theme::kGateRY}},
+    {"rz", GateViewDef{0, theme::kGateRZ}},
+    {"cx", GateViewDef{1, theme::kGateCX}},
+    {"cy", GateViewDef{1, theme::kGateCY}},
+    {"cz", GateViewDef{1, theme::kGateCZ}},
+    {"cp", GateViewDef{1, theme::kGateCP}},
+    {"crx", GateViewDef{1, theme::kGateCRX}},
+    {"cry", GateViewDef{1, theme::kGateCRY}},
+    {"crz", GateViewDef{1, theme::kGateCRZ}},
+    {"ch", GateViewDef{1, theme::kGateCH}},
+    {"swap", GateViewDef{0, theme::kGateSwap}},
+    {"ccx", GateViewDef{2, theme::kGateCCX}},
+    {"cswap", GateViewDef{1, theme::kGateCSwap}},
+    {"cu", GateViewDef{1, theme::kGateCU}},
+    {"U", GateViewDef{0, theme::kGateU}},
+    {"CX", GateViewDef{1, theme::kGateCX}},
+    {"phase", GateViewDef{0, theme::kGatePhase}},
+    {"cphase", GateViewDef{1, theme::kGateCPhase}},
+    {"id", GateViewDef{0, theme::kGateID}},
+    {"u1", GateViewDef{0, theme::kGateU1}},
+    {"u2", GateViewDef{0, theme::kGateU2}},
+    {"u3", GateViewDef{0, theme::kGateU3}}};
 
-// ---- Gate color lookup -----------------------------------------------------
+// ---- Gate lookup -----------------------------------------------------
 
-const std::unordered_map<std::string_view, const GateViewDef*>& GateIndex() {
-  static const auto kIndex = [] {
-    std::unordered_map<std::string_view, const GateViewDef*> m;
-    m.reserve(kStandardGates.size() * 2);
-    for (const GateViewDef& g : kStandardGates) {
-      m.emplace(g.name, &g);
-    }
-    return m;
-  }();
-  return kIndex;
+GateViewDef GetGateViewDef(const std::string& name) {
+  const auto it = kStandardGates.find(name);
+  if (it == kStandardGates.end()) {
+    // TODO: implement user defined control gates
+    return GateViewDef{0, theme::kGateDefault};
+  }
+  return it->second;
 }
 
 // ---- Gate label (name + parameters) ------------------------------
@@ -103,10 +97,38 @@ QString GateLabel(const Operation& op) {
 
 // ---- Drawing primitives ----------------------------------------------------
 
+constexpr int kGateLabelHPadding = 6;  // px on each side of the label
+
+bool IsGlyphGate(const std::string& name) {  // gates drawn without a label box
+  return name == "swap" || name == "cswap" || name == "CX" || name == "cx" ||
+         name == "cz" || name == "ccx";
+}
+
+int LabelBoxWidth(const QString& label, const QFont& base) {
+  const QFont& f = base;
+  const QFontMetrics fm(f);
+  const int w = fm.boundingRect(QRect(), Qt::AlignLeft, label).width();
+  return std::max(theme::kGateSize, w + (2 * kGateLabelHPadding));
+}
+
+int OpBoxWidth(const Operation& op, const QFont& font) {
+  switch (op.type) {
+    case OperationType::kReset:
+      return LabelBoxWidth(KetLabel(0, 1), font);
+    case OperationType::kGate:
+      if (op.gate && (op.qubits.size() == 1 || !IsGlyphGate(op.gate->Name()))) {
+        return LabelBoxWidth(GateLabel(op), font);
+      }
+      return theme::kGateSize;
+    default:
+      return theme::kGateSize;
+  }
+}
+
 void DrawGateBox(QPainter& p, const int cx, const int cy, const QString& label,
-                 const QColor fill) {
-  const QRect box(cx - (theme::kGateSize / 2), cy - (theme::kGateSize / 2),
-                  theme::kGateSize, theme::kGateSize);
+                 const QColor fill, const int width) {
+  const QRect box(cx - (width / 2), cy - (theme::kGateSize / 2), width,
+                  theme::kGateSize);
 
   // shadow
   p.setPen(Qt::NoPen);
@@ -123,17 +145,7 @@ void DrawGateBox(QPainter& p, const int cx, const int cy, const QString& label,
 
   // label
   p.setPen(theme::kGateLabelText);
-
-  if (label.length() > theme::kLongGateLabelThreshold) {
-    p.save();
-    QFont f = p.font();
-    f.setPointSizeF(f.pointSizeF() * theme::kLongGateLabelFontScale);
-    p.setFont(f);
-    p.drawText(box, Qt::AlignCenter, label);
-    p.restore();
-  } else {
-    p.drawText(box, Qt::AlignCenter, label);
-  }
+  p.drawText(box, Qt::AlignCenter, label);
 }
 
 void DrawControlDot(QPainter& p, const int cx, const int cy,
@@ -166,7 +178,7 @@ void DrawVerticalConnector(QPainter& p, const int cx, const int y0,
   p.drawLine(cx, y0, cx, y1);
 }
 
-// Special gates
+// Glyph gates
 
 void DrawCNOT(QPainter& p, const int cx, const int ctrl_y, const int tgt_y,
               const QColor& color) {
@@ -212,10 +224,9 @@ void DrawSWAP(QPainter& p, const int cx, const std::vector<int>& wire_ys,
   }
 }
 
-void DrawMeasureBox(QPainter& p, const int cx, const int cy) {
-  const QRect box(cx - (theme::kGateSize / 2), cy - (theme::kGateSize / 2),
-                  theme::kGateSize, theme::kGateSize);
-
+void DrawMeasureBox(QPainter& p, const int cx, const int cy, const int width) {
+  const QRect box(cx - (width / 2), cy - (theme::kGateSize / 2), width,
+                  theme::kGateSize);
   p.setPen(Qt::NoPen);
   p.setBrush(theme::kGateShadow);
   p.drawRoundedRect(
@@ -283,13 +294,13 @@ void DrawBarrierColumn(QPainter& p, const int cx, const int top_y) {
              top_y + (theme::kCellHeight / 2));
 }
 
-void DrawResetBox(QPainter& p, const int cx, const int cy) {
-  DrawGateBox(p, cx, cy, KetLabel(0, 1), theme::kGateDefault);
+void DrawResetBox(QPainter& p, const int cx, const int cy, const int width) {
+  DrawGateBox(p, cx, cy, KetLabel(0, 1), theme::kGateDefault, width);
 }
 
 void DrawMultiGate(QPainter& p, const int cx, const std::vector<int>& wire_ys,
                    const int control_qubits, const QString& label,
-                   const QColor& color) {
+                   const QColor& color, const int width) {
   if (wire_ys.empty()) {
     return;
   }
@@ -303,36 +314,25 @@ void DrawMultiGate(QPainter& p, const int cx, const std::vector<int>& wire_ys,
   for (int i = 0; i < control_qubits; i++) {
     DrawControlDot(p, cx, wire_ys[i], color);
   }
-  DrawGateBox(p, cx, wire_ys[control_qubits], label, color);
-  auto label_i = 2;  // for user made multi target gates labels
+  DrawGateBox(p, cx, wire_ys[control_qubits], label, color, width);
+  auto label_i = 2;
   for (int i = control_qubits + 1; i < static_cast<int>(wire_ys.size()); i++) {
-    DrawGateBox(p, cx, wire_ys[i], QString("#%1").arg(label_i++), color);
+    DrawGateBox(p, cx, wire_ys[i], QString("#%1").arg(label_i++), color, width);
   }
 }
 
 template <typename WireYFn, typename RowFn>
-void DrawGateOperation(QPainter& painter, const int cx, const Operation& op,
-                       WireYFn wire_y, RowFn row) {
+void DrawGateOperation(QPainter& painter, const int cx, const int box_w,
+                       const Operation& op, WireYFn wire_y, RowFn row) {
   if (!op.gate) {
     return;
   }
   const int nq = op.qubits.size();
   const std::string& name = op.gate->Name();
-  const auto& index = GateIndex();
-  QColor color;
-  int control_qubits = 0;
-  auto it = index.find(name);
-  if (it == index.end()) {
-    color = theme::kGateDefault;
-    control_qubits = 0;
-  } else {
-    const auto& gate_definition = *it->second;
-    control_qubits = gate_definition.control_qubits;
-    color = gate_definition.color;
-  }
-
+  const auto& gate_def = GetGateViewDef(name);
   if (nq == 1) {
-    DrawGateBox(painter, cx, wire_y(row(op.qubits[0])), GateLabel(op), color);
+    DrawGateBox(painter, cx, wire_y(row(op.qubits[0])), GateLabel(op),
+                gate_def.color, box_w);
     return;
   }
 
@@ -343,15 +343,16 @@ void DrawGateOperation(QPainter& painter, const int cx, const Operation& op,
   }
 
   if (name == "swap" || name == "cswap") {
-    DrawSWAP(painter, cx, ys, control_qubits, color);
+    DrawSWAP(painter, cx, ys, gate_def.control_qubits, gate_def.color);
   } else if (name == "CX" || name == "cx") {
-    DrawCNOT(painter, cx, ys[0], ys[1], color);
+    DrawCNOT(painter, cx, ys[0], ys[1], gate_def.color);
   } else if (name == "cz") {
-    DrawCZ(painter, cx, ys[0], ys[1], color);
+    DrawCZ(painter, cx, ys[0], ys[1], gate_def.color);
   } else if (name == "ccx") {
-    DrawCCX(painter, cx, ys[0], ys[1], ys[2], color);
+    DrawCCX(painter, cx, ys[0], ys[1], ys[2], gate_def.color);
   } else {
-    DrawMultiGate(painter, cx, ys, control_qubits, GateLabel(op), color);
+    DrawMultiGate(painter, cx, ys, gate_def.control_qubits, GateLabel(op),
+                  gate_def.color, box_w);
   }
 }
 
@@ -420,6 +421,7 @@ void QuantumCircuitView::RenderCircuit(const Circuit& circuit) {
       last_qubit_row_ = std::max(last_qubit_row_, r);
     }
   }
+  ComputeLayout();
 
   resize(sizeHint());  // tells QScrollArea to update its scrollable extent
   update();
@@ -430,6 +432,9 @@ void QuantumCircuitView::ClearCircuit() {
   wires_.clear();
   qubit_rows_.clear();
   bit_rows_.clear();
+  op_cols_.clear();
+  col_box_w_.clear();
+  col_left_.assign(1, 0);
   last_qubit_row_ = 0;
   hidden_wires_ = 0;
   num_wires_ = 0;
@@ -439,23 +444,124 @@ void QuantumCircuitView::ClearCircuit() {
   update();
 }
 
+void QuantumCircuitView::ComputeLayout() {
+  op_cols_.clear();
+  col_box_w_.clear();
+  col_left_.assign(1, 0);
+  if (!circuit_) {
+    return;
+  }
+
+  const QFont font(theme::kWireLabelFontFamily, theme::kWireLabelFontSize);
+  std::vector<int> next_col(num_wires_, 0);
+  std::set<std::pair<int, int>> occupied;
+
+  for (const Operation& op : circuit_->Operations()) {
+    op_cols_.push_back(-1);
+    int& out_col = op_cols_.back();
+
+    const bool hidden =
+        std::any_of(op.qubits.begin(), op.qubits.end(),
+                    [this](const auto& q) { return QubitRow(q) < 0; });
+    if (hidden || op.qubits.empty()) {
+      continue;
+    }
+
+    std::vector<int> rows;
+    rows.reserve(op.qubits.size());
+    for (const auto& q : op.qubits) {
+      rows.push_back(QubitRow(q));
+    }
+
+    int br = -1;
+    if (op.type == OperationType::kMeasure && !op.measure_target.empty()) {
+      br = BitRow(op.measure_target[0]);
+    }
+
+    std::vector<int> deps = rows;
+    std::vector<int> cells;
+    switch (op.type) {
+      case OperationType::kBarrier:
+        cells = rows;
+        break;
+      case OperationType::kMeasure: {
+        deps = {rows[0]};
+        int lo = rows[0];
+        int hi = rows[0];
+        if (br >= 0) {
+          deps.push_back(br);
+          lo = std::min(lo, br);
+          hi = std::max(hi, br);
+        }
+        for (int r = lo; r <= hi; ++r) {
+          cells.push_back(r);
+        }
+        break;
+      }
+      default: {
+        const auto [lo, hi] = std::minmax_element(rows.begin(), rows.end());
+        for (int r = *lo; r <= *hi; ++r) {
+          cells.push_back(r);
+        }
+        break;
+      }
+    }
+
+    int col = 0;
+    for (const int r : deps) {
+      col = std::max(col, next_col[r]);
+    }
+    auto free_at = [&](const int c) {
+      return std::all_of(cells.begin(), cells.end(), [&](const int r) {
+        return occupied.count({c, r}) == 0;
+      });
+    };
+    while (!free_at(col)) {
+      ++col;
+    }
+
+    for (const int r : cells) {
+      occupied.insert({col, r});
+    }
+    for (const int r : deps) {
+      next_col[r] = col + 1;
+    }
+
+    out_col = col;
+    if (col >= static_cast<int>(col_box_w_.size())) {
+      col_box_w_.resize(col + 1, theme::kGateSize);
+    }
+    col_box_w_[col] = std::max(col_box_w_[col], OpBoxWidth(op, font));
+  }
+
+  const int gap = std::max(0, theme::kCellWidth - theme::kGateSize);
+  col_left_.reserve(col_box_w_.size() + 1);
+  for (const int bw : col_box_w_) {
+    col_left_.push_back(col_left_.back() +
+                        std::max(theme::kCellWidth, bw + gap));
+  }
+}
+
 int QuantumCircuitView::WireY(const int flat_index) const {
   return margin_up_ + (flat_index * theme::kCellHeight) +
          (theme::kCellHeight / 2);
 }
 
+int QuantumCircuitView::ColWidth(const int col) const {
+  return col_left_[col + 1] - col_left_[col];
+}
+
 int QuantumCircuitView::ColX(const int col) const {
-  return max_wire_label_width_ + margin_left_ + (col * theme::kCellWidth) +
-         (theme::kCellWidth / 2);
+  return max_wire_label_width_ + margin_left_ + col_left_[col] +
+         (ColWidth(col) / 2);
 }
 
 QSize QuantumCircuitView::sizeHint() const {
   if (!circuit_) {
     return {theme::kDefaultWidth, theme::kDefaultHeight};
   }
-  const int cols = static_cast<int>(circuit_->Operations().size());
-  const int w = max_wire_label_width_ + margin_left_ + margin_right_ +
-                ((cols + 1) * theme::kCellWidth);
+  const int grid_w = col_left_.back() + theme::kCellWidth;  // +1 trailing cell
+  const int w = max_wire_label_width_ + margin_left_ + margin_right_ + grid_w;
   const int h =
       margin_up_ + margin_down_ + ((TotalWires() + 1) * theme::kCellHeight);
   return {w, h};
@@ -513,109 +619,45 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
   }
 
   // ---- operations ----------------------------------------------------
-  std::vector<int> next_col(num_wires_, 0);
-  std::set<std::pair<int, int>> occupied;
-
+  std::size_t op_idx = 0;
   for (const Operation& op : c.Operations()) {
-    const bool hidden =
-        std::any_of(op.qubits.begin(), op.qubits.end(),
-                    [this](const auto& q) { return QubitRow(q) < 0; });
-    if (hidden) {
+    const int col = op_cols_[op_idx++];
+    if (col < 0) {
       continue;
     }
-
-    // ---- ASAP layout ----
-    if (op.qubits.empty()) {
-      return;
-    }
+    const int cx = ColX(col);
+    const int box_w = col_box_w_[col];
 
     std::vector<int> rows;
     rows.reserve(op.qubits.size());
     for (const auto& q : op.qubits) {
       rows.push_back(QubitRow(q));
     }
-
     int br = -1;
     if (op.type == OperationType::kMeasure && !op.measure_target.empty()) {
       br = BitRow(op.measure_target[0]);
     }
 
-    std::vector<int> deps = rows;  // wires whose ordering matters
-    std::vector<int> cells;        // grid cells this op occupies
-
     switch (op.type) {
       case OperationType::kBarrier:
-        cells = rows;
-        break;
-      case OperationType::kMeasure: {
-        deps = {rows[0]};
-        int lo = rows[0];
-        int hi = rows[0];
-        if (br >= 0) {
-          deps.push_back(br);
-          lo = std::min(lo, br);
-          hi = std::max(hi, br);
-        }
-        for (int r = lo; r <= hi; ++r) {
-          cells.push_back(r);
-        }
-        break;
-      }
-      default: {  // gate, reset
-        const auto [lo, hi] = std::minmax_element(rows.begin(), rows.end());
-        for (int r = *lo; r <= *hi; ++r) {
-          cells.push_back(r);
-        }
-        break;
-      }
-    }
-
-    int col = 0;
-    for (int const r : deps) {
-      col = std::max(col, next_col[r]);
-    }
-
-    auto free_at = [&](int c) {
-      return std::all_of(cells.begin(), cells.end(), [&](int const r) {
-        return occupied.count({c, r}) == 0;
-      });
-    };
-    while (!free_at(col)) {
-      ++col;
-    }
-
-    for (int const r : cells) {
-      occupied.insert({col, r});
-    }
-    for (int const r : deps) {
-      next_col[r] = col + 1;
-    }
-
-    const int cx = ColX(col);
-
-    switch (op.type) {
-      case OperationType::kBarrier:
-        for (int const r : rows) {
+        for (const int r : rows) {
           DrawBarrierColumn(painter, cx, WireY(r));
         }
         break;
-
       case OperationType::kReset:
-        DrawResetBox(painter, cx, WireY(rows[0]));
+        DrawResetBox(painter, cx, WireY(rows[0]), box_w);
         break;
-
       case OperationType::kMeasure: {
         const int qy = WireY(rows[0]);
-        DrawMeasureBox(painter, cx, qy);
+        DrawMeasureBox(painter, cx, qy, box_w);
         if (br >= 0) {
           DrawMeasureArrow(painter, cx, qy, WireY(br));
         }
         break;
       }
-
       case OperationType::kGate:
         DrawGateOperation(
-            painter, cx, op, [this](int i) { return WireY(i); },
+            painter, cx, box_w, op, [this](int i) { return WireY(i); },
             [this](QubitReference q) { return QubitRow(q); });
         break;
     }
