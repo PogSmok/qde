@@ -33,7 +33,9 @@ class QuantumCircuitView : public QWidget {
 
  private:
   int WireY(int flat_index) const;
+  int ColWidth(int col) const;
   int ColX(int col) const;
+  void ComputeLayout();
   int TotalWires() const { return num_wires_; }
   int QubitRow(const QubitReference& r) const {
     return qubit_rows_[r.reg][r.qubit];
@@ -47,10 +49,15 @@ class QuantumCircuitView : public QWidget {
   int max_wire_label_width_ = theme::kLabelWidth;
   int num_wires_ = 0;
   int padding_width_ = 0;
+  int last_qubit_row_ = 0;
   std::vector<std::vector<int>> qubit_rows_, bit_rows_;  // -1 = hidden
   int hidden_wires_ = 0;
   std::vector<WireInfo> wires_;
   std::optional<Circuit> circuit_;
+  std::vector<int> op_cols_;    // column per operation (-1 = not drawn)
+  std::vector<int> col_box_w_;  // gate box width per column
+  std::vector<int>
+      col_left_;  // cumulative x offset per column, size = cols + 1
 };
 
 }  // namespace qde::gui
