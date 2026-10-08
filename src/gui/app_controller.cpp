@@ -1,7 +1,51 @@
 #include "qde/gui/app_controller.hpp"
+
+#include <exception>
+#include <utility>
+#include <vector>
+
 #include "qde/backend_config.hpp"
+#include "qde/operation.hpp"
+#include "qde/simulator/simulation_circuit.hpp"
+#include "qde/simulator/simulator.hpp"
 
 namespace qde::gui {
+
+namespace {
+
+qde::Circuit StripMeasurements(const qde::Circuit& circuit) {
+  const auto& src = circuit.Operations();
+  std::set<std::pair<std::uint8_t, std::uint8_t>> used_later;
+  std::vector<qde::Operation> kept;
+  kept.reserve(src.size());
+
+  for (auto it = src.rbegin(); it != src.rend(); ++it) {
+    const auto& op = *it;
+
+    if (op.type == qde::OperationType::kMeasure) {
+      const bool terminal =
+          std::none_of(op.qubits.begin(), op.qubits.end(), [&](const auto& q) {
+            return used_later.count({q.reg, q.qubit}) > 0;
+          });
+      if (terminal) {
+        continue;
+      }
+    }
+
+    if (op.type != qde::OperationType::kBarrier) {
+      for (const auto& q : op.qubits) {
+        used_later.insert({q.reg, q.qubit});
+      }
+    }
+    kept.push_back(op);
+  }
+
+  std::reverse(kept.begin(), kept.end());
+  return qde::Circuit{circuit.GetRegistry(), circuit.QubitRegisters(),
+                      circuit.BitRegisters(), std::move(kept)};
+}
+
+}  // namespace
 
 AppController::AppController(QuantumCircuitView* circuit_view,
                              TextEditor* text_editor, QObject* parent)
@@ -25,14 +69,18 @@ AppController::AppController(QuantumCircuitView* circuit_view,
 void AppController::OnTextChanged() { debounceTimer_.start(); }
 
 void AppController::ParseNow() {
-  auto result = qde::Parser::Parse(textEditor_->PlainText().toStdString(),
-                                   qde::BackendConfig{});
+  const auto result = qde::Parser::Parse(textEditor_->PlainText().toStdString(),
+                                         qde::BackendConfig{});
   if (result.IsOk()) {
     circuit_ = result.GetCircuit();
+    circuitView_->RenderCircuit(*circuit_);
     textEditor_->ClearErrors();
     emit ParseSuccess();
+    RunSimulation();
   } else {
     circuit_.reset();
+    simulationState_.reset();
+    circuitView_->ClearCircuit();
     textEditor_->SetErrors(result.Errors());
 
     QStringList error_list;
@@ -40,6 +88,33 @@ void AppController::ParseNow() {
       error_list << QString::fromStdString(err.message);
     }
     emit ParseError(error_list);
+  }
+}
+
+void AppController::RunSimulation() {
+  if (!circuit_.has_value()) {
+    return;
+  }
+
+  try {
+    int simulated_qubits = 0;
+    for (const auto& [_, qubits] : circuit_->QubitRegisters()) {
+      simulated_qubits += qubits;
+    }
+    if (simulated_qubits > theme::kMaxSimQubits) {
+      emit SimulationFailed(
+          QString(
+              "Cannot simulate: circuit exceeds the maximum qubit count of %1")
+              .arg(theme::kMaxSimQubits));
+      return;
+    }
+
+    const qde::SimulationCircuit sim_circuit{StripMeasurements(*circuit_)};
+    simulationState_ = qde::Simulator::RunFinal(sim_circuit);
+    emit SimulationComplete(*simulationState_);
+  } catch (const std::exception& e) {
+    simulationState_.reset();
+    emit SimulationFailed(QString::fromStdString(e.what()));
   }
 }
 

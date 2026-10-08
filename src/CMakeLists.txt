@@ -52,15 +52,18 @@ add_library(qde_gui STATIC
     gui/config_manager.cpp
     gui/main_window.cpp
     gui/quantum_circuit_view.cpp
+    gui/simulation_results_view.cpp
     gui/syntax_highlighter.cpp
     gui/text_document.cpp
     gui/text_editor.cpp
+    gui/view_helpers.cpp
     # Q_OBJECT headers live outside this directory, list explicitly
     ${PROJECT_SOURCE_DIR}/include/qde/gui/app_controller.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/code_editor.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/config_manager.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/main_window.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/quantum_circuit_view.hpp
+    ${PROJECT_SOURCE_DIR}/include/qde/gui/simulation_results_view.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/syntax_highlighter.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/text_document.hpp
     ${PROJECT_SOURCE_DIR}/include/qde/gui/text_editor.hpp
