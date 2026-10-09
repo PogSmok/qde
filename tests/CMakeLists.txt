@@ -19,6 +19,9 @@ add_executable(qde_tests
     test_parser.cpp
     test_qubit_allocator.cpp
     test_syntax_error_listener.cpp
+    simulator/test_eigenvalues.cpp
+    simulator/test_memory_guard.cpp
+    simulator/test_quantum_state.cpp
     simulator/test_simulation_circuit.cpp
     simulator/test_simulator.cpp
 )
