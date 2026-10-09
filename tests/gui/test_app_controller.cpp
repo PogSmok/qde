@@ -100,7 +100,7 @@ TEST_F(AppControllerTest, ParseNowEmitsSimulationComplete) {
 
   EXPECT_EQ(sim_spy.count(), 1);
   ASSERT_NE(controller->GetSimulationState(), nullptr);
-  EXPECT_EQ(controller->GetSimulationState()->basis_probabilities.size(), 2U);
+  EXPECT_EQ(controller->GetSimulationState()->Dim(), 2U);
 }
 
 TEST_F(AppControllerTest, SimulationIgnoresMeasurements) {
@@ -115,9 +115,9 @@ TEST_F(AppControllerTest, SimulationIgnoresMeasurements) {
 
   const auto* state = controller->GetSimulationState();
   ASSERT_NE(state, nullptr);
-  ASSERT_EQ(state->basis_probabilities.size(), 2U);
-  EXPECT_NEAR(state->basis_probabilities[0], 0.5, 1e-9);
-  EXPECT_NEAR(state->basis_probabilities[1], 0.5, 1e-9);
+  ASSERT_EQ(state->Dim(), 2U);
+  EXPECT_NEAR(state->Probability(0), 0.5, 1e-9);
+  EXPECT_NEAR(state->Probability(1), 0.5, 1e-9);
 }
 
 }  // namespace qde::gui

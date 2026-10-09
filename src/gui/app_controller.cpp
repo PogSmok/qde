@@ -109,8 +109,9 @@ void AppController::RunSimulation() {
       return;
     }
 
-    const qde::SimulationCircuit sim_circuit{StripMeasurements(*circuit_)};
-    simulationState_ = qde::Simulator::RunFinal(sim_circuit);
+    const qde::simulator::SimulationCircuit sim_circuit{
+        StripMeasurements(*circuit_)};
+    simulationState_ = qde::simulator::Simulator::RunFinal(sim_circuit);
     emit SimulationComplete(*simulationState_);
   } catch (const std::exception& e) {
     simulationState_.reset();

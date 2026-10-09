@@ -18,15 +18,14 @@ namespace qde::gui {
 
 namespace {
 
-qde::SimulationState MakeState(std::size_t qubit_count,
-                               std::vector<double> probabilities) {
-  qde::SimulationState state;
+qde::simulator::SimulationState MakeState(std::size_t qubit_count,
+                                          std::vector<double> probabilities) {
+  qde::simulator::SimulationState state;
   state.qubit_count = qubit_count;
-  state.basis_probabilities = std::move(probabilities);
-  const std::size_t dim = state.basis_probabilities.size();
+  const std::size_t dim = probabilities.size();
   state.density_matrix.assign(dim * dim, {0.0, 0.0});
   for (std::size_t i = 0; i < dim; ++i) {
-    state.density_matrix[(i * dim) + i] = {state.basis_probabilities[i], 0.0};
+    state.density_matrix[(i * dim) + i] = {probabilities[i], 0.0};
   }
   return state;
 }
