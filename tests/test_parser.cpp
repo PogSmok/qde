@@ -60,7 +60,6 @@ TEST(Parser, InvalidTokenFails) {
 }
 
 TEST(Parser, ErrorReportsCorrectLocation) {
-  qde::Parser parser;
   auto result = qde::Parser::Parse("OPENQASM 3.0;\nqubit q;\n???\n",
                                    qde::BackendConfig{});
   ASSERT_FALSE(result.Errors().empty());

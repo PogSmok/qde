@@ -9,10 +9,6 @@
 #include <utility>
 #include <vector>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include "qde/simulator/internal/complex_math.hpp"
 #include "qde/simulator/internal/memory_guard.hpp"
 
@@ -52,22 +48,6 @@ constexpr std::size_t InsertZeroBit(std::size_t index,
 // Value (0 or 1) of bit `bit` of `index`.
 constexpr std::size_t BitOf(std::size_t index, std::size_t bit) noexcept {
   return (index >> bit) & 1U;
-}
-
-std::size_t MaxThreads() noexcept {
-#ifdef _OPENMP
-  return static_cast<std::size_t>(omp_get_max_threads());
-#else
-  return 1;
-#endif
-}
-
-std::size_t ThreadIndex() noexcept {
-#ifdef _OPENMP
-  return static_cast<std::size_t>(omp_get_thread_num());
-#else
-  return 0;
-#endif
 }
 
 // ---- Gates ------------------------------------------------------------------
@@ -157,34 +137,27 @@ void ApplyMatrix(std::vector<Amplitude>& state, const std::vector<Amplitude>& u,
   std::vector<std::size_t> sorted_targets(targets);
   std::sort(sorted_targets.begin(), sorted_targets.end());
 
-  // One scratch block per thread, allocated up front so that nothing can throw
-  // inside the parallel region. The team is pinned to the number of blocks.
-  const std::size_t threads = MaxThreads();
-  std::vector<Amplitude> scratch(gate_dim * threads);
+  // Inputs of the group being transformed.
+  std::vector<Amplitude> inputs(gate_dim);
 
-#pragma omp parallel num_threads(static_cast<int>(threads)) if (parallel)
-  {
-    const std::size_t inputs = ThreadIndex() * gate_dim;
+#pragma omp parallel for schedule(static) firstprivate(inputs) if (parallel)
+  for (std::int64_t g = 0; g < groups; g++) {
+    // Open a zero bit at every target position, lowest first.
+    auto base = static_cast<std::size_t>(g);
+    for (const std::size_t target : sorted_targets) {
+      base = InsertZeroBit(base, target);
+    }
 
-#pragma omp for schedule(static)
-    for (std::int64_t g = 0; g < groups; g++) {
-      // Open a zero bit at every target position, lowest first.
-      auto base = static_cast<std::size_t>(g);
-      for (const std::size_t target : sorted_targets) {
-        base = InsertZeroBit(base, target);
+    for (std::size_t r = 0; r < gate_dim; r++) {
+      inputs[r] = state[base | offsets[r]];
+    }
+    for (std::size_t r = 0; r < gate_dim; r++) {
+      const std::size_t row = r * gate_dim;
+      Amplitude sum = kZero;
+      for (std::size_t c = 0; c < gate_dim; c++) {
+        sum += Mul(u[row + c], inputs[c]);
       }
-
-      for (std::size_t r = 0; r < gate_dim; r++) {
-        scratch[inputs + r] = state[base | offsets[r]];
-      }
-      for (std::size_t r = 0; r < gate_dim; r++) {
-        const std::size_t row = r * gate_dim;
-        Amplitude sum = kZero;
-        for (std::size_t c = 0; c < gate_dim; c++) {
-          sum += Mul(u[row + c], scratch[inputs + c]);
-        }
-        state[base | offsets[r]] = sum;
-      }
+      state[base | offsets[r]] = sum;
     }
   }
 }
