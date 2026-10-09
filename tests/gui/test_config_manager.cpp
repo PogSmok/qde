@@ -171,7 +171,7 @@ class ConfigManagerTest : public ::testing::Test {
 TEST_F(ConfigManagerTest, LoadValidConfigFile) {
   PrepareValidConfig();
   DefaultValues();
-  auto& mgr = ConfigManager::Instance();
+  static_cast<void>(ConfigManager::Instance());
 
   EXPECT_EQ(test_config.Value(), 4);
   EXPECT_EQ(test_config_key_sequence.Value(), QKeySequence("Alt+Left"));
@@ -186,7 +186,7 @@ TEST_F(ConfigManagerTest, LoadValidConfigFile) {
 TEST_F(ConfigManagerTest, LoadConfigFileInvalidValue) {
   PrepareInvalidConfigBadValue();
   DefaultValues();
-  auto& mgr = ConfigManager::Instance();
+  static_cast<void>(ConfigManager::Instance());
 
   EXPECT_EQ(test_config.Value(), 4);
   EXPECT_EQ(test_config_key_sequence.Value(), QKeySequence("Alt+Left"));
@@ -206,7 +206,7 @@ TEST_F(ConfigManagerTest, LoadConfigFileInvalidValue) {
 TEST_F(ConfigManagerTest, LoadConfigFileInvalidJson) {
   PrepareInvalidConfigBadJson();
   DefaultValues();
-  auto& mgr = ConfigManager::Instance();
+  static_cast<void>(ConfigManager::Instance());
 
   EXPECT_EQ(test_config.Value(), 4);
   EXPECT_EQ(test_config_key_sequence.Value(), QKeySequence("Alt+Left"));
@@ -226,7 +226,7 @@ TEST_F(ConfigManagerTest, LoadConfigFileInvalidJson) {
 TEST_F(ConfigManagerTest, SaveValidConfigKeys) {
   PrepareValidConfig();
   DefaultValues();
-  auto& mgr = ConfigManager::Instance();
+  static_cast<void>(ConfigManager::Instance());
 
   test_config.SetValue(1);
   test_config_key_sequence.SetValue(QKeySequence("Alt+Right"));

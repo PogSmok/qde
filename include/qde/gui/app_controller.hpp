@@ -22,7 +22,8 @@ class AppController : public QObject {
   [[nodiscard]] const qde::Circuit* GetCircuit() const {
     return circuit_.has_value() ? &circuit_.value() : nullptr;
   }
-  [[nodiscard]] const qde::SimulationState* GetSimulationState() const {
+  [[nodiscard]] const qde::simulator::SimulationState* GetSimulationState()
+      const {
     return simulationState_.has_value() ? &simulationState_.value() : nullptr;
   }
 
@@ -32,7 +33,7 @@ class AppController : public QObject {
  signals:
   void ParseSuccess();
   void ParseError(const QStringList& errors);
-  void SimulationComplete(const qde::SimulationState& state);
+  void SimulationComplete(const qde::simulator::SimulationState& state);
   void SimulationFailed(const QString& message);
 
  private:
@@ -42,7 +43,7 @@ class AppController : public QObject {
   QPointer<TextEditor> textEditor_;
   std::unique_ptr<qde::Parser> parser_;
   std::optional<qde::Circuit> circuit_;
-  std::optional<qde::SimulationState> simulationState_;
+  std::optional<qde::simulator::SimulationState> simulationState_;
   QTimer debounceTimer_;
 };
 

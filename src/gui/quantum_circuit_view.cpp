@@ -28,8 +28,8 @@ namespace qde::gui {
 namespace {
 // ---- Standard Gates ----------------------------------------------
 struct GateViewDef {
-  const int control_qubits;
-  const QColor color;
+  int control_qubits;
+  QColor color;
 };
 
 const std::unordered_map<std::string_view, GateViewDef> kStandardGates = {
