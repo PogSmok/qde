@@ -47,7 +47,7 @@ of two views:
 ## The interface
 
 <p align="center">
-    <img src="docs/images/interface.png" alt="QDE Interface" width="50%"/>
+    <img src="docs/images/interface.png" alt="QDE Interface" width="75%"/>
 </p>
 
 ---
