@@ -122,7 +122,7 @@ endif ()
 qt_add_resources(qde "app_icons"
         PREFIX "/icons"
         BASE "${PROJECT_SOURCE_DIR}/resources"
-        FILES "${PROJECT_SOURCE_DIR}/resources/app_icon.png"
+        FILES "${PROJECT_SOURCE_DIR}/resources/app_icon_256x256.png"
 )
 
 if (APPLE)
@@ -138,7 +138,7 @@ endif ()
 if (UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     install(TARGETS qde RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(FILES "${PROJECT_SOURCE_DIR}/resources/app_icon.png"
+    install(FILES "${PROJECT_SOURCE_DIR}/resources/app_icon_256x256.png"
             DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps
             RENAME qde.png
     )

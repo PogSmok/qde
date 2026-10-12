@@ -1,10 +1,15 @@
 <p align="center">
-    <img src="resources/app_logo.png" alt="QDE Logo" width="75%" />
+    <img src="resources/app_logo_1024x512.png" alt="QDE Logo" width="75%" />
 </p>
 
 # QDE: Quantum Development Environment
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+[![CI](https://github.com/PogSmok/qde/actions/workflows/ci.yml/badge.svg)](https://github.com/PogSmok/qde/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/PogSmok/qde/actions/workflows/codeql.yml/badge.svg)](https://github.com/PogSmok/qde/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/PogSmok/qde/branch/develop/graph/badge.svg)](https://codecov.io/gh/PogSmok/qde)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12988/badge)](https://www.bestpractices.dev/projects/12988)
 
 QDE is a desktop environment for writing OpenQASM, seeing the circuit, and inspecting the simulated quantum state on
 your own machine.
@@ -100,6 +105,9 @@ cx q[0], q[1];
 #### Expected results
 
 The probability view should show equal weight on `|00⟩` and `|11⟩`, and none on `|01⟩` or `|10⟩`.
+<p align="center">
+    <img src="docs/images/bell_example_prob.png" alt="Simulation results probabilities" width="40%" />
+</p>
 
 ---
 
@@ -121,8 +129,3 @@ Building from source, tests, and the contribution workflow are documented in [CO
 ---
 
 Distributed under the GNU General Public License v3. See [LICENSE](LICENSE).
-
-[![CI](https://github.com/PogSmok/qde/actions/workflows/ci.yml/badge.svg)](https://github.com/PogSmok/qde/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/PogSmok/qde/actions/workflows/codeql.yml/badge.svg)](https://github.com/PogSmok/qde/actions/workflows/codeql.yml)
-[![codecov](https://codecov.io/gh/PogSmok/qde/branch/develop/graph/badge.svg)](https://codecov.io/gh/PogSmok/qde)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12988/badge)](https://www.bestpractices.dev/projects/12988)
