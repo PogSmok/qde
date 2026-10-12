@@ -25,12 +25,14 @@ results beside the circuit.
 
 ### OpenQASM editor
 
-Write and open OpenQASM 3 programs (`.qasm`, `.qasm2`). The editor highlights the language and reports when a program
+- **Full OpenQASM 3 Support**. Write and open OpenQASM 3 programs (`.qasm`, `.qasm2`).
+- **Live Syntax Validation**. The editor highlights the language and reports when a program
 does not parse, so the circuit and the simulation stay tied to a valid source file.
 
 ### Circuit view
 
-A valid program is drawn as a circuit: qubit and classical registers, gates, and measurements, in program order.
+- Automatically translates valid programs into clear circuit diagrams.
+- Display qubit and classical registers, measurements and gates, including user defined gates.
 
 ### Simulation results
 
@@ -44,43 +46,43 @@ of two views:
 
 ## The interface
 
-<img src="docs/images/interface.png" alt="QDE Interface" width="75%" />
+<p align="center">
+    <img src="docs/images/interface.png" alt="QDE Interface" width="50%"/>
+</p>
 
 ---
 
 **Editor and parse feedback**
 
-![OpenQASM editor](docs/images/qasm_editor_example.png)
+<p align="center">
+    <img src="docs/images/qasm_editor_example.png" alt="OpenQASM editor" width="50%"/>
+</p>
 
 ---
 
 **Circuit diagram**
-
-![Circuit diagram of qubits, gates, and measurements](docs/images/circuit_view_example.png)
+<p align="center">
+    <img src="docs/images/circuit_view_example.png" alt="Circuit diagram of qubits, gates, and measurements" width="50%"/>
+</p>
 
 ---
 
 **Probabilities and phase**
 
-<p>
+<p align="center">
     <img src="docs/images/probabilities_view_example.png" alt="Simulation results probabilities" width="40%" />
     <img src="docs/images/statevector_example.png" alt="Simulation results statevector" width="40%"/>
 </p>
 
 ---
 
-## Planned features
-
-1. **Step simulation.**  Advance the circuit one operation at a time and inspect the state after each step.
-
----
-
 ## How a session works
 
-1. Open a `.qasm` file or write a program in the editor.
-2. When the program parses, the circuit diagram updates.
-3. The local simulator runs on that circuit.
-4. Read the result as basis probabilities, or switch to the statevector view to see amplitudes and relative phase.
+1. **Write or Open**: Open an existing `.qasm` file or write a program in the editor.
+2. **Parse & Render**: When the program parses successfully, the circuit diagram updates automatically.
+3. **Simulate**: The local simulator runs on parsed circuit instantly.
+4. **Inspect**: Analyze results via basis probabilities, or switch to the statevector view to see amplitudes and
+   relative phases.
 
 ---
 
@@ -95,7 +97,16 @@ h q[0];
 cx q[0], q[1];
 ```
 
+#### Expected results
+
 The probability view should show equal weight on `|00⟩` and `|11⟩`, and none on `|01⟩` or `|10⟩`.
+
+---
+
+## Roadmap & Planned features
+
+- [ ] **Step Simulation**:  Advance the circuit one operation at a time and inspect the state after each step.
+- [ ] **Export Options**: Export circuit diagrams (SVG/PNG) and simulation data (JSON/CSV).
 
 ---
 
