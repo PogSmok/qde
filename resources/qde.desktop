@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Quantum Development Environment
+Exec=qde
+Icon=qde
+Terminal=false
+Categories=Development;

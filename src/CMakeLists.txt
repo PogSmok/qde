@@ -119,4 +119,33 @@ if(WIN32)
                 "$<TARGET_FILE:qde>"
         COMMENT "Deploying Qt dependencies..."
     )
+    target_sources(qde PRIVATE "${PROJECT_SOURCE_DIR}/resources/app.rc")
+endif ()
+
+qt_add_resources(qde "app_icons"
+        PREFIX "/icons"
+        BASE "${PROJECT_SOURCE_DIR}/resources"
+        FILES "${PROJECT_SOURCE_DIR}/resources/app_icon_256x256.png"
+)
+
+if (APPLE)
+    set_target_properties(qde PROPERTIES
+            MACOSX_BUNDLE_ICON_FILE app_icon.icns
+    )
+    set_source_files_properties("${PROJECT_SOURCE_DIR}/resources/app_icon.icns"
+            PROPERTIES MACOSX_PACKAGE_LOCATION Resources
+    )
+    target_sources(qde PRIVATE "${PROJECT_SOURCE_DIR}/resources/app_icon.icns")
+endif ()
+
+if (UNIX AND NOT APPLE)
+    include(GNUInstallDirs)
+    install(TARGETS qde RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(FILES "${PROJECT_SOURCE_DIR}/resources/app_icon_256x256.png"
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps
+            RENAME qde.png
+    )
+    install(FILES "${PROJECT_SOURCE_DIR}/resources/qde.desktop"
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+    )
 endif()
