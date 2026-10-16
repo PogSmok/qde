@@ -25,6 +25,9 @@ qde_enable_warnings(qde_lib)
 find_package(OpenMP REQUIRED)
 
 add_library(qde_sim STATIC
+    simulator/eigenvalues.cpp
+    simulator/memory_guard.cpp
+    simulator/quantum_state.cpp
     simulator/simulation_circuit.cpp
     simulator/simulator.cpp
 )
@@ -36,7 +39,7 @@ target_link_libraries(qde_sim
         OpenMP::OpenMP_CXX
 )
 
-# /openmp:llvm upgrades MSVC from OpenMP 2.0 to 3.1, enabling collapse clause.
+# Use MSVC's LLVM OpenMP runtime (OpenMP 3.1) instead of the legacy 2.0 one.
 if(MSVC)
     target_compile_options(qde_sim PRIVATE /openmp:llvm)
 endif()

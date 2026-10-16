@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <complex>
 #include <cstddef>
+#include <vector>
 
 #include <QColor>
 #include <QComboBox>
@@ -22,24 +24,26 @@ namespace {
 
 constexpr double kPi = 3.141592653589793238462643383;
 
-int BarCount(const qde::SimulationState& state) {
-  return static_cast<int>(state.basis_probabilities.size());
+int BarCount(const qde::simulator::SimulationState& state) {
+  return static_cast<int>(state.Dim());
 }
 
 // Index of the basis state with the largest probability; used as the phase
 // reference (its amplitude is taken to be real and positive).
-std::size_t ReferenceIndex(const qde::SimulationState& state) {
-  const auto& p = state.basis_probabilities;
+std::size_t ReferenceIndex(const qde::simulator::SimulationState& state) {
+  const std::vector<double> p = state.Probabilities();
   return static_cast<std::size_t>(
       std::distance(p.begin(), std::max_element(p.begin(), p.end())));
 }
 
-// Phase of amplitude i relative to the reference, recovered from the pure-state
-// density matrix: rho[i][ref] = psi_i * conj(psi_ref). With psi_ref real and
-// positive, arg(psi_i) = arg(rho[i][ref]).
-double AmplitudePhase(const qde::SimulationState& state, const std::size_t i,
-                      const std::size_t ref) {
-  const std::size_t dim = state.basis_probabilities.size();
+// Phase of amplitude i relative to the reference: rho[i][ref] = psi_i *
+// conj(psi_ref). With psi_ref real and positive, arg(psi_i) = arg(rho[i][ref]).
+double AmplitudePhase(const qde::simulator::SimulationState& state,
+                      const std::size_t i, const std::size_t ref) {
+  const std::size_t dim = state.Dim();
+  if (state.state_vector.size() == dim) {
+    return std::arg(state.state_vector[i] * std::conj(state.state_vector[ref]));
+  }
   if (state.density_matrix.size() != dim * dim) {
     return 0.0;
   }
@@ -82,7 +86,8 @@ SimulationResultsView::SimulationResultsView(QWidget* parent)
           });
 }
 
-void SimulationResultsView::ShowState(const qde::SimulationState& state) {
+void SimulationResultsView::ShowState(
+    const qde::simulator::SimulationState& state) {
   error_.reset();
   state_ = state;
   FitToContent();
@@ -166,7 +171,7 @@ void SimulationResultsView::paintEvent(QPaintEvent* /*event*/) {
     return;
   }
 
-  const qde::SimulationState& state = *state_;
+  const qde::simulator::SimulationState& state = *state_;
   const int bars = BarCount(state);
   const bool statevector = mode_ == Mode::kStatevector;
 
@@ -184,7 +189,7 @@ void SimulationResultsView::paintEvent(QPaintEvent* /*event*/) {
   // ---- mixed state check ---------------------------------------------
   {
     double max_eigenvalue = 0;
-    for (auto eigen : state.eigenvalues) {
+    for (auto eigen : state.Eigenvalues()) {
       max_eigenvalue = std::max(eigen, max_eigenvalue);
     }
     if (statevector && max_eigenvalue < 1) {
@@ -240,8 +245,8 @@ void SimulationResultsView::paintEvent(QPaintEvent* /*event*/) {
   const std::size_t ref = ReferenceIndex(state);
   const int step = bar_width + theme::kHistBarGap;
   for (int i = 0; i < bars; ++i) {
-    const double prob = std::clamp(
-        state.basis_probabilities[static_cast<std::size_t>(i)], 0.0, 1.0);
+    const double prob =
+        std::clamp(state.Probability(static_cast<std::size_t>(i)), 0.0, 1.0);
     // Probabilities view plots prob; statevector view plots amplitude
     // magnitude = sqrt(prob), both on a 0..1 axis.
     const double value = statevector ? std::sqrt(prob) : prob;

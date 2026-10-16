@@ -114,6 +114,8 @@ The probability view should show equal weight on `|00⟩` and `|11⟩`, and none
 
 - [ ] **Step Simulation**:  Advance the circuit one operation at a time and inspect the state after each step.
 - [ ] **Export Options**: Export circuit diagrams (SVG/PNG) and simulation data (JSON/CSV).
+- [ ] **Realistic noise modeling**: Simulate how real devices misbehave, using configurable noise channels and per-gate error rates, so results look like what real quantum hardware would produce instead of ideal outcomes.
+- [ ] **Hardware simulation**: Load a device description from JSON and map the circuit's logical qubits onto physical ones.
 
 ---
 

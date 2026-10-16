@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -116,15 +117,18 @@ Circuit MakeCircuit(std::vector<QubitRegister> qregs,
 }
 
 Operation HadamardOn(GateRegistry& reg, std::uint8_t qubit) {
-  return {OperationType::kGate, reg.Find("h"), {}, {{0, qubit}}, {}};
+  return {OperationType::kGate, reg.Find("h"), {}, {{0, qubit}}, {},
+          std::nullopt};
 }
 
 Operation PauliXOn(GateRegistry& reg, std::uint8_t qubit) {
-  return {OperationType::kGate, reg.Find("x"), {}, {{0, qubit}}, {}};
+  return {OperationType::kGate, reg.Find("x"), {}, {{0, qubit}}, {},
+          std::nullopt};
 }
 
 Operation RotationOn(GateRegistry& reg, double angle, std::uint8_t qubit) {
-  return {OperationType::kGate, reg.Find("rx"), {angle}, {{0, qubit}}, {}};
+  return {OperationType::kGate, reg.Find("rx"), {angle}, {{0, qubit}}, {},
+          std::nullopt};
 }
 
 Operation TwoQubitGate(GateRegistry& reg, const char* name,
@@ -133,7 +137,8 @@ Operation TwoQubitGate(GateRegistry& reg, const char* name,
           reg.Find(name),
           {},
           {{0, qubit_a}, {0, qubit_b}},
-          {}};
+          {},
+          std::nullopt};
 }
 
 QImage RenderWidget(QWidget* widget) {
@@ -275,35 +280,50 @@ TEST_F(QuantumCircuitViewTest, RenderAllOperationTypesProducesImage) {
   const Circuit circuit = MakeCircuit(
       {{"q", 2}, {"r", 2}}, {{"c", 2}},
       {
-          {OperationType::kGate, registry_.Find("rx"), {kPi / 2}, {{0, 0}}, {}},
+          {OperationType::kGate,
+           registry_.Find("rx"),
+           {kPi / 2},
+           {{0, 0}},
+           {},
+           std::nullopt},
           {OperationType::kGate,
            registry_.Find("cx"),
            {},
            {{0, 0}, {0, 1}},
-           {}},
+           {},
+           std::nullopt},
           {OperationType::kGate,
            registry_.Find("cz"),
            {},
            {{0, 1}, {1, 0}},
-           {}},
+           {},
+           std::nullopt},
           {OperationType::kGate,
            registry_.Find("swap"),
            {},
            {{1, 0}, {1, 1}},
-           {}},
+           {},
+           std::nullopt},
           {OperationType::kGate,
            registry_.Find("ccx"),
            {},
            {{0, 0}, {0, 1}, {1, 0}},
-           {}},
+           {},
+           std::nullopt},
           {OperationType::kGate,
            registry_.Find("cswap"),
            {},
            {{0, 0}, {0, 1}, {1, 1}},
-           {}},
-          {OperationType::kMeasure, nullptr, {}, {{0, 0}}, {{0, 0}}},
-          {OperationType::kReset, nullptr, {}, {{0, 1}}, {}},
-          {OperationType::kBarrier, nullptr, {}, {{1, 0}}, {}},
+           {},
+           std::nullopt},
+          {OperationType::kMeasure,
+           nullptr,
+           {},
+           {{0, 0}},
+           {{0, 0}},
+           std::nullopt},
+          {OperationType::kReset, nullptr, {}, {{0, 1}}, {}, std::nullopt},
+          {OperationType::kBarrier, nullptr, {}, {{1, 0}}, {}, std::nullopt},
       });
 
   view_->RenderCircuit(circuit);

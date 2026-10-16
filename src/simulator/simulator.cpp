@@ -1,356 +1,231 @@
 #include "qde/simulator/simulator.hpp"
 
-#include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <complex>
-#include <numeric>
+#include <cstddef>
+#include <cstdint>
+#include <new>
 #include <random>
 #include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
+#include "qde/operation.hpp"
 #include "qde/simulator/compiled_operation.hpp"
+#include "qde/simulator/internal/complex_math.hpp"
+#include "qde/simulator/internal/eigenvalues.hpp"
+#include "qde/simulator/internal/memory_guard.hpp"
+#include "qde/simulator/internal/quantum_state.hpp"
 #include "qde/simulator/simulation_circuit.hpp"
+#include "qde/simulator/simulation_state.hpp"
 
-namespace qde {
+namespace qde::simulator {
 
 namespace {
 
-// gate_idx:     index to state of all gate qubits (MSB-first)
-// non_gate_idx: index to state of all non-gate qubits (LSB-first)
-std::size_t EmbedIndex(std::size_t gate_idx, std::size_t non_gate_idx,
-                       const std::vector<std::size_t>& gate_qubits,
-                       std::size_t total_qubits) {
-  std::size_t result = 0;
+using internal::Amplitude;
+using internal::QuantumState;
+using internal::RequireMemory;
+using internal::SaturatingAdd;
+using internal::SaturatingMul;
 
-  // Place gate qubits at their qubit positions (MSB-first).
-  const std::size_t gate_arity = gate_qubits.size();
-  for (std::size_t i = 0; i < gate_arity; i++) {
-    if (((gate_idx >> (gate_arity - 1 - i)) & 1) != 0U) {
-      result |= std::size_t{1} << gate_qubits[i];
-    }
-  }
+// |Tr(ρ²) - 1| below this is treated as a pure state.
+constexpr double kPurityEps = 1e-12;
 
-  // Place non-gate qubits at the remaining positions (LSB-first).
-  std::size_t non_gate_pos = 0;
-  for (std::size_t qubit_idx = 0; qubit_idx < total_qubits; qubit_idx++) {
-    bool is_gate = false;
-    for (const std::size_t gate_qubit_idx : gate_qubits) {
-      if (qubit_idx == gate_qubit_idx) {
-        is_gate = true;
-        break;
-      }
-    }
-    if (is_gate) {
-      continue;  // gate qubits are already placed
-    }
+// Everything a run mutates while it steps through the circuit.
+struct Execution {
+  QuantumState state;
+  std::vector<std::uint8_t> classical_bits;
+  std::mt19937_64 rng;
+};
 
-    if (((non_gate_idx >> non_gate_pos) & 1) != 0U) {
-      result |= std::size_t{1} << qubit_idx;
-    }
-    non_gate_pos++;
-  }
-
-  return result;
+std::uint64_t RandomSeed() {
+  std::random_device device;
+  const std::uint64_t high = device();
+  return (high << 32) | device();
 }
 
-// Apply unitary gate U (gate_dim × gate_dim) to the given qubits.
-// ρ' = U ρ U†
-// Implemented as two passes: left-multiply by U, then right-multiply by U†.
-void ApplyGate(DensityMatrix& rho, std::size_t total_qubits,
-               const std::vector<std::complex<double>>& u,
-               const std::vector<std::size_t>& gate_qubits) {
-  const std::size_t gate_arity = gate_qubits.size();
-  const std::size_t gate_dim = std::size_t{1} << gate_arity;
-  const std::size_t dim = std::size_t{1} << total_qubits;
-  const std::size_t non_gate_dim = std::size_t{1}
-                                   << (total_qubits - gate_arity);
-
-  // Pre-compute embedIndex for all (gate_state, background_state) pairs to
-  // avoid recomputing inside the parallel loops.
-  std::vector<std::size_t> idx_table(gate_dim * non_gate_dim);
-  for (std::size_t i = 0; i < gate_dim; i++) {
-    for (std::size_t j = 0; j < non_gate_dim; j++) {
-      idx_table[(i * non_gate_dim) + j] =
-          EmbedIndex(i, j, gate_qubits, total_qubits);
-    }
+// Eigenvalues of the density matrix ρ, sorted descending.
+std::vector<double> DensityMatrixEigenvalues(const DensityMatrix& rho,
+                                             std::size_t dim) {
+  // Tr(ρ²) is the squared Frobenius norm of a Hermitian matrix. A pure state
+  // has the single non-zero eigenvalue 1, which spares the O(dim³) solver.
+  double purity = 0.0;
+  for (const Amplitude& element : rho) {
+    purity += std::norm(element);
   }
-
-  // Pass 1: A = U * ρ  (left multiply in gate subspace)
-  // row mixing — each column k of A is independent, safe to parallelise.
-  DensityMatrix a(dim * dim, {0.0, 0.0});
-#ifdef _MSC_VER  // proc_bind is unsupported by MSVC
-#pragma omp parallel for collapse(2) schedule(static)
-#else
-#pragma omp parallel for collapse(2) schedule(static) proc_bind(close)
-#endif
-  for (std::ptrdiff_t k = 0; k < static_cast<std::ptrdiff_t>(dim); k++) {
-    for (std::size_t i = 0; i < gate_dim; i++) {
-      for (std::size_t j = 0; j < non_gate_dim; j++) {
-        std::complex<double> sum{0.0, 0.0};
-        // for each gate_dim compute dot product of U row i with ρ
-        for (std::size_t l = 0; l < gate_dim; l++) {
-          sum += u[(i * gate_dim) + l] *
-                 rho[(idx_table[(l * non_gate_dim) + j] * dim) +
-                     static_cast<std::size_t>(k)];
-        }
-
-        a[(idx_table[(i * non_gate_dim) + j] * dim) +
-          static_cast<std::size_t>(k)] = sum;
-      }
-    }
+  if (std::abs(purity - 1.0) < kPurityEps) {
+    std::vector<double> eigenvalues(dim, 0.0);
+    eigenvalues[0] = 1.0;
+    return eigenvalues;
   }
-
-  // Pass 2: ρ' = A * U†  (right multiply in gate subspace)
-  // column mixing — each row k of ρ' is independent, safe to parallelise.
-#ifdef _MSC_VER  // proc_bind is unsupported by MSVC
-#pragma omp parallel for collapse(2) schedule(static)
-#else
-#pragma omp parallel for collapse(2) schedule(static) proc_bind(close)
-#endif
-  for (std::ptrdiff_t k = 0; k < static_cast<std::ptrdiff_t>(dim); k++) {
-    for (std::size_t i = 0; i < gate_dim; i++) {
-      for (std::size_t j = 0; j < non_gate_dim; j++) {
-        std::complex<double> sum{0.0, 0.0};
-        // for each gate_dim compute dot product of U column i with ρ
-        for (std::size_t l = 0; l < gate_dim; l++) {
-          sum += a[(static_cast<std::size_t>(k) * dim) +
-                   idx_table[(l * non_gate_dim) + j]] *
-                 std::conj(u[(i * gate_dim) + l]);
-        }
-
-        rho[(static_cast<std::size_t>(k) * dim) +
-            idx_table[(i * non_gate_dim) + j]] = sum;
-      }
-    }
-  }
+  return internal::HermitianEigenvalues(rho, dim);
 }
 
-std::uint8_t Measure(DensityMatrix& rho, std::size_t total_qubits,
-                     std::size_t qubit, std::mt19937& rng) {
-  const std::size_t dim = std::size_t{1} << total_qubits;
-  const std::size_t qubit_mask = std::size_t{1} << qubit;
-
-  // Calculate probability of measurement as 0
-  double p0 = 0.0;
-  for (std::size_t i = 0; i < dim; i++) {
-    if ((i & qubit_mask) == 0) {
-      p0 += rho[(i * dim) + i].real();
-    }
-  }
-  p0 = std::clamp(p0, 0.0, 1.0);  // guard against floating point drift
-
-  const std::uint8_t measurement =
-      std::uniform_real_distribution<double>(0.0, 1.0)(rng) < p0 ? 0 : 1;
-  const double probability = measurement == 0 ? p0 : 1.0 - p0;
-
-  // Collapse quantum states and renormalize
-  for (std::size_t i = 0; i < dim; i++) {
-    for (std::size_t j = 0; j < dim; j++) {
-      // Is basis state consistent with measurement?
-      const bool keep = (((i & qubit_mask) >> qubit) == measurement) &&
-                        (((j & qubit_mask) >> qubit) == measurement);
-
-      if (keep) {
-        rho[(i * dim) + j] /= probability;
-      } else {
-        rho[(i * dim) + j] = std::complex<double>{0.0, 0.0};
-      }
-    }
-  }
-
-  return measurement;
-}
-
-// Reset qubit to |0⟩ via the Kraus channel.
-void Reset(DensityMatrix& rho, std::size_t total_qubits, std::size_t qubit) {
-  const std::size_t dim = std::size_t{1} << total_qubits;
-  const std::size_t qubit_mask = std::size_t{1} << qubit;
-  DensityMatrix new_rho(dim * dim, {0.0, 0.0});
-
-  for (std::size_t i = 0; i < dim; i++) {
-    if ((i & qubit_mask) != 0U) {
-      continue;
-    }
-    for (std::size_t j = 0; j < dim; j++) {
-      if ((j & qubit_mask) != 0U) {
-        continue;
-      }
-      // K0 term: keep existing |0> amplitude; K1 term: fold |1> back into |0>
-      new_rho[(i * dim) + j] =
-          rho[(i * dim) + j] + rho[((i | qubit_mask) * dim) + (j | qubit_mask)];
-    }
-  }
-
-  rho = std::move(new_rho);
-}
-
-std::vector<double> ComputeEigenvalues(const DensityMatrix& rho,
-                                       std::size_t total_qubits) {
-  const std::size_t dim = std::size_t{1} << total_qubits;
-  std::vector<std::complex<double>> h(rho);
-  constexpr int k_max_sweeps = 100;
-  constexpr double k_eps = 1e-10;
-
-  for (int sweep = 0; sweep < k_max_sweeps; sweep++) {
-    double max_off = 0.0;
-    for (std::size_t p = 0; p < dim; p++) {
-      for (std::size_t q = p + 1; q < dim; q++) {
-        max_off = std::max(max_off, std::abs(h[(p * dim) + q]));
-      }
-    }
-    if (max_off < k_eps) {
-      break;
-    }
-
-    for (std::size_t p = 0; p < dim; p++) {
-      for (std::size_t q = p + 1; q < dim; q++) {
-        const std::complex<double> hpq = h[(p * dim) + q];
-        if (std::abs(hpq) < k_eps * k_eps) {
-          continue;
-        }
-
-        const double hpp = h[(p * dim) + p].real();
-        const double hqq = h[(q * dim) + q].real();
-        const double tau = (hqq - hpp) / (2.0 * std::abs(hpq));
-        const double t = (tau >= 0 ? 1.0 : -1.0) /
-                         (std::abs(tau) + std::sqrt(1.0 + (tau * tau)));
-        const double c = 1.0 / std::sqrt(1.0 + (t * t));
-        const double s = c * t;
-        const std::complex<double> phase = hpq / std::abs(hpq);
-
-        // Update diagonal.
-        h[(p * dim) + p] =
-            (hpp * c * c) + (hqq * s * s) - (2.0 * std::abs(hpq) * s * c);
-        h[(q * dim) + q] =
-            (hpp * s * s) + (hqq * c * c) + (2.0 * std::abs(hpq) * s * c);
-        h[(p * dim) + q] = h[(q * dim) + p] = {0.0, 0.0};
-
-        // Update off-diagonal rows/columns.
-        for (std::size_t r = 0; r < dim; r++) {
-          if (r == p || r == q) {
-            continue;
-          }
-          const std::complex<double> hrp = h[(r * dim) + p];
-          const std::complex<double> hrq = h[(r * dim) + q];
-          h[(r * dim) + p] = c * hrp + (s * std::conj(phase) * hrq);
-          h[(r * dim) + q] = (-s * phase * hrp) + c * hrq;
-          h[(p * dim) + r] = std::conj(h[(r * dim) + p]);
-          h[(q * dim) + r] = std::conj(h[(r * dim) + q]);
-        }
-      }
-    }
-  }
-
-  std::vector<double> vals(dim);
-  for (std::size_t i = 0; i < dim; ++i) {
-    vals[i] = h[(i * dim) + i].real();
-  }
-  std::sort(vals.begin(), vals.end(), std::greater<>());
-  return vals;
-}
-
-SimulationState MakeSnapshot(const DensityMatrix& rho, std::size_t total_qubits,
+// Takes the state by value so that the caller chooses between copying it and
+// handing over its buffer.
+SimulationState MakeSnapshot(QuantumState state,
                              const std::vector<std::uint8_t>& classical_bits,
-                             std::size_t layer, double gate_fidelity) {
-  const std::size_t dim = std::size_t{1} << total_qubits;
+                             std::size_t layer) {
+  SimulationState snapshot;
+  snapshot.layer = layer;
+  snapshot.qubit_count = state.QubitCount();
+  snapshot.bit_count = classical_bits.size();
+  snapshot.classical_bits = classical_bits;
 
-  SimulationState s;
-  s.layer = layer;
-  s.qubit_count = total_qubits;
-  s.bit_count = classical_bits.size();
-  s.density_matrix = rho;
-  s.classical_bits = classical_bits;
-  s.gate_fidelity = gate_fidelity;
-
-  s.basis_probabilities.resize(dim);
-  for (std::size_t i = 0; i < dim; ++i) {
-    s.basis_probabilities[i] = rho[(i * dim) + i].real();
+  if (state.IsPure()) {
+    snapshot.state_vector = std::move(state).ReleaseData();
+  } else {
+    snapshot.mixed_eigenvalues = DensityMatrixEigenvalues(
+        state.Data(), std::size_t{1} << state.QubitCount());
+    snapshot.density_matrix = std::move(state).ReleaseData();
   }
-
-  s.eigenvalues = ComputeEigenvalues(rho, total_qubits);
-  return s;
+  return snapshot;
 }
 
+// Throws unless a run over n qubits fits in memory while the state stays pure
+void RequireStateVectorMemory(std::size_t n, std::uint64_t copies) {
+  RequireMemory(n, SaturatingMul(SaturatingAdd(copies, 1), sizeof(Amplitude)),
+                "the state vector of " + std::to_string(n) + " qubits");
+}
+
+// Throws unless the density matrix of n qubits fits in memory together with
+// its copy for the eigenvalue solver and one copy per remaining snapshot.
+void RequireDensityMatrixMemory(std::size_t n,
+                                std::uint64_t snapshots_remaining) {
+  RequireMemory(
+      2 * n,
+      SaturatingMul(SaturatingAdd(2, snapshots_remaining), sizeof(Amplitude)),
+      "the density matrix of " + std::to_string(n) +
+          " qubits (resetting an entangled qubit makes the state mixed)");
+}
+
+// Resets `qubit`, switching to a density matrix if the reset mixes the state.
+// `snapshots_remaining` is the number of copies of the state still to be
+// taken, which have to fit in memory next to it.
+void Reset(QuantumState& state, std::size_t qubit,
+           std::uint64_t snapshots_remaining) {
+  if (state.TryReset(qubit)) {
+    return;
+  }
+
+  RequireDensityMatrixMemory(state.QubitCount(), snapshots_remaining);
+  state.ConvertToDensityMatrix();
+  static_cast<void>(state.TryReset(qubit));  // cannot fail on a mixed state
+}
+
+// Measures every qubit of `op` into its target bit.
+void Measure(const CompiledOperation& op, Execution& execution) {
+  std::uniform_real_distribution<double> uniform{0.0, 1.0};
+  for (std::size_t i = 0; i < op.qubits.size(); i++) {
+    const std::uint8_t outcome =
+        execution.state.Measure(op.qubits[i], uniform(execution.rng));
+    // A measurement without a target bit still collapses the state.
+    if (i < op.measure_target.size()) {
+      execution.classical_bits[op.measure_target[i]] = outcome;
+    }
+  }
+}
+
+// Runs `op` unless its classical condition is not met.
+void Apply(const CompiledOperation& op, Execution& execution,
+           std::uint64_t snapshots_remaining) {
+  if (op.condition) {
+    const auto [bit, expected] = *op.condition;
+    if (execution.classical_bits[bit] != expected) {
+      return;
+    }
+  }
+
+  switch (op.type) {
+    case OperationType::kGate:
+      execution.state.ApplyGate(op.gate->Matrix(op.gate_params), op.qubits);
+      break;
+    case OperationType::kMeasure:
+      Measure(op, execution);
+      break;
+    case OperationType::kReset:
+      for (const std::size_t qubit : op.qubits) {
+        Reset(execution.state, qubit, snapshots_remaining);
+      }
+      break;
+    case OperationType::kBarrier:
+      break;
+  }
+}
+
+// Returns the state before every layer followed by the final state if
+// `save_all`; otherwise only the final state.
+// `seed` fixes the measurement outcomes.
 std::vector<SimulationState> Simulate(const SimulationCircuit& circuit,
-                                      bool save_all) {
+                                      bool save_all, std::uint64_t seed) {
   const std::size_t n = circuit.QubitCount();
-  const std::size_t dim = std::size_t{1} << n;
+  const std::size_t layer_count = circuit.Layers().size();
 
-  // Initial state ρ = |0...0><0...0|
-  DensityMatrix rho(dim * dim, {0.0, 0.0});
-  rho[0] = {1.0, 0.0};
+  const std::uint64_t copies = save_all ? layer_count : 0;
+  RequireStateVectorMemory(n, copies);
 
-  // All bits initially 0
-  std::vector<std::uint8_t> classical_bits(circuit.BitCount(), 0);
-  std::mt19937 rng{std::random_device{}()};
+  Execution execution{QuantumState(n),
+                      std::vector<std::uint8_t>(circuit.BitCount(), 0),
+                      std::mt19937_64(seed)};
 
   std::vector<SimulationState> states;
-  if (save_all) {
-    states.reserve(circuit.Layers().size() + 1);
-    states.push_back(MakeSnapshot(rho, n, classical_bits, 0, 1.0));
-  }
+  states.reserve(static_cast<std::size_t>(copies) + 1);
 
-  for (std::size_t layer_idx = 0; layer_idx < circuit.Layers().size();
-       layer_idx++) {
-    for (const CompiledOperation& op : circuit.Layers()[layer_idx]) {
-      if (op.condition) {
-        const auto [bit_idx, expected] = *op.condition;
-        if (classical_bits[bit_idx] != expected) {
-          continue;
-        }
-      }
-
-      switch (op.type) {
-        case OperationType::kGate:
-          if (op.gate) {
-            ApplyGate(rho, n, op.gate->Matrix(op.gate_params), op.qubits);
-          }
-          break;
-        case OperationType::kMeasure:
-          for (std::size_t qi = 0; qi < op.qubits.size(); qi++) {
-            const std::size_t bit_idx =
-                qi < op.measure_target.size() ? op.measure_target[qi] : 0;
-            classical_bits[bit_idx] = Measure(rho, n, op.qubits[qi], rng);
-          }
-          break;
-        case OperationType::kReset:
-          for (const std::size_t q : op.qubits) {
-            Reset(rho, n, q);
-          }
-          break;
-        case OperationType::kBarrier:
-          break;
-      }
-    }
-
+  for (std::size_t layer = 0; layer < layer_count; layer++) {
     if (save_all) {
       states.push_back(
-          MakeSnapshot(rho, n, classical_bits, layer_idx + 1, 1.0));
+          MakeSnapshot(execution.state, execution.classical_bits, layer));
+    }
+    // Snapshots still to be copied once this layer has run.
+    const std::uint64_t snapshots_remaining =
+        save_all ? layer_count - layer - 1 : 0;
+    for (const CompiledOperation& op : circuit.Layers()[layer]) {
+      Apply(op, execution, snapshots_remaining);
     }
   }
 
-  if (!save_all) {
-    states.push_back(
-        MakeSnapshot(rho, n, classical_bits, circuit.Layers().size(), 1.0));
-  }
-
+  states.push_back(MakeSnapshot(std::move(execution.state),
+                                execution.classical_bits, layer_count));
   return states;
 }
 
-}  // namespace
+// Reports allocation failure as a runtime error
+std::vector<SimulationState> SimulateChecked(const SimulationCircuit& circuit,
+                                             bool save_all,
+                                             std::uint64_t seed) {
+  try {
+    return Simulate(circuit, save_all, seed);
+  } catch (const std::bad_alloc&) {
+    throw std::runtime_error("Simulator: out of memory while simulating " +
+                             std::to_string(circuit.QubitCount()) + " qubits");
+  }
+}
 
-// ---- Simulator public API -------------------------------------------------
+}  // namespace
 
 void Simulator::SetNoiseModel(const std::shared_ptr<const NoiseModel>& model) {
   noise_model_ = model;
 }
 
 std::vector<SimulationState> Simulator::Run(const SimulationCircuit& circuit) {
-  return Simulate(circuit, true);
+  return Run(circuit, RandomSeed());
+}
+
+std::vector<SimulationState> Simulator::Run(const SimulationCircuit& circuit,
+                                            std::uint64_t seed) {
+  return SimulateChecked(circuit, true, seed);
 }
 
 SimulationState Simulator::RunFinal(const SimulationCircuit& circuit) {
-  return Simulate(circuit, false).back();
+  return RunFinal(circuit, RandomSeed());
 }
 
-}  // namespace qde
+SimulationState Simulator::RunFinal(const SimulationCircuit& circuit,
+                                    std::uint64_t seed) {
+  std::vector<SimulationState> states(SimulateChecked(circuit, false, seed));
+  return std::move(states.back());
+}
+
+}  // namespace qde::simulator

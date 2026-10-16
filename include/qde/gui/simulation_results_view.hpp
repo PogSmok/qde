@@ -25,13 +25,13 @@ class SimulationResultsView : public QWidget {
 
   explicit SimulationResultsView(QWidget* parent = nullptr);
 
-  void ShowState(const qde::SimulationState& state);
+  void ShowState(const qde::simulator::SimulationState& state);
   void ClearState();
   [[nodiscard]] Mode GetMode() const { return mode_; }
   void SetMode(Mode mode);
   QSize sizeHint() const override;
 
- public slots:
+ public slots:  // NOLINT(readability-redundant-access-specifiers)
   void ShowError(const QString& message);
 
  protected:
@@ -45,7 +45,7 @@ class SimulationResultsView : public QWidget {
 
   QPointer<QComboBox> mode_selector_;
   Mode mode_{Mode::kProbabilities};
-  std::optional<qde::SimulationState> state_;
+  std::optional<qde::simulator::SimulationState> state_;
   std::optional<QString> error_;
 };
 
