@@ -3,14 +3,31 @@
 
 #include <cstdint>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
+#include "qde/program.hpp"
 #include "qde/simulator/simulation_circuit.hpp"
 #include "qde/simulator/simulation_state.hpp"
 
 namespace qde::simulator {
 
 class NoiseModel;
+
+// Thrown when a program fails while it runs
+class ProgramFailure : public std::runtime_error {
+ public:
+  explicit ProgramFailure(const ProgramError& error)
+      : std::runtime_error("line " + std::to_string(error.line) + ": " +
+                           error.message),
+        error_(error) {}
+
+  [[nodiscard]] const ProgramError& Error() const noexcept { return error_; }
+
+ private:
+  ProgramError error_;
+};
 
 // Simulates a SimulationCircuit layer by layer, starting from |0...0>.
 //
@@ -33,13 +50,18 @@ class Simulator {
   [[nodiscard]] static std::vector<SimulationState> Run(
       const SimulationCircuit& circuit, std::uint64_t seed);
 
-  // Runs the circuit and returns only the final state. Needs the memory of a
-  // single state, however many layers the circuit has.
+  // Runs the circuit and returns only the final state.
+  // Needs the memory of a single state, however many layers the circuit has.
   // Throws std::runtime_error if the state does not fit in memory.
   [[nodiscard]] static SimulationState RunFinal(
       const SimulationCircuit& circuit);
   [[nodiscard]] static SimulationState RunFinal(
       const SimulationCircuit& circuit, std::uint64_t seed);
+
+  // Runs `program` and returns the final state.
+  [[nodiscard]] static SimulationState RunProgram(const Program& program);
+  [[nodiscard]] static SimulationState RunProgram(const Program& program,
+                                                  std::uint64_t seed);
 
   // Stores a noise model, or clears it with nullptr.
   // TODO: noise is not simulated yet, so Run and RunFinal ignore the model.

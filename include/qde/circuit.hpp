@@ -1,6 +1,7 @@
 #ifndef CIRCUIT_HPP_
 #define CIRCUIT_HPP_
 
+#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -41,11 +42,37 @@ class Circuit {
   [[nodiscard]] const std::vector<BitRegister>& BitRegisters() const noexcept {
     return bit_registers_;
   }
+
+  // Can contain non-flat blocks
   [[nodiscard]] const std::vector<Operation>& Operations() const noexcept {
     return operations_;
   }
 
+  [[nodiscard]] std::vector<Operation> FlatOperations() const {
+    std::vector<Operation> flat;
+    AppendFlat(operations_, flat);
+    return flat;
+  }
+
+  [[nodiscard]] bool IsFlat() const {
+    return std::none_of(operations_.begin(), operations_.end(),
+                        [](const Operation& operation) {
+                          return operation.type == OperationType::kBlock;
+                        });
+  }
+
  private:
+  static void AppendFlat(const std::vector<Operation>& operations,
+                         std::vector<Operation>& flat) {
+    for (const Operation& operation : operations) {
+      if (operation.type == OperationType::kBlock) {
+        AppendFlat(operation.body, flat);
+      } else {
+        flat.push_back(operation);
+      }
+    }
+  }
+
   GateRegistry gate_registry_;
   std::vector<QubitRegister> qubit_registers_;
   std::vector<BitRegister> bit_registers_;
