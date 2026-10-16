@@ -11,7 +11,9 @@
 #include <utility>
 #include <vector>
 
+#include "qde/gate_definition.hpp"
 #include "qde/operation.hpp"
+#include "qde/program.hpp"
 #include "qde/simulator/compiled_operation.hpp"
 #include "qde/simulator/internal/complex_math.hpp"
 #include "qde/simulator/internal/eigenvalues.hpp"
@@ -118,39 +120,69 @@ void Reset(QuantumState& state, std::size_t qubit,
 // Measures every qubit of `op` into its target bit.
 void Measure(const CompiledOperation& op, Execution& execution) {
   std::uniform_real_distribution<double> uniform{0.0, 1.0};
-  for (std::size_t i = 0; i < op.qubits.size(); i++) {
+  for (std::size_t i = 0; i < op.qubit_indices.size(); i++) {
     const std::uint8_t outcome =
-        execution.state.Measure(op.qubits[i], uniform(execution.rng));
+        execution.state.Measure(op.qubit_indices[i], uniform(execution.rng));
     // A measurement without a target bit still collapses the state.
-    if (i < op.measure_target.size()) {
-      execution.classical_bits[op.measure_target[i]] = outcome;
+    if (i < op.measure_target_indices.size()) {
+      execution.classical_bits[op.measure_target_indices[i]] = outcome;
     }
+  }
+}
+
+// The value of `condition` for the current classical bits.
+bool Evaluate(const CompiledCondition& condition,
+              const std::vector<std::uint8_t>& classical_bits) {
+  std::size_t index = 0;
+  for (std::size_t k = 0; k < condition.bit_indices.size(); k++) {
+    if (classical_bits[condition.bit_indices[k]] != 0) {
+      index |= std::size_t{1} << k;
+    }
+  }
+  return condition.truth[index] != 0;
+}
+
+// Writes every assigned value. All of them are evaluated before any bit
+// changes, so that the values may depend on the bits they replace.
+void Assign(const CompiledOperation& op,
+            std::vector<std::uint8_t>& classical_bits) {
+  std::vector<std::uint8_t> values;
+  values.reserve(op.assign_sources.size());
+  for (const CompiledCondition& source : op.assign_sources) {
+    values.push_back(Evaluate(source, classical_bits) ? 1 : 0);
+  }
+  for (std::size_t i = 0; i < values.size(); i++) {
+    classical_bits[op.measure_target_indices[i]] = values[i];
   }
 }
 
 // Runs `op` unless its classical condition is not met.
 void Apply(const CompiledOperation& op, Execution& execution,
            std::uint64_t snapshots_remaining) {
-  if (op.condition) {
-    const auto [bit, expected] = *op.condition;
-    if (execution.classical_bits[bit] != expected) {
-      return;
-    }
+  if (op.condition && !Evaluate(*op.condition, execution.classical_bits)) {
+    return;
   }
 
   switch (op.type) {
     case OperationType::kGate:
-      execution.state.ApplyGate(op.gate->Matrix(op.gate_params), op.qubits);
+      execution.state.ApplyGate(op.gate->Matrix(op.gate_params),
+                                op.qubit_indices);
       break;
     case OperationType::kMeasure:
       Measure(op, execution);
       break;
     case OperationType::kReset:
-      for (const std::size_t qubit : op.qubits) {
+      for (const std::size_t qubit : op.qubit_indices) {
         Reset(execution.state, qubit, snapshots_remaining);
       }
       break;
     case OperationType::kBarrier:
+      break;
+    case OperationType::kAssign:
+      Assign(op, execution.classical_bits);
+      break;
+    case OperationType::kBlock:
+      // A SimulationCircuit has the operations of its blocks, not the blocks.
       break;
   }
 }
@@ -191,6 +223,54 @@ std::vector<SimulationState> Simulate(const SimulationCircuit& circuit,
   return states;
 }
 
+// Holds the state of a running program and answers its measurements.
+class StateBackend final : public QuantumBackend {
+ public:
+  explicit StateBackend(std::uint64_t seed) : rng_(seed) {}
+
+  void AppendQubits(std::size_t count) override {
+    const std::size_t qubit_count = state_.QubitCount();
+    if (count > kMaxQubits - qubit_count) {
+      throw std::runtime_error(
+          "Simulator: too many qubits for simulation (max " +
+          std::to_string(kMaxQubits) + ")");
+    }
+    if (state_.IsPure()) {
+      RequireStateVectorMemory(qubit_count + count, 0);
+    } else {
+      RequireDensityMatrixMemory(qubit_count + count, 0);
+    }
+    state_.AppendQubits(count);
+  }
+
+  void ApplyGate(const GateDefinition& gate, const std::vector<double>& params,
+                 const std::vector<std::size_t>& qubits) override {
+    state_.ApplyGate(gate.Matrix(params), qubits);
+  }
+
+  bool Measure(std::size_t qubit) override {
+    std::uniform_real_distribution<double> uniform{0.0, 1.0};
+    return state_.Measure(qubit, uniform(rng_)) != 0;
+  }
+
+  void Reset(std::size_t qubit) override { simulator::Reset(state_, qubit, 0); }
+
+  [[nodiscard]] QuantumState TakeState() && { return std::move(state_); }
+
+ private:
+  QuantumState state_{0};
+  std::mt19937_64 rng_;
+};
+
+SimulationState ExecuteProgram(const Program& program, std::uint64_t seed) {
+  StateBackend backend(seed);
+  const ProgramResult result = program.Run(backend);
+  if (!result.errors.empty()) {
+    throw ProgramFailure(result.errors.front());
+  }
+  return MakeSnapshot(std::move(backend).TakeState(), result.classical_bits, 0);
+}
+
 // Reports allocation failure as a runtime error
 std::vector<SimulationState> SimulateChecked(const SimulationCircuit& circuit,
                                              bool save_all,
@@ -216,6 +296,21 @@ std::vector<SimulationState> Simulator::Run(const SimulationCircuit& circuit) {
 std::vector<SimulationState> Simulator::Run(const SimulationCircuit& circuit,
                                             std::uint64_t seed) {
   return SimulateChecked(circuit, true, seed);
+}
+
+SimulationState Simulator::RunProgram(const Program& program) {
+  return RunProgram(program, RandomSeed());
+}
+
+SimulationState Simulator::RunProgram(const Program& program,
+                                      std::uint64_t seed) {
+  try {
+    return ExecuteProgram(program, seed);
+  } catch (const std::bad_alloc&) {
+    throw std::runtime_error(
+        "Simulator: out of memory while running the "
+        "program");
+  }
 }
 
 SimulationState Simulator::RunFinal(const SimulationCircuit& circuit) {
