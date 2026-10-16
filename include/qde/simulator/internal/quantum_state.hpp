@@ -69,6 +69,10 @@ class QuantumState {
   // Throws std::out_of_range if the qubit does not exist.
   [[nodiscard]] bool TryReset(std::size_t qubit);
 
+  // Extends the register by `count` qubits in the |0> state.
+  // Throws std::length_error if the larger state cannot be indexed.
+  void AppendQubits(std::size_t count);
+
   // Replaces ψ by ρ = |ψ><ψ|. Does nothing if the state is already mixed.
   // Throws std::length_error if 4^n elements cannot be indexed.
   void ConvertToDensityMatrix();

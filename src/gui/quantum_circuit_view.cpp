@@ -660,6 +660,10 @@ void QuantumCircuitView::paintEvent(QPaintEvent* /*event*/) {
             painter, cx, box_w, op, [this](int i) { return WireY(i); },
             [this](QubitReference q) { return QubitRow(q); });
         break;
+      case OperationType::kAssign:
+      case OperationType::kBlock:
+        // TODO: implement in parser
+        break;
     }
   }
   if (hidden_wires_ > 0) {

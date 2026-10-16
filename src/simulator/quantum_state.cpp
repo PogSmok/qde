@@ -20,6 +20,26 @@ namespace {
 // Threading overhead dominates for smaller loops.
 constexpr std::size_t kParallelThreshold = std::size_t{1} << 14;
 
+// Calls body(k) for every k in [0, count), on all threads if `parallel`.
+// The iterations must be independent.
+//
+// NOTE: a serial loop is not written as
+//   #pragma omp parallel for schedule(static) if(parallel)
+// because if(false) still creates a parallel region with a single thread.
+template <typename Body>
+void ForEach(std::int64_t count, bool parallel, const Body& body) {
+  if (!parallel) {
+    for (std::int64_t k = 0; k < count; k++) {
+      body(k);
+    }
+    return;
+  }
+#pragma omp parallel for schedule(static)
+  for (std::int64_t k = 0; k < count; k++) {
+    body(k);
+  }
+}
+
 // Largest Gram determinant ⟨a|a⟩⟨b|b⟩ - |⟨a|b⟩|² still treated as zero.
 constexpr double kEntanglementEps = 1e-12;
 
@@ -106,15 +126,14 @@ void ApplySingleBitMatrix(std::vector<Amplitude>& state,
   const Amplitude u10 = u[2];
   const Amplitude u11 = u[3];
 
-#pragma omp parallel for schedule(static) if (parallel)
-  for (std::int64_t p = 0; p < pairs; p++) {
+  ForEach(pairs, parallel, [&](std::int64_t p) {
     const std::size_t i0 = InsertZeroBit(static_cast<std::size_t>(p), target);
     const std::size_t i1 = i0 | bit;
     const Amplitude a0 = state[i0];
     const Amplitude a1 = state[i1];
     state[i0] = Mul(u00, a0) + Mul(u01, a1);
     state[i1] = Mul(u10, a0) + Mul(u11, a1);
-  }
+  });
 }
 
 // Applies the 2^k × 2^k matrix u to k bits of the index of `state`.
@@ -137,11 +156,8 @@ void ApplyMatrix(std::vector<Amplitude>& state, const std::vector<Amplitude>& u,
   std::vector<std::size_t> sorted_targets(targets);
   std::sort(sorted_targets.begin(), sorted_targets.end());
 
-  // Inputs of the group being transformed.
-  std::vector<Amplitude> inputs(gate_dim);
-
-#pragma omp parallel for schedule(static) firstprivate(inputs) if (parallel)
-  for (std::int64_t g = 0; g < groups; g++) {
+  // Transforms group `g`; `inputs` is scratch space for its amplitudes.
+  const auto transform = [&](std::int64_t g, std::vector<Amplitude>& inputs) {
     // Open a zero bit at every target position, lowest first.
     auto base = static_cast<std::size_t>(g);
     for (const std::size_t target : sorted_targets) {
@@ -159,6 +175,20 @@ void ApplyMatrix(std::vector<Amplitude>& state, const std::vector<Amplitude>& u,
       }
       state[base | offsets[r]] = sum;
     }
+  };
+
+  std::vector<Amplitude> inputs(gate_dim);
+  if (!parallel) {
+    // See ForEach() for why this is not left to a pragma `if` clause.
+    for (std::int64_t g = 0; g < groups; g++) {
+      transform(g, inputs);
+    }
+    return;
+  }
+  // Every thread has its own scratch space.
+#pragma omp parallel for schedule(static) firstprivate(inputs)
+  for (std::int64_t g = 0; g < groups; g++) {
+    transform(g, inputs);
   }
 }
 
@@ -170,17 +200,25 @@ OutcomeProbabilities MeasureProbabilities(const std::vector<Amplitude>& data,
                                           std::size_t dim, bool pure,
                                           std::size_t qubit) {
   const bool parallel = dim >= kParallelThreshold;
+  const auto count = static_cast<std::int64_t>(dim);
   double p0 = 0.0;
   double p1 = 0.0;
-
-#pragma omp parallel for schedule(static) reduction(+ : p0, p1) if (parallel)
-  for (std::int64_t k = 0; k < static_cast<std::int64_t>(dim); k++) {
+  // Adds the probability of basis state `k` to that of its outcome.
+  const auto add = [&](std::int64_t k, double& zero, double& one) {
     const auto i = static_cast<std::size_t>(k);
     const double p = pure ? std::norm(data[i]) : data[(i * dim) + i].real();
-    if (BitOf(i, qubit) == 0U) {
-      p0 += p;
-    } else {
-      p1 += p;
+    (BitOf(i, qubit) == 0U ? zero : one) += p;
+  };
+
+  if (!parallel) {
+    // See ForEach() for why this is not left to a pragma `if` clause.
+    for (std::int64_t k = 0; k < count; k++) {
+      add(k, p0, p1);
+    }
+  } else {
+#pragma omp parallel for schedule(static) reduction(+ : p0, p1)
+    for (std::int64_t k = 0; k < count; k++) {
+      add(k, p0, p1);
     }
   }
   // Guard against floating point drift.
@@ -207,11 +245,10 @@ void CollapsePure(std::vector<Amplitude>& psi, std::size_t qubit,
   const bool parallel = psi.size() >= kParallelThreshold;
   const double scale = 1.0 / std::sqrt(probability);
 
-#pragma omp parallel for schedule(static) if (parallel)
-  for (std::int64_t k = 0; k < static_cast<std::int64_t>(psi.size()); k++) {
+  ForEach(static_cast<std::int64_t>(psi.size()), parallel, [&](std::int64_t k) {
     const auto i = static_cast<std::size_t>(k);
     psi[i] = BitOf(i, qubit) == outcome ? psi[i] * scale : kZero;
-  }
+  });
 }
 
 // Projects the dim × dim ρ onto `qubit` = `outcome`, which has the given
@@ -221,8 +258,7 @@ void CollapseMixed(std::vector<Amplitude>& rho, std::size_t dim,
   const bool parallel = rho.size() >= kParallelThreshold;
   const double scale = 1.0 / probability;
 
-#pragma omp parallel for schedule(static) if (parallel)
-  for (std::int64_t k = 0; k < static_cast<std::int64_t>(dim); k++) {
+  ForEach(static_cast<std::int64_t>(dim), parallel, [&](std::int64_t k) {
     const auto i = static_cast<std::size_t>(k);
     const std::size_t row = i * dim;
     const bool keep_row = BitOf(i, qubit) == outcome;
@@ -230,7 +266,7 @@ void CollapseMixed(std::vector<Amplitude>& rho, std::size_t dim,
       const bool keep = keep_row && BitOf(j, qubit) == outcome;
       rho[row + j] = keep ? rho[row + j] * scale : kZero;
     }
-  }
+  });
 }
 
 // ---- Reset ------------------------------------------------------------------
@@ -243,17 +279,29 @@ QubitSplit SplitByQubit(const std::vector<Amplitude>& psi, std::size_t qubit) {
   double norm_b = 0.0;
   double overlap_re = 0.0;
   double overlap_im = 0.0;
-
-#pragma omp parallel for schedule(static) \
-    reduction(+ : norm_a, norm_b, overlap_re, overlap_im) if (parallel)
-  for (std::int64_t p = 0; p < pairs; p++) {
+  // Adds what pair `p` of amplitudes contributes to the four sums.
+  const auto add = [&](std::int64_t p, double& na, double& nb, double& re,
+                       double& im) {
     const std::size_t i0 = InsertZeroBit(static_cast<std::size_t>(p), qubit);
     const Amplitude a = psi[i0];
     const Amplitude b = psi[i0 | bit];
-    norm_a += std::norm(a);
-    norm_b += std::norm(b);
-    overlap_re += (a.real() * b.real()) + (a.imag() * b.imag());
-    overlap_im += (a.real() * b.imag()) - (a.imag() * b.real());
+    na += std::norm(a);
+    nb += std::norm(b);
+    re += (a.real() * b.real()) + (a.imag() * b.imag());
+    im += (a.real() * b.imag()) - (a.imag() * b.real());
+  };
+
+  if (!parallel) {
+    // See ForEach() for why this is not left to a pragma `if` clause.
+    for (std::int64_t p = 0; p < pairs; p++) {
+      add(p, norm_a, norm_b, overlap_re, overlap_im);
+    }
+  } else {
+#pragma omp parallel for schedule(static) \
+    reduction(+ : norm_a, norm_b, overlap_re, overlap_im)
+    for (std::int64_t p = 0; p < pairs; p++) {
+      add(p, norm_a, norm_b, overlap_re, overlap_im);
+    }
   }
   return {norm_a, norm_b,
           (overlap_re * overlap_re) + (overlap_im * overlap_im)};
@@ -267,13 +315,12 @@ void ProjectOntoZero(std::vector<Amplitude>& psi, std::size_t qubit,
   const bool parallel = psi.size() >= kParallelThreshold;
   const auto pairs = static_cast<std::int64_t>(psi.size() >> 1);
 
-#pragma omp parallel for schedule(static) if (parallel)
-  for (std::int64_t p = 0; p < pairs; p++) {
+  ForEach(pairs, parallel, [&](std::int64_t p) {
     const std::size_t i0 = InsertZeroBit(static_cast<std::size_t>(p), qubit);
     const std::size_t i1 = i0 | bit;
     psi[i0] = (keep_one ? psi[i1] : psi[i0]) * scale;
     psi[i1] = kZero;
-  }
+  });
 }
 
 }  // namespace
@@ -300,11 +347,10 @@ std::vector<double> QuantumState::Probabilities() const {
   const std::vector<Amplitude>& data = data_;
   std::vector<double> probabilities(dim);
 
-#pragma omp parallel for schedule(static) if (parallel)
-  for (std::int64_t k = 0; k < static_cast<std::int64_t>(dim); k++) {
+  ForEach(static_cast<std::int64_t>(dim), parallel, [&](std::int64_t k) {
     const auto i = static_cast<std::size_t>(k);
     probabilities[i] = pure ? std::norm(data[i]) : data[(i * dim) + i].real();
-  }
+  });
   return probabilities;
 }
 
@@ -387,8 +433,7 @@ void QuantumState::ResetMixed(std::size_t qubit) {
   // row and in the column index. K0 keeps the |0><0| block, K1 folds the
   // |1><1| block onto it, and the other blocks vanish. Each iteration owns
   // one pair of rows, so the iterations are independent.
-#pragma omp parallel for schedule(static) if (parallel)
-  for (std::int64_t p = 0; p < static_cast<std::int64_t>(half); p++) {
+  ForEach(static_cast<std::int64_t>(half), parallel, [&](std::int64_t p) {
     const std::size_t i0 = InsertZeroBit(static_cast<std::size_t>(p), qubit);
     const std::size_t row0 = i0 * dim;
     const std::size_t row1 = (i0 | bit) * dim;
@@ -400,7 +445,32 @@ void QuantumState::ResetMixed(std::size_t qubit) {
       rho[row1 + j0] = kZero;
       rho[row1 + j1] = kZero;
     }
+  });
+}
+
+void QuantumState::AppendQubits(std::size_t count) {
+  const std::size_t index_bits = pure_ ? 1 : 2;
+  if (count > kMaxIndexBits ||
+      (qubit_count_ + count) * index_bits > kMaxIndexBits) {
+    throw std::length_error("QuantumState: too many qubits to index");
   }
+  const std::size_t old_dim = Dim();
+  qubit_count_ += count;
+  const std::size_t dim = Dim();
+
+  // The new qubits are the high bits of a basis state index, so every old
+  // basis state keeps its index and all the new ones have amplitude zero.
+  if (pure_) {
+    data_.resize(dim, kZero);
+    return;
+  }
+  std::vector<Amplitude> rho(dim * dim, kZero);
+  for (std::size_t i = 0; i < old_dim; i++) {
+    for (std::size_t j = 0; j < old_dim; j++) {
+      rho[(i * dim) + j] = data_[(i * old_dim) + j];
+    }
+  }
+  data_ = std::move(rho);
 }
 
 void QuantumState::ConvertToDensityMatrix() {
@@ -416,14 +486,13 @@ void QuantumState::ConvertToDensityMatrix() {
   std::vector<Amplitude> rho(dim * dim);
   const bool parallel = rho.size() >= kParallelThreshold;
 
-#pragma omp parallel for schedule(static) if (parallel)
-  for (std::int64_t k = 0; k < static_cast<std::int64_t>(dim); k++) {
+  ForEach(static_cast<std::int64_t>(dim), parallel, [&](std::int64_t k) {
     const auto i = static_cast<std::size_t>(k);
     const std::size_t row = i * dim;
     for (std::size_t j = 0; j < dim; j++) {
       rho[row + j] = Mul(psi[i], std::conj(psi[j]));
     }
-  }
+  });
 
   data_ = std::move(rho);
   pure_ = false;

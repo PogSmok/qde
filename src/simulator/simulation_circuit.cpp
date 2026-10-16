@@ -141,6 +141,23 @@ void CheckGate(const Operation& op, const std::vector<std::size_t>& qubits) {
   }
 }
 
+// Resolves the bit references of `condition` and validates its truth table.
+CompiledCondition Compile(const Condition& condition,
+                          const RegisterMap& registers) {
+  if (condition.bits.size() > Condition::kMaxBits ||
+      condition.truth.size() != std::size_t{1} << condition.bits.size()) {
+    throw std::invalid_argument(
+        "SimulationCircuit: condition has a truth table of the wrong size");
+  }
+  CompiledCondition compiled;
+  compiled.truth = condition.truth;
+  compiled.bit_indices.reserve(condition.bits.size());
+  for (const BitReference& bit : condition.bits) {
+    compiled.bit_indices.push_back(registers.Bit(bit));
+  }
+  return compiled;
+}
+
 // Resolves every register reference of `op` and validates the result.
 CompiledOperation Compile(const Operation& op, const RegisterMap& registers) {
   CompiledOperation compiled;
@@ -148,12 +165,12 @@ CompiledOperation Compile(const Operation& op, const RegisterMap& registers) {
   compiled.gate = op.gate;
   compiled.gate_params = op.gate_params;
 
-  compiled.qubits.reserve(op.qubits.size());
+  compiled.qubit_indices.reserve(op.qubits.size());
   for (const QubitReference& qubit : op.qubits) {
-    compiled.qubits.push_back(registers.Qubit(qubit));
+    compiled.qubit_indices.push_back(registers.Qubit(qubit));
   }
   if (op.type == OperationType::kGate) {
-    CheckGate(op, compiled.qubits);
+    CheckGate(op, compiled.qubit_indices);
   }
 
   if (op.type == OperationType::kMeasure && !op.measure_target.empty() &&
@@ -162,14 +179,23 @@ CompiledOperation Compile(const Operation& op, const RegisterMap& registers) {
         "SimulationCircuit: measurement must target one bit per qubit or "
         "none");
   }
-  compiled.measure_target.reserve(op.measure_target.size());
+  compiled.measure_target_indices.reserve(op.measure_target.size());
   for (const BitReference& bit : op.measure_target) {
-    compiled.measure_target.push_back(registers.Bit(bit));
+    compiled.measure_target_indices.push_back(registers.Bit(bit));
+  }
+
+  if (op.type == OperationType::kAssign &&
+      op.assign_sources.size() != op.measure_target.size()) {
+    throw std::invalid_argument(
+        "SimulationCircuit: assignment must have one value per target bit");
+  }
+  compiled.assign_sources.reserve(op.assign_sources.size());
+  for (const Condition& source : op.assign_sources) {
+    compiled.assign_sources.push_back(Compile(source, registers));
   }
 
   if (op.condition) {
-    const auto& [bit, expected] = *op.condition;
-    compiled.condition = {registers.Bit(bit), expected};
+    compiled.condition = Compile(*op.condition, registers);
   }
   return compiled;
 }
@@ -186,24 +212,25 @@ class AsapScheduler {
   // Returns the layer of `op` and reserves the qubits and bits it uses.
   std::size_t Place(const CompiledOperation& op) {
     std::size_t layer = 0;
-    for (const std::size_t qubit : op.qubits) {
+    for (const std::size_t qubit : op.qubit_indices) {
       layer = std::max(layer, qubit_free_[qubit]);
     }
-    for (const std::size_t bit : op.measure_target) {
+    for (const std::size_t bit : op.measure_target_indices) {
       layer = std::max(layer, bit_writable_[bit]);
     }
-    if (op.condition) {
-      layer = std::max(layer, bit_readable_[op.condition->first]);
+    const std::vector<std::size_t> read = BitsRead(op);
+    for (const std::size_t bit : read) {
+      layer = std::max(layer, bit_readable_[bit]);
     }
 
-    for (const std::size_t qubit : op.qubits) {
+    for (const std::size_t qubit : op.qubit_indices) {
       qubit_free_[qubit] = layer + 1;
     }
-    if (op.condition) {
-      std::size_t& writable = bit_writable_[op.condition->first];
+    for (const std::size_t bit : read) {
+      std::size_t& writable = bit_writable_[bit];
       writable = std::max(writable, layer + 1);
     }
-    for (const std::size_t bit : op.measure_target) {
+    for (const std::size_t bit : op.measure_target_indices) {
       bit_readable_[bit] = layer + 1;
       bit_writable_[bit] = layer + 1;
     }
@@ -211,6 +238,21 @@ class AsapScheduler {
   }
 
  private:
+  // Returns the flat indices of all bits `op` needs to know the value of
+  // That is its condition bits and the assigned values
+  [[nodiscard]] static std::vector<std::size_t> BitsRead(
+      const CompiledOperation& op) {
+    std::vector<std::size_t> bits;
+    if (op.condition) {
+      bits = op.condition->bit_indices;
+    }
+    for (const CompiledCondition& source : op.assign_sources) {
+      bits.insert(bits.end(), source.bit_indices.begin(),
+                  source.bit_indices.end());
+    }
+    return bits;
+  }
+
   // First layer in which each qubit is free.
   std::vector<std::size_t> qubit_free_;
   // First layer in which each bit holds its latest value: the layer after
@@ -231,6 +273,12 @@ SimulationCircuit::SimulationCircuit(const Circuit& circuit) {
   const RegisterMap registers(circuit);
   qubit_count_ = registers.QubitCount();
   bit_count_ = registers.BitCount();
+
+  if (!circuit.IsFlat()) {
+    throw std::invalid_argument(
+        "SimulationCircuit: the circuit has blocks, and is the outline of a "
+        "program, not a list of operations to simulate");
+  }
 
   layers_.emplace_back();
   AsapScheduler scheduler(qubit_count_, bit_count_);
