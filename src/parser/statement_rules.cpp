@@ -6,7 +6,7 @@ namespace qde::parser::internal {
 
 using ast::StmtKind;
 
-const char* Describe(ast::StmtKind kind) {
+std::string_view Describe(ast::StmtKind kind) {
   switch (kind) {
     case StmtKind::kPragma:
       return "a pragma";

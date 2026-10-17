@@ -10,6 +10,7 @@
 #include <optional>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -25,7 +26,7 @@ namespace qde::parser::internal {
 namespace {
 
 // Digit separators are legal in every numeric literal.
-std::string WithoutUnderscores(const std::string& text) {
+std::string WithoutUnderscores(std::string_view text) {
   std::string digits;
   digits.reserve(text.size());
   for (const char c : text) {
@@ -38,7 +39,7 @@ std::string WithoutUnderscores(const std::string& text) {
 
 // Parses a float independently of the global locale.
 // Returns nullopt if it is too large for a double.
-std::optional<double> ParseReal(const std::string& text) {
+std::optional<double> ParseReal(std::string_view text) {
   std::istringstream stream(WithoutUnderscores(text));
   stream.imbue(std::locale::classic());
   double value = 0.0;
@@ -58,9 +59,9 @@ std::string Trimmed(std::string text) {
   return text;
 }
 
-bool EndsWith(const std::string& text, const std::string& suffix) {
+bool EndsWith(std::string_view text, std::string_view suffix) {
   return text.size() >= suffix.size() &&
-         text.compare(text.size() - suffix.size(), suffix.size(), suffix) == 0;
+         text.substr(text.size() - suffix.size()) == suffix;
 }
 
 }  // namespace
@@ -70,7 +71,7 @@ bool EndsWith(const std::string& text, const std::string& suffix) {
 // The magnitude of a float, imaginary or timing literal, given as the text
 // of `node` without its suffix.
 double AstBuilder::Real(antlr4::tree::TerminalNode* node,
-                        const std::string& text) {
+                        std::string_view text) {
   const auto value = ParseReal(text);
   if (!value) {
     diagnostics_.Error(Loc(node), "literal '" + node->getText() +
@@ -155,7 +156,7 @@ ast::ExprPtr AstBuilder::Literal(qasm3Parser::LiteralExpressionContext* ctx) {
     auto expr = Make<ast::TimingLiteral>(Loc(ctx));
     std::string text = node->getText();
     // "s" is a suffix of every other unit and has to be tried last.
-    const std::array<std::pair<const char*, ast::TimeUnit>, 6> units = {{
+    const std::array<std::pair<std::string_view, ast::TimeUnit>, 6> units = {{
         {"dt", ast::TimeUnit::kDeviceCycle},
         {"ns", ast::TimeUnit::kNanosecond},
         {"us", ast::TimeUnit::kMicrosecond},
@@ -166,7 +167,7 @@ ast::ExprPtr AstBuilder::Literal(qasm3Parser::LiteralExpressionContext* ctx) {
     for (const auto& [suffix, unit] : units) {
       if (EndsWith(text, suffix)) {
         expr->unit = unit;
-        text.resize(text.size() - std::string(suffix).size());
+        text.resize(text.size() - suffix.size());
         break;
       }
     }

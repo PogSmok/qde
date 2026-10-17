@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include <antlr4-runtime.h>
@@ -113,7 +114,7 @@ class AstBuilder {
 
   std::uint64_t Integer(antlr4::tree::TerminalNode* node, std::size_t prefix,
                         unsigned base);
-  double Real(antlr4::tree::TerminalNode* node, const std::string& text);
+  double Real(antlr4::tree::TerminalNode* node, std::string_view text);
 
   // Reports `ctx`, a `what` the builder cannot convert into an AST node.
   // Returns where the ErrorExpr or ErrorStmt standing in for the unsupported

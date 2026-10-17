@@ -1,12 +1,14 @@
 #ifndef PARSER_INTERNAL_STATEMENT_RULES_HPP_
 #define PARSER_INTERNAL_STATEMENT_RULES_HPP_
 
+#include <string_view>
+
 #include "qde/parser/internal/ast.hpp"
 
 namespace qde::parser::internal {
 
 // The statement as it is named in an error message, such as "a gate call".
-[[nodiscard]] const char* Describe(ast::StmtKind kind);
+[[nodiscard]] std::string_view Describe(ast::StmtKind kind);
 
 // Statements that declare something for the whole program.
 [[nodiscard]] bool IsGlobalOnly(ast::StmtKind kind);
