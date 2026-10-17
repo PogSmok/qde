@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <string>
+#include <string_view>
 
 #include <antlr4-runtime.h>
 
@@ -53,8 +54,8 @@ inline std::string SourceText(antlr4::ParserRuleContext* ctx) {
 }
 
 // The quotes of an include path or a defcalgrammar name are not part of it.
-inline std::string Unquoted(const std::string& text) {
-  return text.size() >= 2 ? text.substr(1, text.size() - 2) : text;
+inline std::string Unquoted(std::string_view text) {
+  return std::string(text.size() >= 2 ? text.substr(1, text.size() - 2) : text);
 }
 
 }  // namespace qde::parser::internal

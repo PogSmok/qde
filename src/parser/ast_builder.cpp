@@ -7,6 +7,7 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -45,7 +46,7 @@ std::string Header(antlr4::ParserRuleContext* ctx,
   return SourceText(ctx, body->getStart()->getStartIndex());
 }
 
-BinaryOp CompoundOperator(const std::string& text) {
+BinaryOp CompoundOperator(std::string_view text) {
   // `text` is the operator without its trailing '='.
   if (text == "+") {
     return BinaryOp::kAdd;

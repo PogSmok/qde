@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -18,7 +19,7 @@ namespace {
 
 using ast::BinaryOp;
 
-BinaryOp ComparisonOperator(const std::string& text) {
+BinaryOp ComparisonOperator(std::string_view text) {
   if (text == "<") {
     return BinaryOp::kLess;
   }
