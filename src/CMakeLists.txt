@@ -20,6 +20,26 @@ target_link_libraries(qde_lib
 qde_enable_warnings(qde_lib)
 
 # -------------------------
+# QDE parser library
+# -------------------------
+add_library(qde_parser STATIC
+    parser/ast_builder.cpp
+    parser/ast_builder_expressions.cpp
+    parser/ast_builder_literals.cpp
+    parser/frontend.cpp
+    parser/statement_rules.cpp
+)
+
+target_link_libraries(qde_parser
+    PUBLIC
+        qde_lib
+    PRIVATE
+        qasm3_parser
+)
+
+qde_enable_warnings(qde_parser)
+
+# -------------------------
 # QDE simulation library
 # -------------------------
 find_package(OpenMP REQUIRED)

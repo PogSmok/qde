@@ -18,7 +18,7 @@ add_executable(qde_tests
     test_parse_result.cpp
     test_parser.cpp
     test_qubit_allocator.cpp
-    test_syntax_error_listener.cpp
+    parser/test_syntax_error_listener.cpp
     simulator/test_classical_operations.cpp
     simulator/test_eigenvalues.cpp
     simulator/test_memory_guard.cpp
@@ -31,6 +31,7 @@ add_executable(qde_tests
 target_link_libraries(qde_tests
     PRIVATE
         qde_lib
+        qde_parser
         qde_sim
         qasm3_parser
         GTest::gtest_main
