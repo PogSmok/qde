@@ -49,8 +49,9 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
     googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG 52eb8108c5bdec04579160ae17225d66034bd723 # v1.17.0
+    URL https://github.com/google/googletest/releases/download/v1.17.0/googletest-1.17.0.tar.gz
+    URL_HASH SHA256=65fab701d9829d38cb77c14acdc431d2108bfdbf8979e40eb8ae567edf10b27c
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 # -------------------------
