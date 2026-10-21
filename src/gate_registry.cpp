@@ -158,6 +158,13 @@ inline const M& MatCy() {
   return kV;
 }
 
+// CH: Hadamard on the target when the control is |1⟩
+inline const M& MatCh() {
+  static const M kV =
+      Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, kIS2, kIS2, 0, 0, kIS2, -kIS2);
+  return kV;
+}
+
 // SWAP: |01⟩ ↔ |10⟩
 inline const M& MatSwap() {
   static const M kV = Mat4(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
@@ -269,6 +276,7 @@ GateRegistry GateRegistry::WithBuiltins() {
   reg.Add({"cy", 2, MatCy()});
   reg.Add({"swap", 2, MatSwap()});
   reg.Add({"iswap", 2, MatIswap()});
+  reg.Add({"ch", 2, MatCh()});
 
   // ---- parametric two-qubit -----------------------------------------------
 
@@ -294,6 +302,29 @@ GateRegistry GateRegistry::WithBuiltins() {
              const double h = p[0] / 2.0;
              return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, std::exp(kMI * h), 0, 0,
                          0, 0, std::exp(kI * h));
+           }});
+
+  reg.Add({"cu", 2, 4, [](const P& p) {
+             const double theta = p[0];
+             const double phi = p[1];
+             const double lam = p[2];
+             // gamma is a phase on the control
+             const C g = std::exp(kI * p[3]);
+             const double c = std::cos(theta / 2.0);
+             const double s = std::sin(theta / 2.0);
+             return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, g * c,
+                         -g * std::exp(kI * lam) * s, 0, 0,
+                         g * std::exp(kI * phi) * s,
+                         g * std::exp(kI * (phi + lam)) * c);
+           }});
+
+  // stdgates.inc aliases of cx, p and cp
+  reg.Add({"CX", 2, MatCx()});
+  reg.Add({"phase", 1, 1,
+           [](const P& p) { return Mat2(1, 0, 0, std::exp(kI * p[0])); }});
+  reg.Add({"cphase", 2, 1, [](const P& p) {
+             return Mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                         std::exp(kI * p[0]));
            }});
 
   // ---- three-qubit --------------------------------------------------------

@@ -1,3 +1,7 @@
+#include <cmath>
+#include <complex>
+#include <cstddef>
+
 #include <gtest/gtest.h>
 
 #include "qde/gate_registry.hpp"
@@ -69,6 +73,12 @@ TEST_F(GateRegistryTest, ContainsTwoQubitGates) {
   }
 }
 
+TEST_F(GateRegistryTest, ContainsRemainingStdgates) {
+  for (const auto& name : {"ch", "cu", "CX", "phase", "cphase"}) {
+    EXPECT_TRUE(reg_.Contains(name)) << "missing gate: " << name;
+  }
+}
+
 TEST_F(GateRegistryTest, ContainsThreeQubitGates) {
   for (const auto& name : {"ccx", "ccz", "cswap"}) {
     EXPECT_TRUE(reg_.Contains(name)) << "missing gate: " << name;
@@ -100,6 +110,41 @@ TEST_F(GateRegistryTest, RxGateAtZeroIsIdentity) {
   EXPECT_NEAR(mat[1].real(), 0.0, 1e-10);
   EXPECT_NEAR(mat[2].real(), 0.0, 1e-10);
   EXPECT_NEAR(mat[3].real(), 1.0, 1e-10);
+}
+
+TEST_F(GateRegistryTest, CuWithZeroPhaseIsControlledU) {
+  // cu(theta, phi, lambda, 0) leaves |0x> alone and applies U on |1x>.
+  const auto cu = reg_.Find("cu")->Matrix({0.3, 0.5, 0.7, 0.0});
+  const auto u = reg_.Find("U")->Matrix({0.3, 0.5, 0.7});
+  for (std::size_t row = 0; row < 2; ++row) {
+    for (std::size_t col = 0; col < 2; ++col) {
+      EXPECT_NEAR(std::abs(cu[((2 + row) * 4) + 2 + col] - u[(row * 2) + col]),
+                  0.0, 1e-12);
+      EXPECT_NEAR(std::abs(cu[(row * 4) + col] - (row == col ? 1.0 : 0.0)), 0.0,
+                  1e-12);
+    }
+  }
+}
+
+TEST_F(GateRegistryTest, CuPhaseMultipliesControlledBlock) {
+  const double gamma = 0.9;
+  const auto with_phase = reg_.Find("cu")->Matrix({0.3, 0.5, 0.7, gamma});
+  const auto without = reg_.Find("cu")->Matrix({0.3, 0.5, 0.7, 0.0});
+  const std::complex<double> phase = std::polar(1.0, gamma);
+  EXPECT_NEAR(std::abs(with_phase[10] - (phase * without[10])), 0.0, 1e-12);
+  EXPECT_NEAR(std::abs(with_phase[15] - (phase * without[15])), 0.0, 1e-12);
+  EXPECT_NEAR(std::abs(with_phase[0] - 1.0), 0.0, 1e-12);
+}
+
+TEST_F(GateRegistryTest, ChGateIsControlledHadamard) {
+  const auto mat = reg_.Find("ch")->Matrix();
+  const double i_s2 = 0.7071067811865475;
+  EXPECT_NEAR(mat[0].real(), 1.0, 1e-10);
+  EXPECT_NEAR(mat[5].real(), 1.0, 1e-10);
+  EXPECT_NEAR(mat[10].real(), i_s2, 1e-10);
+  EXPECT_NEAR(mat[11].real(), i_s2, 1e-10);
+  EXPECT_NEAR(mat[14].real(), i_s2, 1e-10);
+  EXPECT_NEAR(mat[15].real(), -i_s2, 1e-10);
 }
 
 TEST_F(GateRegistryTest, CXGateMetadata) {
