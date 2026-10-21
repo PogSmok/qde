@@ -79,7 +79,7 @@ TEST_F(SimulationCircuitTest, SingleGateScheduledInLayerZero) {
   const SimulationCircuit sc(MakeCircuit({{"q", 1}}, {}, {op}));
   ASSERT_GE(sc.Layers().size(), 1U);
   ASSERT_EQ(sc.Layers()[0].size(), 1U);
-  EXPECT_EQ(sc.Layers()[0][0].qubits[0], 0U);
+  EXPECT_EQ(sc.Layers()[0][0].qubit_indices[0], 0U);
 }
 
 TEST_F(SimulationCircuitTest, IndependentGatesScheduledInSameLayer) {
@@ -134,7 +134,7 @@ TEST_F(SimulationCircuitTest, CompiledOperationQubitsAreResolvedToFlatIndex) {
   const auto op = GateOp("h", {{1, 0}});  // reg=1 (b), qubit=0
   const SimulationCircuit sc(MakeCircuit({{"a", 2}, {"b", 1}}, {}, {op}));
   ASSERT_EQ(sc.Layers()[0].size(), 1U);
-  EXPECT_EQ(sc.Layers()[0][0].qubits[0], 2U);
+  EXPECT_EQ(sc.Layers()[0][0].qubit_indices[0], 2U);
 }
 
 TEST_F(SimulationCircuitTest, MeasureBitTargetResolvedCorrectly) {
@@ -143,7 +143,7 @@ TEST_F(SimulationCircuitTest, MeasureBitTargetResolvedCorrectly) {
   const SimulationCircuit sc(
       MakeCircuit({{"q", 1}}, {{"a", 2}, {"c", 1}}, {msr}));
   ASSERT_EQ(sc.Layers()[0].size(), 1U);
-  EXPECT_EQ(sc.Layers()[0][0].measure_target[0], 2U);
+  EXPECT_EQ(sc.Layers()[0][0].measure_target_indices[0], 2U);
 }
 
 // --- Limits and validation ---------------------------------------------------
@@ -210,7 +210,7 @@ TEST_F(SimulationCircuitTest, RejectsMeasurementWithPartialTargets) {
 TEST_F(SimulationCircuitTest, AcceptsMeasurementWithoutTargets) {
   const Operation msr = MeasureOp({{0, 0}, {0, 1}}, {});
   const SimulationCircuit sc(MakeCircuit({{"q", 2}}, {}, {msr}));
-  EXPECT_TRUE(sc.Layers()[0][0].measure_target.empty());
+  EXPECT_TRUE(sc.Layers()[0][0].measure_target_indices.empty());
 }
 
 TEST_F(SimulationCircuitTest, RejectsMoreThanMaxBits) {
@@ -253,7 +253,7 @@ TEST_F(SimulationCircuitTest, MeasurementWaitsForEarlierReadOfItsBit) {
   ASSERT_EQ(sc.Layers().size(), 3U);
   ASSERT_EQ(sc.Layers()[2].size(), 1U);
   EXPECT_EQ(sc.Layers()[2][0].type, OperationType::kMeasure);
-  EXPECT_EQ(sc.Layers()[2][0].qubits[0], 2U);
+  EXPECT_EQ(sc.Layers()[2][0].qubit_indices[0], 2U);
 }
 
 TEST_F(SimulationCircuitTest, IndependentConditionsShareALayer) {

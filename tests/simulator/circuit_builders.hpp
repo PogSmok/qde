@@ -50,7 +50,23 @@ inline Operation BarrierOp(std::vector<QubitReference> qubits) {
 
 // `op`, executed only while classical bit `bit` equals `expected`.
 inline Operation If(BitReference bit, std::uint8_t expected, Operation op) {
-  op.condition = std::make_pair(bit, expected);
+  op.condition = Condition(bit, expected);
+  return op;
+}
+
+// `op`, executed only while `condition` holds.
+inline Operation If(Condition condition, Operation op) {
+  op.condition = std::move(condition);
+  return op;
+}
+
+// Sets each of `bits` to the value of the matching entry of `sources`.
+inline Operation AssignOp(std::vector<BitReference> bits,
+                          std::vector<Condition> sources) {
+  Operation op;
+  op.type = OperationType::kAssign;
+  op.measure_target = std::move(bits);
+  op.assign_sources = std::move(sources);
   return op;
 }
 

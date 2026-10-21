@@ -45,6 +45,20 @@ class GateDefinition {
     };
   }
 
+  // matrix_fn must return a vector of size (2^num_qubits)^2.
+  GateDefinition(std::string name, std::uint8_t num_qubits, MatrixFn matrix_fn)
+      : name_(std::move(name)),
+        num_qubits_(num_qubits),
+        num_params_(0),
+        matrix_fn_(std::move(matrix_fn)) {
+    if (num_qubits_ < 1) {
+      throw std::invalid_argument("GateDefinition: num_qubits must be >= 1");
+    }
+    if (!matrix_fn_) {
+      throw std::invalid_argument("GateDefinition: matrix_fn must not be null");
+    }
+  }
+
   // Parametric gate constructor (num_params != 0)
   // matrix_fn must return a vector of size (2^num_qubits)^2.
   GateDefinition(std::string name, std::uint8_t num_qubits,
